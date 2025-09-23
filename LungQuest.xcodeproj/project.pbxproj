@@ -1,0 +1,487 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		8D1107310486CEB800E47090 /* LungQuestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1107300486CEB800E47090 /* LungQuestApp.swift */; };
+		8D1107330486CEB800E47090 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1107320486CEB800E47090 /* ContentView.swift */; };
+		8D1107400486CEB800E47090 /* DataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D11073F0486CEB800E47090 /* DataModels.swift */; };
+		8D1107420486CEB800E47090 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1107410486CEB800E47090 /* AppState.swift */; };
+		8D1107440486CEB800E47090 /* DataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1107430486CEB800E47090 /* DataService.swift */; };
+		8D1107480486CEB800E47090 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1107470486CEB800E47090 /* HomeView.swift */; };
+		8D11074C0486CEB800E47090 /* ProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D11074B0486CEB800E47090 /* ProgressView.swift */; };
+		8D11074E0486CEB800E47090 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D11074D0486CEB800E47090 /* ProfileView.swift */; };
+		8D1107500486CEB800E47090 /* LungCharacter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D11074F0486CEB800E47090 /* LungCharacter.swift */; };
+		8D1107520486CEB800E47090 /* CheckInModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1107510486CEB800E47090 /* CheckInModalView.swift */; };
+		8D1107600486CEB800E47090 /* LearningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D11075F0486CEB800E47090 /* LearningView.swift */; };
+		8D1107620486CEB800E47090 /* PanicHelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1107610486CEB800E47090 /* PanicHelpView.swift */; };
+		8D1107660486CEB800E47090 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1107650486CEB800E47090 /* PaywallView.swift */; };
+		8D1107680486CEB800E47090 /* IntakeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1107670486CEB800E47090 /* IntakeView.swift */; };
+		8D11076A0486CEB800E47090 /* CommonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1107690486CEB800E47090 /* CommonStyles.swift */; };
+		9701BB4D2E81E7E500716F78 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9701BB4C2E81E7E500716F78 /* Assets.xcassets */; };
+		971C04602E7DFED500540355 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 971C045F2E7DFED500540355 /* FirebaseAnalytics */; };
+		971C04622E7DFED500540355 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 971C04612E7DFED500540355 /* FirebaseAuth */; };
+		971C04642E7DFED500540355 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 971C04632E7DFED500540355 /* FirebaseFirestore */; };
+		971C04662E7DFED500540355 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 971C04652E7DFED500540355 /* FirebaseStorage */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		8D1107270486CEB800E47090 /* LungQuest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LungQuest.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107300486CEB800E47090 /* LungQuestApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LungQuestApp.swift; sourceTree = "<group>"; };
+		8D1107320486CEB800E47090 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		8D1107390486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8D11073F0486CEB800E47090 /* DataModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataModels.swift; sourceTree = "<group>"; };
+		8D1107410486CEB800E47090 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		8D1107430486CEB800E47090 /* DataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataService.swift; sourceTree = "<group>"; };
+		8D1107470486CEB800E47090 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		8D11074B0486CEB800E47090 /* ProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressView.swift; sourceTree = "<group>"; };
+		8D11074D0486CEB800E47090 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		8D11074F0486CEB800E47090 /* LungCharacter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LungCharacter.swift; sourceTree = "<group>"; };
+		8D1107510486CEB800E47090 /* CheckInModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInModalView.swift; sourceTree = "<group>"; };
+		8D11075F0486CEB800E47090 /* LearningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearningView.swift; sourceTree = "<group>"; };
+		8D1107610486CEB800E47090 /* PanicHelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanicHelpView.swift; sourceTree = "<group>"; };
+		8D1107650486CEB800E47090 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		8D1107670486CEB800E47090 /* IntakeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntakeView.swift; sourceTree = "<group>"; };
+		8D1107690486CEB800E47090 /* CommonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonStyles.swift; sourceTree = "<group>"; };
+		9701BB4C2E81E7E500716F78 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8D1107240486CEB800E47090 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				971C04602E7DFED500540355 /* FirebaseAnalytics in Frameworks */,
+				971C04662E7DFED500540355 /* FirebaseStorage in Frameworks */,
+				971C04622E7DFED500540355 /* FirebaseAuth in Frameworks */,
+				971C04642E7DFED500540355 /* FirebaseFirestore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		8D11071E0486CEB800E47090 = {
+			isa = PBXGroup;
+			children = (
+				9701BB4C2E81E7E500716F78 /* Assets.xcassets */,
+				8D1107290486CEB800E47090 /* LungQuest */,
+				8D1107280486CEB800E47090 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		8D1107280486CEB800E47090 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8D1107270486CEB800E47090 /* LungQuest.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8D1107290486CEB800E47090 /* LungQuest */ = {
+			isa = PBXGroup;
+			children = (
+				8D1107300486CEB800E47090 /* LungQuestApp.swift */,
+				8D11073E0486CEB800E47090 /* Models */,
+				8D1107550486CEB800E47090 /* ViewModels */,
+				8D1107560486CEB800E47090 /* Services */,
+				8D1107570486CEB800E47090 /* Views */,
+				8D1107390486CEB800E47090 /* Info.plist */,
+			);
+			path = LungQuest;
+			sourceTree = "<group>";
+		};
+		8D11073E0486CEB800E47090 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				8D11073F0486CEB800E47090 /* DataModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		8D1107550486CEB800E47090 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				8D1107410486CEB800E47090 /* AppState.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		8D1107560486CEB800E47090 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				8D1107430486CEB800E47090 /* DataService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		8D1107570486CEB800E47090 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				8D1107320486CEB800E47090 /* ContentView.swift */,
+				8D1107470486CEB800E47090 /* HomeView.swift */,
+				8D11075F0486CEB800E47090 /* LearningView.swift */,
+				8D1107650486CEB800E47090 /* PaywallView.swift */,
+				8D1107670486CEB800E47090 /* IntakeView.swift */,
+				8D11074B0486CEB800E47090 /* ProgressView.swift */,
+				8D11074D0486CEB800E47090 /* ProfileView.swift */,
+				8D1107580486CEB800E47090 /* Components */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		8D1107580486CEB800E47090 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				8D11074F0486CEB800E47090 /* LungCharacter.swift */,
+				8D1107510486CEB800E47090 /* CheckInModalView.swift */,
+				8D1107610486CEB800E47090 /* PanicHelpView.swift */,
+				8D1107690486CEB800E47090 /* CommonStyles.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8D1107260486CEB800E47090 /* LungQuest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8D11072C0486CEB800E47090 /* Build configuration list for PBXNativeTarget "LungQuest" */;
+			buildPhases = (
+				8D1107230486CEB800E47090 /* Sources */,
+				8D1107240486CEB800E47090 /* Frameworks */,
+				8D1107250486CEB800E47090 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LungQuest;
+			packageProductDependencies = (
+				971C045F2E7DFED500540355 /* FirebaseAnalytics */,
+				971C04612E7DFED500540355 /* FirebaseAuth */,
+				971C04632E7DFED500540355 /* FirebaseFirestore */,
+				971C04652E7DFED500540355 /* FirebaseStorage */,
+			);
+			productName = LungQuest;
+			productReference = 8D1107270486CEB800E47090 /* LungQuest.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8D11071F0486CEB800E47090 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				ORGANIZATIONNAME = LungQuest;
+				TargetAttributes = {
+					8D1107260486CEB800E47090 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 8D1107220486CEB800E47090 /* Build configuration list for PBXProject "LungQuest" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 8D11071E0486CEB800E47090;
+			packageReferences = (
+				971C045E2E7DFED500540355 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
+			productRefGroup = 8D1107280486CEB800E47090 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8D1107260486CEB800E47090 /* LungQuest */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8D1107250486CEB800E47090 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9701BB4D2E81E7E500716F78 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8D1107230486CEB800E47090 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8D1107330486CEB800E47090 /* ContentView.swift in Sources */,
+				8D1107310486CEB800E47090 /* LungQuestApp.swift in Sources */,
+				8D1107400486CEB800E47090 /* DataModels.swift in Sources */,
+				8D1107420486CEB800E47090 /* AppState.swift in Sources */,
+				8D1107440486CEB800E47090 /* DataService.swift in Sources */,
+				8D1107480486CEB800E47090 /* HomeView.swift in Sources */,
+				8D1107600486CEB800E47090 /* LearningView.swift in Sources */,
+				8D1107660486CEB800E47090 /* PaywallView.swift in Sources */,
+				8D1107680486CEB800E47090 /* IntakeView.swift in Sources */,
+				8D11074C0486CEB800E47090 /* ProgressView.swift in Sources */,
+				8D11074E0486CEB800E47090 /* ProfileView.swift in Sources */,
+				8D1107500486CEB800E47090 /* LungCharacter.swift in Sources */,
+				8D1107520486CEB800E47090 /* CheckInModalView.swift in Sources */,
+				8D1107620486CEB800E47090 /* PanicHelpView.swift in Sources */,
+				8D11076A0486CEB800E47090 /* CommonStyles.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		8D11072A0486CEB800E47090 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		8D11072B0486CEB800E47090 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		8D11072D0486CEB800E47090 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"LungQuest/Preview Content\"";
+				DEVELOPMENT_TEAM = TZ8T5P79WT;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = LungQuest/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lungquest.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		8D11072E0486CEB800E47090 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"LungQuest/Preview Content\"";
+				DEVELOPMENT_TEAM = TZ8T5P79WT;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = LungQuest/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lungquest.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8D1107220486CEB800E47090 /* Build configuration list for PBXProject "LungQuest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8D11072A0486CEB800E47090 /* Debug */,
+				8D11072B0486CEB800E47090 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8D11072C0486CEB800E47090 /* Build configuration list for PBXNativeTarget "LungQuest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8D11072D0486CEB800E47090 /* Debug */,
+				8D11072E0486CEB800E47090 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		971C045E2E7DFED500540355 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.3.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		971C045F2E7DFED500540355 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 971C045E2E7DFED500540355 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		971C04612E7DFED500540355 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 971C045E2E7DFED500540355 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		971C04632E7DFED500540355 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 971C045E2E7DFED500540355 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		971C04652E7DFED500540355 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 971C045E2E7DFED500540355 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 8D11071F0486CEB800E47090 /* Project object */;
+}
