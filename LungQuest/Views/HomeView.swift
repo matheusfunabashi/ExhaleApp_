@@ -7,6 +7,7 @@ struct HomeView: View {
     @State private var showCelebration = false
     @State private var showCalendar = false
     @State private var showMoney = false
+    @State private var showHealth = false
     #if DEBUG
     @State private var showDevMenu = false
     #endif
@@ -52,7 +53,8 @@ struct HomeView: View {
                     // Quick stats
                     StatsSection(
                         onDaysTapped: { showCalendar = true },
-                        onMoneyTapped: { showMoney = true }
+                        onMoneyTapped: { showMoney = true },
+                        onHealthTapped: { showHealth = true }
                     )
                     
                     // Daily check-in
@@ -105,6 +107,19 @@ struct HomeView: View {
             }
             .environmentObject(appState)
         }
+        .sheet(isPresented: $showHealth) {
+            NavigationView {
+                HealthImprovementsView()
+                    .navigationTitle("Health Improvements")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Close") { showHealth = false }
+                        }
+                    }
+            }
+            .environmentObject(appState)
+        }
         #if DEBUG
         .sheet(isPresented: $showDevMenu) {
             DevMenuView()
@@ -136,6 +151,7 @@ struct StatsSection: View {
     @EnvironmentObject var appState: AppState
     var onDaysTapped: (() -> Void)? = nil
     var onMoneyTapped: (() -> Void)? = nil
+    var onHealthTapped: (() -> Void)? = nil
     
     var body: some View {
         HStack(spacing: 15) {
@@ -156,10 +172,11 @@ struct StatsSection: View {
             )
             
             StatsCard(
-                title: "XP Earned",
-                value: "\(appState.statistics.totalXP)",
-                icon: "star.fill",
-                color: .orange
+                title: "Health Improvements",
+                value: appState.getHealthImprovements(),
+                icon: "heart.text.square.fill",
+                color: .orange,
+                onTap: { onHealthTapped?() }
             )
         }
     }
@@ -500,6 +517,58 @@ struct MoneySavedView: View {
             Spacer()
         }
         .padding()
+        .background(
+            LinearGradient(
+                gradient: Gradient(colors: [Color.blue.opacity(0.05), Color.pink.opacity(0.05)]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+    }
+}
+
+// MARK: - Health Improvements Detail
+struct HealthImprovementsView: View {
+    @EnvironmentObject var appState: AppState
+    private var days: Int {
+        appState.getDaysVapeFree()
+    }
+    private var timeline: [(when: String, description: String, minDays: Int)] {
+        [
+            ("20 minutes", "Heart rate and blood pressure drop", 0),
+            ("24 hours", "Carbon monoxide levels normalize", 1),
+            ("72 hours", "Nicotine is out of your system", 3),
+            ("1 week", "Taste and smell improve", 7),
+            ("1 month", "Lung function increases up to 30%", 30),
+            ("3 months", "Circulation and breathing improve", 90),
+            ("1 year", "Risk of heart disease is cut in half", 365)
+        ]
+    }
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("You’ve been vape‑free for \(days) day\(days == 1 ? "" : "s").")
+                    .font(.headline)
+                Text("Here’s what your body is likely experiencing based on time since quitting:")
+                    .foregroundColor(.secondary)
+                VStack(spacing: 12) {
+                    ForEach(timeline, id: \.minDays) { item in
+                        HStack(alignment: .top, spacing: 12) {
+                            Image(systemName: days >= item.minDays ? "checkmark.circle.fill" : "circle")
+                                .foregroundColor(days >= item.minDays ? .green : .gray)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(item.when).font(.subheadline).fontWeight(.semibold)
+                                Text(item.description).font(.footnote).foregroundColor(.secondary)
+                            }
+                            Spacer()
+                        }
+                        .padding(12)
+                        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.9)))
+                    }
+                }
+            }
+            .padding()
+        }
         .background(
             LinearGradient(
                 gradient: Gradient(colors: [Color.blue.opacity(0.05), Color.pink.opacity(0.05)]),
