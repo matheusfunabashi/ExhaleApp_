@@ -176,8 +176,8 @@ struct StatsSection: View {
                 value: "Health Improvements",
                 icon: "heart.text.square.fill",
                 color: .orange,
-                valueFont: .subheadline,
-                onTap: { onHealthTapped?() }
+                onTap: { onHealthTapped?() },
+                valueFont: .subheadline
             )
         }
     }
