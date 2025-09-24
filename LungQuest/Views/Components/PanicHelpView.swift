@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import AVFoundation
+import Combine
 
 struct PanicButton: View {
     var action: () -> Void
@@ -50,51 +51,55 @@ struct PanicHelpView: View {
             )
             .ignoresSafeArea()
             
-            VStack(spacing: 24) {
-                // Camera reflection area
-                ZStack {
-                    if cameraAuthorized {
-                        CameraPreview(session: camera.session)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 260)
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Camera reflection area
+                    ZStack {
+                        if cameraAuthorized {
+                            CameraPreview(session: camera.session)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 260)
+                                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.2), lineWidth: 1))
+                        } else {
+                            VStack(spacing: 8) {
+                                Image(systemName: "camera.fill").font(.title).foregroundColor(.secondary)
+                                Text("Enable camera to see yourself and take a mindful pause.")
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .frame(maxWidth: .infinity, minHeight: 200)
+                            .padding()
+                            .background(RoundedRectangle(cornerRadius: 16).fill(Color.white.opacity(0.9)))
                             .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.2), lineWidth: 1))
-                    } else {
-                        VStack(spacing: 8) {
-                            Image(systemName: "camera.fill").font(.title).foregroundColor(.secondary)
-                            Text("Enable camera to see yourself and take a mindful pause.")
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
                         }
-                        .frame(maxWidth: .infinity, minHeight: 200)
-                        .padding()
-                        .background(RoundedRectangle(cornerRadius: 16).fill(Color.white.opacity(0.9)))
                     }
-                }
-                
-                Text("Take a breath — you got this")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.pink)
-                    .padding(.top, 10)
-                
-                BreathingCoach()
-                
-                MotivationList()
-                
-                Button(action: { isPresented = false }) {
-                    Text("I’m okay now")
-                        .fontWeight(.semibold)
+                    
+                    Text("Take a breath — you got this")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(.pink)
+                        .padding(.top, 10)
+                    
+                    BreathingCoach()
                         .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(RoundedRectangle(cornerRadius: 14).fill(Color.pink))
-                        .foregroundColor(.white)
+                    
+                    MotivationList()
+                    
+                    Button(action: { isPresented = false }) {
+                        Text("I’m okay now")
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(RoundedRectangle(cornerRadius: 14).fill(Color.pink))
+                            .foregroundColor(.white)
+                    }
+                    .padding(.top, 8)
                 }
-                .padding(.top, 8)
+                .padding()
             }
-            .padding()
             
             Button(action: { isPresented = false }) {
                 Image(systemName: "xmark.circle.fill")
@@ -129,6 +134,7 @@ struct PanicHelpView: View {
 
 private struct BreathingCoach: View {
     @State private var phase: Bool = false
+    private var timer: Timer.TimerPublisher { Timer.publish(every: 4, on: .main, in: .common) }
     var body: some View {
         VStack(spacing: 12) {
             Text(phase ? "Breathe out" : "Breathe in")
@@ -142,13 +148,19 @@ private struct BreathingCoach: View {
                 Circle()
                     .fill(Color.pink.opacity(0.6))
                     .frame(width: phase ? 160 : 80, height: phase ? 160 : 80)
-                    .animation(.easeInOut(duration: 4.0).repeatForever(autoreverses: true), value: phase)
+                    .animation(.easeInOut(duration: 4.0), value: phase)
             }
+            .frame(maxWidth: .infinity)
             Text("4-7-8 breathing: In 4 • Hold 7 • Out 8")
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
         .onAppear { phase = true }
+        .onReceive(timer.autoconnect()) { _ in
+            withAnimation(.easeInOut(duration: 4.0)) {
+                phase.toggle()
+            }
+        }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Guided breathing coach")
     }
