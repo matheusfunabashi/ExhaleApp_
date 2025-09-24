@@ -85,6 +85,7 @@ struct IntakeView: View {
         switch stepIndex {
         case 1: return !name.isEmpty
         case 2: return !yearsVaping.isEmpty && !dailyCost.isEmpty
+        case (2 + questions.count): return !(answers.reasonToQuit ?? "").isEmpty
         case (3 + questions.count): return appRating > 0 // require a rating 1-5
         default: return true
         }
@@ -184,8 +185,6 @@ struct IntakeView: View {
     
     private var questions: [Question] {
         [
-            Question(title: "Why do you want to quit vaping?", subtitle: nil,
-                     kind: .multiple(options: ["Health", "Save money", "Family/friends", "Improve fitness", "Other"], keyPath: \.reasonToQuit)),
             Question(title: "How long have you been vaping?", subtitle: nil,
                      kind: .multiple(options: ["< 6 months", "6–12 months", "1–2 years", "2+ years"], keyPath: \.yearsVaping)),
             Question(title: "How often do you vape?", subtitle: nil,
@@ -202,8 +201,9 @@ struct IntakeView: View {
                      kind: .multiple(options: ["Under 18", "18–24", "25–34", "35–44", "45+"], keyPath: \.ageGroup)),
             Question(title: "Do you want to set a quit date or start immediately?", subtitle: nil,
                      kind: .multiple(options: ["Set quit date", "Start immediately"], keyPath: \.startPlan)),
-            Question(title: "Anything else you'd like us to know?", subtitle: "Optional",
-                     kind: .shortAnswer(placeholder: "Your thoughts...", keyPath: \.freeText))
+            // Move this to the end and make it mandatory via validation
+            Question(title: "Why do you want to quit vaping?", subtitle: nil,
+                     kind: .multiple(options: ["Health", "Save money", "Family/friends", "Improve fitness", "Other"], keyPath: \.reasonToQuit))
         ]
     }
 }

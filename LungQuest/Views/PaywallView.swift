@@ -6,6 +6,21 @@ struct PaywallView: View {
     
     var body: some View {
         VStack(spacing: 20) {
+            if let reason = appState.questionnaire.reasonToQuit, !reason.isEmpty {
+                VStack(spacing: 8) {
+                    Text("Why do you want to quit?")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text(reason)
+                        .font(.headline)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                        .padding(.vertical, 8)
+                        .background(RoundedRectangle(cornerRadius: 10).fill(Color.white.opacity(0.9)))
+                }
+                .padding(.top, 8)
+            }
+
             Text("Personalized support to quit for good")
                 .font(.title2)
                 .fontWeight(.bold)
