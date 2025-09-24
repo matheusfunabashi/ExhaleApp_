@@ -172,7 +172,7 @@ struct StatsSection: View {
             )
             
             StatsCard(
-                title: "Improvements",
+                title: "Upgrades",
                 value: "Health",
                 icon: "heart.text.square.fill",
                 color: .orange,
@@ -331,6 +331,7 @@ struct WeekCheckInStrip: View {
                         Text(shortWeekday(date))
                             .font(.caption2)
                             .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .center)
                         ZStack {
                             Circle()
                                 .stroke(Color.gray.opacity(0.2), lineWidth: 2)
@@ -343,6 +344,7 @@ struct WeekCheckInStrip: View {
                                     .transition(.scale)
                             }
                         }
+                        .frame(maxWidth: .infinity, alignment: .center)
                     }
                 }
             }
@@ -366,7 +368,7 @@ struct LearningPreviewSection: View {
                 
                 Spacer()
                 
-                NavigationLink(destination: LearningView()) {
+                Button(action: { NotificationCenter.default.post(name: Notification.Name("SwitchToLearnTab"), object: nil) }) {
                     Text("Explore All")
                         .font(.subheadline)
                         .foregroundColor(.pink)
@@ -682,7 +684,7 @@ struct QuitTimerView: View {
                 .accessibilityHidden(true)
             
             Text(formattedTime)
-                .font(.system(.largeTitle, design: .rounded))
+                .font(.system(size: 34, weight: .bold, design: .rounded))
                 .bold()
                 .monospacedDigit()
                 .minimumScaleFactor(0.5)
@@ -715,9 +717,10 @@ struct QuitTimerView: View {
         let days = totalSeconds / 86_400
         let hours = (totalSeconds % 86_400) / 3_600
         let minutes = (totalSeconds % 3_600) / 60
-        return days >= 0
-        ? "\(days)d \(hours)h \(minutes)m"
-        : "\(hours)h \(minutes)m"
+        let seconds = totalSeconds % 60
+        return days > 0
+        ? "\(days)d \(hours)h \(minutes)m \(seconds)s"
+        : "\(hours)h \(minutes)m \(seconds)s"
     }
     
     private var accessibilityTimeLabel: String {

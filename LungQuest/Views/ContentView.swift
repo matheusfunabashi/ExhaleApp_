@@ -45,6 +45,7 @@ struct LoadingView: View {
 struct MainTabView: View {
     @EnvironmentObject var appState: AppState
     @State private var showPanic: Bool = false
+    @State private var selectedTab: Int = 0
     
     var body: some View {
         ZStack {
@@ -61,32 +62,39 @@ struct MainTabView: View {
                         }
                     }
             } else {
-                TabView {
+                TabView(selection: $selectedTab) {
                 HomeView()
                     .tabItem {
                         Image(systemName: "house.fill")
                         Text("Home")
                     }
+                    .tag(0)
                 
                 LearningView()
                     .tabItem {
                         Image(systemName: "book.fill")
                         Text("Learn")
                     }
+                    .tag(1)
                 
                 ProgressView()
                     .tabItem {
                         Image(systemName: "chart.line.uptrend.xyaxis")
                         Text("Progress")
                     }
+                    .tag(2)
                 
                 ProfileView()
                     .tabItem {
                         Image(systemName: "person.fill")
                         Text("Profile")
                     }
+                    .tag(3)
                 }
                 .accentColor(.pink)
+                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("SwitchToLearnTab"))) { _ in
+                    selectedTab = 1
+                }
             
                 VStack {
                     Spacer()
