@@ -34,7 +34,7 @@ struct UserProfile: Codable {
 
 struct VapingHistory: Codable {
     var yearsVaping: Double = 0
-    var dailyCost: Double = 0
+    var dailyCost: Double = 0 // Interpreted as weekly cost in UI from now on
     var deviceType: String = ""
 }
 

@@ -115,7 +115,9 @@ class AppState: ObservableObject {
         guard let user = currentUser else { return }
         
         statistics.daysVapeFree = user.quitGoal.currentStreak
-        statistics.moneySaved = Double(statistics.daysVapeFree) * user.profile.vapingHistory.dailyCost
+        // Interpret stored cost as WEEKLY cost; convert to per-day for savings
+        let perDayCost = user.profile.vapingHistory.dailyCost / 7.0
+        statistics.moneySaved = Double(statistics.daysVapeFree) * perDayCost
         
         // Calculate cravings reduction (simplified)
         let recentProgress = dailyProgress.suffix(7)
@@ -271,7 +273,8 @@ class AppState: ObservableObject {
     
     func getMoneySaved() -> Double {
         guard let user = currentUser else { return 0 }
-        return Double(getDaysVapeFree()) * user.profile.vapingHistory.dailyCost
+        let perDayCost = user.profile.vapingHistory.dailyCost / 7.0
+        return Double(getDaysVapeFree()) * perDayCost
     }
     
     func getHealthImprovements() -> String {

@@ -407,7 +407,7 @@ private struct IntakeVapingStep: View {
             VStack(spacing: 16) {
                 IntakeTextField(title: "How long have you been vaping? (years)", text: $yearsVaping, placeholder: "e.g., 2.5")
                     .keyboardType(.decimalPad)
-                IntakeTextField(title: "Daily cost (USD)", text: $dailyCost, placeholder: "e.g., 15.00")
+                IntakeTextField(title: "Weekly cost (USD)", text: $dailyCost, placeholder: "e.g., 60.00")
                     .keyboardType(.decimalPad)
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Device Type").font(.subheadline).fontWeight(.medium)

@@ -6,6 +6,7 @@ struct HomeView: View {
     @State private var showCheckIn = false
     @State private var showCelebration = false
     @State private var showCalendar = false
+    @State private var showMoney = false
     #if DEBUG
     @State private var showDevMenu = false
     #endif
@@ -49,7 +50,10 @@ struct HomeView: View {
                     #endif
                     
                     // Quick stats
-                    StatsSection(onDaysTapped: { showCalendar = true })
+                    StatsSection(
+                        onDaysTapped: { showCalendar = true },
+                        onMoneyTapped: { showMoney = true }
+                    )
                     
                     // Daily check-in
                     SlipButton(resetAction: resetTimerForSlip)
@@ -88,6 +92,19 @@ struct HomeView: View {
             }
             .environmentObject(appState)
         }
+        .sheet(isPresented: $showMoney) {
+            NavigationView {
+                MoneySavedView()
+                    .navigationTitle("Money Saved")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Close") { showMoney = false }
+                        }
+                    }
+            }
+            .environmentObject(appState)
+        }
         #if DEBUG
         .sheet(isPresented: $showDevMenu) {
             DevMenuView()
@@ -118,6 +135,7 @@ struct HomeView: View {
 struct StatsSection: View {
     @EnvironmentObject var appState: AppState
     var onDaysTapped: (() -> Void)? = nil
+    var onMoneyTapped: (() -> Void)? = nil
     
     var body: some View {
         HStack(spacing: 15) {
@@ -133,7 +151,8 @@ struct StatsSection: View {
                 title: "Money Saved",
                 value: "$\(Int(appState.getMoneySaved()))",
                 icon: "dollarsign.circle.fill",
-                color: .blue
+                color: .blue,
+                onTap: { onMoneyTapped?() }
             )
             
             StatsCard(
@@ -422,6 +441,62 @@ struct MonthlyCalendarView: View {
             .background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.9)))
             .shadow(radius: 4)
             Spacer(minLength: 0)
+        }
+        .padding()
+        .background(
+            LinearGradient(
+                gradient: Gradient(colors: [Color.blue.opacity(0.05), Color.pink.opacity(0.05)]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+    }
+}
+
+// MARK: - Money Saved View
+struct MoneySavedView: View {
+    @EnvironmentObject var appState: AppState
+    private var perDay: Double {
+        let weekly = appState.currentUser?.profile.vapingHistory.dailyCost ?? 0
+        return weekly / 7.0
+    }
+    private var projections: [(title: String, days: Int)] {
+        [("1 Month", 30), ("6 Months", 182), ("1 Year", 365)]
+    }
+    var body: some View {
+        VStack(spacing: 16) {
+            // Simple bar chart
+            let maxVal = max(1.0, projections.map { Double($0.days) * perDay }.max() ?? 1)
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(projections, id: \.title) { item in
+                    let val = Double(item.days) * perDay
+                    HStack {
+                        Text(item.title).frame(width: 90, alignment: .leading)
+                        GeometryReader { geo in
+                            ZStack(alignment: .leading) {
+                                Capsule().fill(Color.gray.opacity(0.15))
+                                Capsule().fill(Color.blue.opacity(0.6))
+                                    .frame(width: max(8, geo.size.width * CGFloat(val / maxVal)))
+                            }
+                        }
+                        .frame(height: 16)
+                        Text("$\(Int(val))").frame(width: 70, alignment: .trailing)
+                    }
+                }
+            }
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.9)))
+            .shadow(radius: 4)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Your weekly cost: $\(Int((appState.currentUser?.profile.vapingHistory.dailyCost ?? 0)))")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+                Text("Estimated savings assume consistent avoidance of vaping.")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
         }
         .padding()
         .background(
