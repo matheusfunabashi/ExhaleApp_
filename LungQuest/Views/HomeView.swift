@@ -172,12 +172,11 @@ struct StatsSection: View {
             )
             
             StatsCard(
-                title: "",
-                value: "Health Improvements",
+                title: "Improvements",
+                value: "Health",
                 icon: "heart.text.square.fill",
                 color: .orange,
-                onTap: { onHealthTapped?() },
-                valueFont: .subheadline
+                onTap: { onHealthTapped?() }
             )
         }
     }
