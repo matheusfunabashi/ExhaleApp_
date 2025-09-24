@@ -176,6 +176,7 @@ struct StatsSection: View {
                 value: "Health Improvements",
                 icon: "heart.text.square.fill",
                 color: .orange,
+                valueFont: .subheadline,
                 onTap: { onHealthTapped?() }
             )
         }
@@ -188,6 +189,7 @@ struct StatsCard: View {
     let icon: String
     let color: Color
     var onTap: (() -> Void)? = nil
+    var valueFont: Font = .headline
     
     var body: some View {
         VStack(spacing: 8) {
@@ -196,8 +198,11 @@ struct StatsCard: View {
                 .foregroundColor(color)
             
             Text(value)
-                .font(.headline)
+                .font(valueFont)
                 .fontWeight(.bold)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.8)
             if !title.isEmpty {
                 Text(title)
                     .font(.caption)
