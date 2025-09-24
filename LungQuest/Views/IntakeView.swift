@@ -201,9 +201,9 @@ struct IntakeView: View {
                      kind: .multiple(options: ["Under 18", "18–24", "25–34", "35–44", "45+"], keyPath: \.ageGroup)),
             Question(title: "Do you want to set a quit date or start immediately?", subtitle: nil,
                      kind: .multiple(options: ["Set quit date", "Start immediately"], keyPath: \.startPlan)),
-            // Move this to the end and make it mandatory via validation
-            Question(title: "Why do you want to quit vaping?", subtitle: nil,
-                     kind: .multiple(options: ["Health", "Save money", "Family/friends", "Improve fitness", "Other"], keyPath: \.reasonToQuit))
+            // Move this to the end as an open answer (mandatory via validation)
+            Question(title: "Why do you want to quit?", subtitle: nil,
+                     kind: .shortAnswer(placeholder: "Tell us in your own words", keyPath: \.reasonToQuit))
         ]
     }
 }
