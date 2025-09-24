@@ -13,6 +13,15 @@ struct HomeView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 25) {
+                    // App Title
+                    HStack {
+                        Text("LungQuest")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundColor(.primary)
+                        Spacer()
+                    }
+
                     // Week check-in strip at top
                     WeekCheckInStrip()
 
@@ -42,6 +51,8 @@ struct HomeView: View {
                     StatsSection()
                     
                     // Daily check-in
+                    SlipButton(resetAction: resetTimerForSlip)
+                    
                     CheckInSectionWrapper(showCheckIn: $showCheckIn)
                     
                     // Learn preview
@@ -76,6 +87,18 @@ struct HomeView: View {
     }
     
     private func checkForNewStreak() { }
+
+    private func resetTimerForSlip() {
+        // Record slip for today and reset timer to now
+        appState.checkIn(wasVapeFree: false)
+        if var user = appState.currentUser {
+            user.startDate = Date()
+            appState.currentUser = user
+        }
+        UserDefaults.standard.set(0, forKey: "lastMilestoneNotifiedDays")
+        appState.updateLungHealth()
+        appState.persist()
+    }
 }
 
 struct StatsSection: View {
@@ -393,6 +416,25 @@ struct CheckInSectionWrapper: View {
 }
 
 // MARK: - New Hero Views
+
+private struct SlipButton: View {
+    let resetAction: () -> Void
+    var body: some View {
+        Button(action: resetAction) {
+            HStack(spacing: 8) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundColor(.white)
+                Text("I vaped")
+                    .fontWeight(.semibold)
+            }
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 12).fill(Color.red))
+            .foregroundColor(.white)
+        }
+        .accessibilityLabel("I vaped. Reset timer")
+    }
+}
 
 struct QuitTimerView: View {
     @EnvironmentObject var appState: AppState
