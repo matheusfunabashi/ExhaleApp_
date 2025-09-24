@@ -5,6 +5,7 @@ struct HomeView: View {
     @EnvironmentObject var appState: AppState
     @State private var showCheckIn = false
     @State private var showCelebration = false
+    @State private var showCalendar = false
     #if DEBUG
     @State private var showDevMenu = false
     #endif
@@ -48,7 +49,7 @@ struct HomeView: View {
                     #endif
                     
                     // Quick stats
-                    StatsSection()
+                    StatsSection(onDaysTapped: { showCalendar = true })
                     
                     // Daily check-in
                     SlipButton(resetAction: resetTimerForSlip)
@@ -73,6 +74,19 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showCheckIn) {
             CheckInModalView()
+        }
+        .sheet(isPresented: $showCalendar) {
+            NavigationView {
+                MonthlyCalendarView()
+                    .navigationTitle("This Month")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Close") { showCalendar = false }
+                        }
+                    }
+            }
+            .environmentObject(appState)
         }
         #if DEBUG
         .sheet(isPresented: $showDevMenu) {
@@ -103,6 +117,7 @@ struct HomeView: View {
 
 struct StatsSection: View {
     @EnvironmentObject var appState: AppState
+    var onDaysTapped: (() -> Void)? = nil
     
     var body: some View {
         HStack(spacing: 15) {
@@ -110,7 +125,8 @@ struct StatsSection: View {
                 title: "Days Free",
                 value: "\(appState.getDaysVapeFree())",
                 icon: "calendar",
-                color: .green
+                color: .green,
+                onTap: { onDaysTapped?() }
             )
             
             StatsCard(
@@ -135,6 +151,7 @@ struct StatsCard: View {
     let value: String
     let icon: String
     let color: Color
+    var onTap: (() -> Void)? = nil
     
     var body: some View {
         VStack(spacing: 8) {
@@ -157,6 +174,8 @@ struct StatsCard: View {
                 .fill(Color.white.opacity(0.7))
                 .shadow(radius: 5)
         )
+        .contentShape(Rectangle())
+        .onTapGesture { onTap?() }
     }
 }
 
@@ -355,6 +374,63 @@ struct LearningRow: View {
                 .font(.caption)
         }
         .padding(.vertical, 8)
+    }
+}
+
+// MARK: - Calendar Modal
+struct MonthlyCalendarView: View {
+    @EnvironmentObject var appState: AppState
+    private let calendar = Calendar.current
+    private var monthDays: [Date] {
+        let today = Date()
+        let comps = calendar.dateComponents([.year, .month], from: today)
+        let startOfMonth = calendar.date(from: comps) ?? today
+        let range = calendar.range(of: .day, in: .month, for: startOfMonth) ?? 1...30
+        return range.compactMap { day in
+            calendar.date(byAdding: .day, value: day - 1, to: startOfMonth)
+        }
+    }
+    private func isVapeFree(_ date: Date) -> Bool {
+        appState.dailyProgress.contains { p in
+            Calendar.current.isDate(p.date, inSameDayAs: date) && p.wasVapeFree
+        }
+    }
+    private func dayNumber(_ date: Date) -> String {
+        String(calendar.component(.day, from: date))
+    }
+    var body: some View {
+        VStack(spacing: 12) {
+            let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 7)
+            LazyVGrid(columns: columns, spacing: 8) {
+                ForEach(["S","M","T","W","T","F","S"], id: \.self) { w in
+                    Text(w).font(.caption2).foregroundColor(.secondary)
+                }
+                ForEach(monthDays, id: \.self) { date in
+                    let success = isVapeFree(date)
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(success ? Color.green.opacity(0.2) : Color.clear)
+                        Text(dayNumber(date))
+                            .foregroundColor(success ? .green : .primary)
+                            .fontWeight(success ? .semibold : .regular)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                    .frame(height: 36)
+                }
+            }
+            .padding(8)
+            .background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.9)))
+            .shadow(radius: 4)
+            Spacer(minLength: 0)
+        }
+        .padding()
+        .background(
+            LinearGradient(
+                gradient: Gradient(colors: [Color.blue.opacity(0.05), Color.pink.opacity(0.05)]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
     }
 }
 
