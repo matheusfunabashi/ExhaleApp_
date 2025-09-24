@@ -17,28 +17,47 @@ struct IntakeView: View {
     @State private var answers: OnboardingQuestionnaire = OnboardingQuestionnaire()
     @State private var stepIndex: Int = 0
     @State private var showPaywall: Bool = false
+    @State private var showCreatingPlan: Bool = false
+    @State private var appRating: Int = 0
+    @State private var appRatingFeedback: String = ""
     
-    // 0: Welcome, 1: Personal, 2: Vaping, 3... questions
-    private var totalSteps: Int { 3 + questions.count }
+    // Intro flow state
+    @State private var inIntro: Bool = true
+    @State private var introIndex: Int = 0
+    
+    // Question flow indices: 1: Personal, 2: Vaping, 3... questions, (last) Rating
+    private var questionTotalSteps: Int { 3 + questions.count }
+    private var questionCurrentStepNumber: Int { max(1, stepIndex) } // stepIndex starts at 1 when questions begin
     
     var body: some View {
         NavigationView {
             VStack(spacing: 24) {
-                IntakeProgressHeader(current: stepIndex + 1, total: totalSteps)
+                if !inIntro {
+                    IntakeProgressHeader(current: questionCurrentStepNumber, total: questionTotalSteps)
+                }
                 
-                Group { currentStepView }
+                Group { inIntro ? AnyView(currentIntroView) : AnyView(currentStepView) }
                     .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
                 
                 Spacer(minLength: 8)
                 
                 HStack(spacing: 12) {
-                    if stepIndex > 0 {
-                        Button("Back") { withAnimation { stepIndex -= 1 } }
-                            .buttonStyle(.bordered)
+                    if inIntro {
+                        if introIndex > 0 {
+                            Button("Back") { withAnimation { introIndex -= 1 } }
+                                .buttonStyle(.bordered)
+                        }
+                        Button(introIndex == introTotalSteps - 1 ? "Start" : "Next") { advanceIntro() }
+                            .buttonStyle(.borderedProminent)
+                    } else {
+                        if stepIndex > 1 {
+                            Button("Back") { withAnimation { stepIndex -= 1 } }
+                                .buttonStyle(.bordered)
+                        }
+                        Button(stepIndex == questionTotalSteps ? "Done" : "Next") { advance() }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(!isCurrentStepValid)
                     }
-                    Button(stepIndex == totalSteps - 1 ? "Continue" : "Next") { advance() }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(!isCurrentStepValid)
                 }
             }
             .padding()
@@ -47,30 +66,37 @@ struct IntakeView: View {
                 PaywallView(isPresented: $showPaywall)
                     .environmentObject(appState)
             }
+            .fullScreenCover(isPresented: $showCreatingPlan) {
+                CreatingPlanView {
+                    showCreatingPlan = false
+                    showPaywall = true
+                }
+            }
         }
         .onAppear {
             answers = appState.questionnaire
         }
     }
     
+    // Intro pages count
+    private var introTotalSteps: Int { 4 }
+    
     private var isCurrentStepValid: Bool {
         switch stepIndex {
-        case 0: return true
         case 1: return !name.isEmpty
         case 2: return !yearsVaping.isEmpty && !dailyCost.isEmpty
+        case (3 + questions.count): return appRating > 0 // require a rating 1-5
         default: return true
         }
     }
     
     @ViewBuilder private var currentStepView: some View {
         switch stepIndex {
-        case 0:
-            IntakeWelcomeStep()
         case 1:
             IntakePersonalStep(name: $name, email: $email, age: $age)
         case 2:
             IntakeVapingStep(yearsVaping: $yearsVaping, dailyCost: $dailyCost, deviceType: $deviceType, deviceTypes: deviceTypes)
-        default:
+        case 3...(2 + questions.count):
             let q = questions[stepIndex - 3]
             VStack(alignment: .leading, spacing: 16) {
                 Text(q.title)
@@ -92,11 +118,28 @@ struct IntakeView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+        case (3 + questions.count):
+            RatingStep(rating: $appRating, feedback: $appRatingFeedback)
+        default:
+            EmptyView()
+        }
+    }
+    
+    @ViewBuilder private var currentIntroView: some View {
+        switch introIndex {
+        case 0:
+            IntroApplauseStep()
+        case 1:
+            IntroHowHelpsStep()
+        case 2:
+            IntroFeaturesStep()
+        default:
+            IntakeWelcomeStep(questionCount: questions.count)
         }
     }
     
     private func advance() {
-        if stepIndex < totalSteps - 1 {
+        if stepIndex < questionTotalSteps {
             withAnimation(.easeInOut) { stepIndex += 1 }
         } else {
             // Create user profile then save questionnaire and show paywall
@@ -115,7 +158,18 @@ struct IntakeView: View {
             q.isCompleted = true
             appState.questionnaire = q
             appState.persist()
-            showPaywall = true
+            showCreatingPlan = true
+        }
+    }
+    
+    private func advanceIntro() {
+        if introIndex < introTotalSteps - 1 {
+            withAnimation(.easeInOut) { introIndex += 1 }
+        } else {
+            withAnimation(.easeInOut) {
+                inIntro = false
+                stepIndex = 1 // begin questions at Personal step
+            }
         }
     }
     
@@ -169,6 +223,55 @@ private struct IntakeProgressHeader: View {
     }
 }
 
+private struct CreatingPlanView: View {
+    let onDone: () -> Void
+    @State private var isAnimating = false
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Creating a personalized plan")
+                .font(.title3)
+                .fontWeight(.semibold)
+                .multilineTextAlignment(.center)
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: .pink))
+                .scaleEffect(1.4)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(.systemBackground).ignoresSafeArea())
+        .onAppear {
+            // Simulate brief processing time before moving to paywall
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                onDone()
+            }
+        }
+    }
+}
+
+private struct RatingStep: View {
+    @Binding var rating: Int
+    @Binding var feedback: String
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("How would you rate LungQuest so far?")
+                .font(.title2)
+                .fontWeight(.bold)
+            HStack(spacing: 8) {
+                ForEach(1...5, id: \.self) { star in
+                    Button(action: { rating = star }) {
+                        Image(systemName: star <= rating ? "star.fill" : "star")
+                            .foregroundColor(.yellow)
+                            .font(.title2)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            TextField("Optional feedback", text: $feedback)
+                .textFieldStyle(.roundedBorder)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
 private struct IntakeFlowOptions: View {
     let options: [String]
     @Binding var selection: String
@@ -194,24 +297,80 @@ private struct IntakeFlowOptions: View {
 }
 
 private struct IntakeWelcomeStep: View {
+    let questionCount: Int
+    var body: some View {
+        VStack(spacing: 24) {
+            VStack(spacing: 6) {
+                Text("We’ll ask you \(questionCount) quick questions to help create your quitting plan.")
+                    .font(.subheadline)
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.secondary)
+                Text("Tap Start to begin.")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+}
+
+private struct IntroApplauseStep: View {
     var body: some View {
         VStack(spacing: 24) {
             Group {
                 if UIImage(named: "LungBuddy_50") != nil {
-                    Image("LungBuddy_50")
-                        .resizable()
-                        .scaledToFit()
+                    Image("LungBuddy_50").resizable().scaledToFit()
                 } else {
-                    LungCharacter(healthLevel: 50, isAnimating: true)
+                    LungCharacter(healthLevel: 60, isAnimating: true)
                 }
             }
             .frame(width: 150, height: 120)
-            Text("Welcome to LungQuest")
-                .font(.title)
+            Text("You're taking a powerful step")
+                .font(.title2)
                 .fontWeight(.bold)
-            Text("We'll personalize your plan with a few quick questions.")
+            Text("Applause for deciding to quit vaping — we’re here for you at every step.")
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
+        }
+    }
+}
+
+private struct IntroHowHelpsStep: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("How LungQuest helps")
+                .font(.title2)
+                .fontWeight(.bold)
+            Text("We combine a tailored plan, positive motivation, and science‑backed milestones so you can build lasting habits and feel better, faster.")
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct IntroFeaturesStep: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("What you’ll get")
+                .font(.title2)
+                .fontWeight(.bold)
+            FeatureRow(icon: "lungs.fill", text: "LungBuddy that heals with you")
+            FeatureRow(icon: "timer", text: "Vape‑free timer + health progress")
+            FeatureRow(icon: "checkmark.circle.fill", text: "Daily check‑ins and craving tools")
+            FeatureRow(icon: "target", text: "Quests and rewards to stay on track")
+            FeatureRow(icon: "book.fill", text: "Practical lessons for tough moments")
+            FeatureRow(icon: "wrench.and.screwdriver.fill", text: "Gadgets (coming soon)")
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+private struct FeatureRow: View {
+    let icon: String
+    let text: String
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: icon)
+                .foregroundColor(.pink)
+            Text(text)
         }
     }
 }
