@@ -875,6 +875,7 @@ struct DevMenuView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.presentationMode) var presentationMode
     @State private var showIntake: Bool = false
+    @State private var showDevCheckIn: Bool = false
     
     var body: some View {
         NavigationView {
@@ -889,6 +890,10 @@ struct DevMenuView: View {
                 Section(header: Text("Questionnaire")) {
                     Button("Open Onboarding Questionnaire") { showIntake = true }
                 }
+
+                Section(header: Text("Check-in")) {
+                    Button("Re-do today's check-in") { showDevCheckIn = true }
+                }
             }
             .navigationTitle("Developer Tools")
             .navigationBarTitleDisplayMode(.inline)
@@ -900,6 +905,10 @@ struct DevMenuView: View {
         }
         .sheet(isPresented: $showIntake) {
             IntakeView()
+                .environmentObject(appState)
+        }
+        .sheet(isPresented: $showDevCheckIn) {
+            CheckInModalView()
                 .environmentObject(appState)
         }
     }
@@ -914,7 +923,8 @@ struct DevMenuView: View {
     
     private func shiftStartDate(days: Int = 0, hours: Int = 0, minutes: Int = 0) {
         let seconds = (days * 86_400) + (hours * 3_600) + (minutes * 60)
-        let newDate = Date().addingTimeInterval(TimeInterval(-seconds))
+        guard let current = appState.currentUser?.startDate else { return }
+        let newDate = current.addingTimeInterval(TimeInterval(-seconds))
         setStartDate(to: newDate)
     }
 }
