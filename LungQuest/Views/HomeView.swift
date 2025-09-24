@@ -172,8 +172,8 @@ struct StatsSection: View {
             )
             
             StatsCard(
-                title: "Health Improvements",
-                value: appState.getHealthImprovements(),
+                title: "",
+                value: "Health Improvements",
                 icon: "heart.text.square.fill",
                 color: .orange,
                 onTap: { onHealthTapped?() }
@@ -198,10 +198,11 @@ struct StatsCard: View {
             Text(value)
                 .font(.headline)
                 .fontWeight(.bold)
-            
-            Text(title)
-                .font(.caption)
-                .foregroundColor(.secondary)
+            if !title.isEmpty {
+                Text(title)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
         }
         .frame(maxWidth: .infinity)
         .padding()
