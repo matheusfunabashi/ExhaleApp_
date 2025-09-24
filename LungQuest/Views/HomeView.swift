@@ -404,7 +404,8 @@ struct MonthlyCalendarView: View {
         let today = Date()
         let comps = calendar.dateComponents([.year, .month], from: today)
         let startOfMonth = calendar.date(from: comps) ?? today
-        let range = calendar.range(of: .day, in: .month, for: startOfMonth) ?? 1...30
+        // calendar.range returns Range<Int>; provide a matching fallback 1..<31
+        let range: Range<Int> = calendar.range(of: .day, in: .month, for: startOfMonth) ?? (1..<31)
         return range.compactMap { day in
             calendar.date(byAdding: .day, value: day - 1, to: startOfMonth)
         }
