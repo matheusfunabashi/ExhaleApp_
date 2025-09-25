@@ -68,8 +68,7 @@ struct ProfileHeaderSection: View {
                 }
                 
                 // Lung buddy representation (updated)
-                LungBuddyImageView(healthLevel: appState.lungState.healthLevel)
-                    .aspectRatio(220.0/176.0, contentMode: .fit)
+                BreathingLungCharacter(healthLevel: appState.lungState.healthLevel)
                     .frame(width: 40, height: 32)
             }
             
