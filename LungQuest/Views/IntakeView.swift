@@ -337,6 +337,10 @@ private struct IntroApplauseStep: View {
 private struct IntroHowHelpsStep: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
+            // Screenshot slot: add an asset named "Intro_Progress" in Assets.xcassets
+            IntroScreenshot(assetName: "Intro_Progress")
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 4)
             Text("How LungQuest helps")
                 .font(.title2)
                 .fontWeight(.bold)
@@ -350,6 +354,10 @@ private struct IntroHowHelpsStep: View {
 private struct IntroFeaturesStep: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            // Screenshot carousel: add assets named "Intro_Home" and "Intro_Learn"
+            IntroScreenshotCarousel(assetNames: ["Intro_Home", "Intro_Learn"])
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 4)
             Text("What you’ll get")
                 .font(.title2)
                 .fontWeight(.bold)
@@ -372,6 +380,57 @@ private struct FeatureRow: View {
                 .foregroundColor(.pink)
             Text(text)
         }
+    }
+}
+
+// MARK: - Intro screenshot helpers
+private struct IntroScreenshot: View {
+    let assetName: String
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.white.opacity(0.95))
+                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
+            Group {
+                if UIImage(named: assetName) != nil {
+                    Image(assetName)
+                        .resizable()
+                        .scaledToFit()
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .padding(12)
+                } else {
+                    VStack(spacing: 8) {
+                        Image(systemName: "photo.on.rectangle")
+                            .font(.title)
+                            .foregroundColor(.secondary)
+                        Text("Add screenshot asset ‘\(assetName)’")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(24)
+                }
+            }
+        }
+        .frame(height: 260)
+    }
+}
+
+private struct IntroScreenshotCarousel: View {
+    let assetNames: [String]
+    @State private var index: Int = 0
+    var body: some View {
+        TabView(selection: $index) {
+            ForEach(Array(assetNames.enumerated()), id: \.offset) { idx, name in
+                IntroScreenshot(assetName: name)
+                    .tag(idx)
+            }
+        }
+        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
+        .frame(height: 260)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.clear)
+        )
     }
 }
 
