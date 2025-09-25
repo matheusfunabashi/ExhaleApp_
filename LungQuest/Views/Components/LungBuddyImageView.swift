@@ -51,4 +51,11 @@ struct LungBuddyImageView: View {
     .padding()
 }
 
-
+// Tiny wrapper that ensures consistent aspect ratio when embedding at small sizes
+struct MiniLungBuddyView: View {
+    let healthLevel: Int
+    var body: some View {
+        LungBuddyImageView(healthLevel: healthLevel)
+            .aspectRatio(220.0/176.0, contentMode: .fit)
+    }
+}

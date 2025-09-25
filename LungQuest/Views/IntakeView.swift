@@ -337,10 +337,6 @@ private struct IntroApplauseStep: View {
 private struct IntroHowHelpsStep: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Screenshot slot: add an asset named "Intro_Progress" in Assets.xcassets
-            IntroScreenshot(assetName: "Intro_Progress")
-                .frame(maxWidth: .infinity)
-                .padding(.bottom, 4)
             Text("How LungQuest helps")
                 .font(.title2)
                 .fontWeight(.bold)
@@ -354,10 +350,6 @@ private struct IntroHowHelpsStep: View {
 private struct IntroFeaturesStep: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Screenshot carousel: add assets named "Intro_Home" and "Intro_Learn"
-            IntroScreenshotCarousel(assetNames: ["Intro_Home", "Intro_Learn"])
-                .frame(maxWidth: .infinity)
-                .padding(.bottom, 4)
             Text("What you’ll get")
                 .font(.title2)
                 .fontWeight(.bold)
@@ -367,6 +359,10 @@ private struct IntroFeaturesStep: View {
             FeatureRow(icon: "target", text: "Quests and rewards to stay on track")
             FeatureRow(icon: "book.fill", text: "Practical lessons for tough moments")
             FeatureRow(icon: "wrench.and.screwdriver.fill", text: "Gadgets (coming soon)")
+            // Screenshot carousel: add assets named "Intro_Home" and "Intro_Learn"
+            IntroScreenshotCarousel(assetNames: ["Intro_Home", "Intro_Progress", "Intro_Learn", "Intro_Timer"])
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 4)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
