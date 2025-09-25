@@ -67,12 +67,9 @@ struct ProfileHeaderSection: View {
                         .foregroundColor(.white)
                 }
                 
-                // Lung buddy representation
-                LungCharacter(
-                    healthLevel: appState.lungState.healthLevel,
-                    isAnimating: true
-                )
-                .frame(width: 80, height: 64)
+                // Lung buddy representation (updated)
+                LungBuddyImageView(healthLevel: appState.lungState.healthLevel)
+                    .frame(width: 80, height: 64)
             }
             
             // User details
