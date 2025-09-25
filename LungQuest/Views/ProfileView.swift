@@ -4,6 +4,7 @@ struct ProfileView: View {
     @EnvironmentObject var appState: AppState
     @State private var showEditProfile = false
     @State private var showExportData = false
+    @State private var showShareStreak = false
     
     var body: some View {
         NavigationView {
@@ -13,7 +14,7 @@ struct ProfileView: View {
                     ProfileHeaderSection()
                     
                     // Quick stats
-                    QuickStatsSection()
+                    QuickStatsSection(onCurrentStreakTap: { showShareStreak = true })
                     
                     // Settings sections
                     SettingsSection()
@@ -40,6 +41,10 @@ struct ProfileView: View {
         }
         .sheet(isPresented: $showExportData) {
             ExportDataView()
+        }
+        .sheet(isPresented: $showShareStreak) {
+            ShareStreakView(isPresented: $showShareStreak)
+                .environmentObject(appState)
         }
     }
 }
@@ -110,6 +115,7 @@ struct ProfileHeaderSection: View {
 
 struct QuickStatsSection: View {
     @EnvironmentObject var appState: AppState
+    var onCurrentStreakTap: (() -> Void)? = nil
     
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
@@ -122,7 +128,8 @@ struct QuickStatsSection: View {
                     title: "Current Streak",
                     value: "\(appState.getDaysVapeFree()) days",
                     icon: "flame.fill",
-                    color: .orange
+                    color: .orange,
+                    onTap: onCurrentStreakTap
                 )
                 
                 QuickStatCard(
@@ -318,9 +325,10 @@ struct QuickStatCard: View {
     let value: String
     let icon: String
     let color: Color
+    var onTap: (() -> Void)? = nil
     
     var body: some View {
-        VStack(spacing: 8) {
+        let card = VStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.title3)
                 .foregroundColor(color)
@@ -341,6 +349,12 @@ struct QuickStatCard: View {
                 .fill(Color.white.opacity(0.8))
                 .shadow(radius: 3)
         )
+        if let onTap = onTap {
+            Button(action: onTap) { card }
+            .buttonStyle(PlainButtonStyle())
+        } else {
+            card
+        }
     }
 }
 
@@ -510,6 +524,106 @@ struct ExportDataView: View {
                     presentationMode.wrappedValue.dismiss()
                 }
             )
+        }
+    }
+}
+
+// MARK: - Share Streak Card
+struct ShareStreakView: View {
+    @EnvironmentObject var appState: AppState
+    @Binding var isPresented: Bool
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                ShareStreakCard()
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 16).fill(Color.white))
+                    .shadow(radius: 8)
+                    .padding()
+                
+                Button(action: { isPresented = false }) {
+                    Text("Close")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(RoundedRectangle(cornerRadius: 12).fill(Color.pink))
+                        .foregroundColor(.white)
+                }
+                .padding(.horizontal)
+                Spacer()
+            }
+            .navigationTitle("Share Your Streak")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+}
+
+private struct ShareStreakCard: View {
+    @EnvironmentObject var appState: AppState
+    private var name: String { appState.currentUser?.name ?? "LungQuest" }
+    private var days: Int { appState.getDaysVapeFree() }
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Text(name)
+                    .font(.headline)
+                    .fontWeight(.bold)
+                Spacer()
+                Text("@LungQuest")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            HStack(spacing: 16) {
+                BreathingLungCharacter(healthLevel: appState.lungState.healthLevel)
+                    .frame(width: 80, height: 64)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Vape‑Free Streak")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    Text("\(days) day\(days == 1 ? "" : "s")")
+                        .font(.title)
+                        .fontWeight(.bold)
+                }
+                Spacer()
+            }
+            .padding(.vertical, 6)
+            
+            Divider()
+            
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Scan to start your journey")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text("lungquest.app")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                // Placeholder QR code
+                QRPlaceholder()
+                    .frame(width: 72, height: 72)
+            }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(LinearGradient(gradient: Gradient(colors: [Color.pink.opacity(0.1), Color.blue.opacity(0.1)]), startPoint: .topLeading, endPoint: .bottomTrailing))
+        )
+    }
+}
+
+private struct QRPlaceholder: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 8)
+                .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [4]))
+                .foregroundColor(.secondary)
+            Image(systemName: "qrcode")
+                .font(.title2)
+                .foregroundColor(.secondary)
         }
     }
 }
