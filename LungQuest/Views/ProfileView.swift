@@ -69,7 +69,7 @@ struct ProfileHeaderSection: View {
                 
                 // Lung buddy representation (updated)
                 BreathingLungCharacter(healthLevel: appState.lungState.healthLevel)
-                    .frame(width: 80, height: 64)
+                    .frame(width: 40, height: 32)
             }
             
             // User details
