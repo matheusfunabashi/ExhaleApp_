@@ -21,8 +21,8 @@ struct ProgressView: View {
                     // Time frame selector
                     TimeFrameSelector(selectedTimeFrame: $selectedTimeFrame)
                     
-                    // Progress chart
-                    ProgressChartSection(timeFrame: selectedTimeFrame)
+                    // Progress vs Plan chart
+                    ProgressVsPlanSection(timeFrame: selectedTimeFrame)
                     
                     // Cravings chart
                     CravingsChartSection(timeFrame: selectedTimeFrame)
@@ -133,35 +133,46 @@ struct TimeFrameSelector: View {
     }
 }
 
-struct ProgressChartSection: View {
+struct ProgressVsPlanSection: View {
     @EnvironmentObject var appState: AppState
     let timeFrame: ProgressView.TimeFrame
     
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
-            Text("Daily Check-ins")
+            Text("Your Progress vs. Your Plan")
                 .font(.headline)
                 .fontWeight(.semibold)
             
-            if chartData.isEmpty {
+            if progressData.isEmpty {
                 EmptyChartView(message: "No data available for this period")
             } else {
                 Chart {
-                    ForEach(chartData, id: \.date) { item in
-                        BarMark(
+                    // Plan line (target = 100% vape-free)
+                    ForEach(progressData, id: \.date) { item in
+                        LineMark(
                             x: .value("Date", item.date, unit: .day),
-                            y: .value("Success", item.wasVapeFree ? 1 : 0)
+                            y: .value("Plan", 1.0)
                         )
-                        .foregroundStyle(item.wasVapeFree ? .green : .red)
+                        .foregroundStyle(.green.opacity(0.4))
+                    }
+                    
+                    // Actual cumulative progress (ratio of vape-free days)
+                    ForEach(progressData, id: \.date) { item in
+                        LineMark(
+                            x: .value("Date", item.date, unit: .day),
+                            y: .value("Progress", item.cumulativeSuccessRatio)
+                        )
+                        .foregroundStyle(.pink)
                     }
                 }
                 .frame(height: 200)
+                .chartYScale(domain: 0...1)
                 .chartYAxis {
-                    AxisMarks(values: [0, 1]) { value in
+                    AxisMarks(values: [0, 0.25, 0.5, 0.75, 1.0]) { value in
                         AxisGridLine()
                         AxisValueLabel {
-                            if let intValue = value.as(Int.self) {
-                                Text(intValue == 1 ? "Success" : "Slip")
+                            if let d = value.as(Double.self) {
+                                Text("\(Int(d * 100))%")
                                     .font(.caption)
                             }
                         }
@@ -183,7 +194,9 @@ struct ProgressChartSection: View {
         )
     }
     
-    private var chartData: [DailyProgress] {
+    private struct ProgressPoint { let date: Date; let cumulativeSuccessRatio: Double }
+    
+    private var progressData: [ProgressPoint] {
         let calendar = Calendar.current
         let now = Date()
         
@@ -195,10 +208,27 @@ struct ProgressChartSection: View {
         }
         
         let startDate = calendar.date(byAdding: .day, value: -days + 1, to: now) ?? now
-        
-        return appState.dailyProgress
+        let slice = appState.dailyProgress
             .filter { $0.date >= startDate }
             .sorted { $0.date < $1.date }
+        
+        var cumulative: [ProgressPoint] = []
+        var total = 0
+        var successes = 0
+        var lastDay: Date? = nil
+        
+        for p in slice {
+            total += 1
+            if p.wasVapeFree { successes += 1 }
+            let ratio = total > 0 ? Double(successes) / Double(total) : 0
+            let day = calendar.startOfDay(for: p.date)
+            if let prev = lastDay, prev == day {
+                cumulative.removeLast()
+            }
+            cumulative.append(ProgressPoint(date: day, cumulativeSuccessRatio: ratio))
+            lastDay = day
+        }
+        return cumulative
     }
 }
 
