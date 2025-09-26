@@ -46,7 +46,7 @@ class AppState: ObservableObject {
     }
     
     // MARK: - Progress Tracking
-    func checkIn(wasVapeFree: Bool, cravingsLevel: Int = 1, mood: Mood = .neutral, notes: String = "") {
+    func checkIn(wasVapeFree: Bool, cravingsLevel: Int = 1, mood: Mood = .neutral, notes: String = "", puffInterval: PuffInterval = .none) {
         guard currentUser != nil else { return }
         
         let today = Calendar.current.startOfDay(for: Date())
@@ -59,12 +59,14 @@ class AppState: ObservableObject {
             dailyProgress[existingIndex].cravingsLevel = cravingsLevel
             dailyProgress[existingIndex].mood = mood
             dailyProgress[existingIndex].notes = notes
+            dailyProgress[existingIndex].puffInterval = puffInterval
         } else {
             let progress = DailyProgress(date: today, wasVapeFree: wasVapeFree)
             var newProgress = progress
             newProgress.cravingsLevel = cravingsLevel
             newProgress.mood = mood
             newProgress.notes = notes
+            newProgress.puffInterval = puffInterval
             dailyProgress.append(newProgress)
         }
         

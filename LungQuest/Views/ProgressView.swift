@@ -27,6 +27,9 @@ struct ProgressView: View {
                     // Cravings chart
                     CravingsChartSection(timeFrame: selectedTimeFrame)
                     
+                    // Puff count chart
+                    PuffCountChartSection(timeFrame: selectedTimeFrame)
+                    
                     // Achievements
                     AchievementsSection()
                     
@@ -509,6 +512,149 @@ struct BadgeView: View {
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
         }
+    }
+}
+
+struct PuffCountChartSection: View {
+    @EnvironmentObject var appState: AppState
+    let timeFrame: ProgressView.TimeFrame
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            HStack {
+                Text("Daily Puff Count")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                
+                Spacer()
+                
+                Image(systemName: "lungs.fill")
+                    .foregroundColor(.orange)
+            }
+            
+            if filteredProgressData.isEmpty {
+                EmptyChartView(message: "No puff data available for this time period")
+            } else {
+                Chart(filteredProgressData, id: \.date) { progress in
+                    LineMark(
+                        x: .value("Date", progress.date),
+                        y: .value("Puffs", progress.puffInterval.numericValue)
+                    )
+                    .foregroundStyle(progress.puffInterval.color)
+                    .lineStyle(StrokeStyle(lineWidth: 3))
+                    
+                    AreaMark(
+                        x: .value("Date", progress.date),
+                        y: .value("Puffs", progress.puffInterval.numericValue)
+                    )
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [progress.puffInterval.color.opacity(0.3), progress.puffInterval.color.opacity(0.1)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    
+                    PointMark(
+                        x: .value("Date", progress.date),
+                        y: .value("Puffs", progress.puffInterval.numericValue)
+                    )
+                    .foregroundStyle(progress.puffInterval.color)
+                    .symbolSize(50)
+                }
+                .frame(height: 200)
+                .chartYScale(domain: 0...4)
+                .chartXAxis {
+                    AxisMarks(values: .stride(by: .day, count: timeFrame == .week ? 1 : 7)) { value in
+                        AxisGridLine()
+                        AxisValueLabel(format: .dateTime.weekday(.abbreviated))
+                    }
+                }
+                .chartYAxis {
+                    AxisMarks(position: .leading) { value in
+                        AxisGridLine()
+                        if let intValue = value.as(Int.self),
+                           let interval = PuffInterval.allCases.first(where: { $0.numericValue == intValue }) {
+                            AxisValueLabel(interval.shortName)
+                        }
+                    }
+                }
+            }
+            
+            // Summary stats
+            HStack(spacing: 20) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Most Common")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text(mostCommonInterval.displayName)
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(mostCommonInterval.color)
+                }
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Best Day")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text(bestInterval.displayName)
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.green)
+                }
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Vape-Free Days")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text("\(vapeFreeDays)")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.blue)
+                }
+                
+                Spacer()
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 15)
+                .fill(Color.white.opacity(0.7))
+                .shadow(radius: 5)
+        )
+    }
+    
+    private var filteredProgressData: [DailyProgress] {
+        let calendar = Calendar.current
+        let now = Date()
+        
+        let startDate: Date
+        switch timeFrame {
+        case .week:
+            startDate = calendar.date(byAdding: .day, value: -7, to: now) ?? now
+        case .month:
+            startDate = calendar.date(byAdding: .month, value: -1, to: now) ?? now
+        case .all:
+            startDate = appState.dailyProgress.first?.date ?? now
+        }
+        
+        return appState.dailyProgress
+            .filter { $0.date >= startDate }
+            .sorted { $0.date < $1.date }
+    }
+    
+    private var mostCommonInterval: PuffInterval {
+        guard !filteredProgressData.isEmpty else { return .none }
+        let intervalCounts = Dictionary(grouping: filteredProgressData, by: { $0.puffInterval })
+        return intervalCounts.max(by: { $0.value.count < $1.value.count })?.key ?? .none
+    }
+    
+    private var bestInterval: PuffInterval {
+        filteredProgressData.map { $0.puffInterval }.min(by: { $0.numericValue < $1.numericValue }) ?? .none
+    }
+    
+    private var vapeFreeDays: Int {
+        filteredProgressData.filter { $0.puffInterval == .none }.count
     }
 }
 

@@ -8,6 +8,7 @@ struct HomeView: View {
     @State private var showCalendar = false
     @State private var showMoney = false
     @State private var showHealth = false
+    @State private var showSlipConfirmation = false
     #if DEBUG
     @State private var showDevMenu = false
     #endif
@@ -15,11 +16,11 @@ struct HomeView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 25) {
+                VStack(spacing: 20) {
                     // App Title
                     HStack {
                         Text("Exhale")
-                            .font(.title2)
+                            .font(.largeTitle)
                             .fontWeight(.bold)
                             .foregroundColor(.primary)
                         Spacer()
@@ -58,7 +59,7 @@ struct HomeView: View {
                     )
                     
                     // Daily check-in
-                    SlipButton(resetAction: resetTimerForSlip)
+                    SlipButton(resetAction: { showSlipConfirmation = true })
                     
                     CheckInSectionWrapper(showCheckIn: $showCheckIn)
                     
@@ -129,6 +130,14 @@ struct HomeView: View {
         .overlay(
             CelebrationView(isShowing: $showCelebration)
         )
+        .alert("Reset Your Streak?", isPresented: $showSlipConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Yes, I vaped", role: .destructive) {
+                resetTimerForSlip()
+            }
+        } message: {
+            Text("This will reset your vape-free streak to 0. Are you sure you want to continue?")
+        }
         .onAppear {}
     }
     
