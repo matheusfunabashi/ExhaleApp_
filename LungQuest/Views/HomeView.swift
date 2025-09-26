@@ -19,7 +19,7 @@ struct HomeView: View {
                     // App Title
                     HStack {
                         Text("Exhale")
-                            .font(.title)
+                            .font(.title2)
                             .fontWeight(.bold)
                             .foregroundColor(.blue)
                         Spacer()
