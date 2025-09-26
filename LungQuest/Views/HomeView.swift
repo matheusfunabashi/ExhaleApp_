@@ -18,8 +18,8 @@ struct HomeView: View {
                 VStack(spacing: 25) {
                     // App Title
                     HStack {
-                        Text("LungQuest")
-                            .font(.title2)
+                        Text("Exhale")
+                            .font(.title)
                             .fontWeight(.bold)
                             .foregroundColor(.primary)
                         Spacer()
