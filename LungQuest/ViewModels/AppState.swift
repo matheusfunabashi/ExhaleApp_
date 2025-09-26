@@ -284,7 +284,7 @@ class AppState: ObservableObject {
         
         switch days {
         case 0:
-            return "Start your journey today!"
+            return "Your body is ready to begin healing"
         case 1...3:
             return "Your body is beginning to heal"
         case 4...7:
