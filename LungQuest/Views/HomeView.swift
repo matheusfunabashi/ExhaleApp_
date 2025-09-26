@@ -21,7 +21,7 @@ struct HomeView: View {
                         Text("Exhale")
                             .font(.title2)
                             .fontWeight(.bold)
-                            .foregroundColor(.primary)
+                            .foregroundColor(.blue)
                         Spacer()
                     }
 
