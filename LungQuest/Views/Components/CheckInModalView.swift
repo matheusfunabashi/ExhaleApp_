@@ -8,6 +8,7 @@ struct CheckInModalView: View {
     @State private var cravingsLevel = 1
     @State private var selectedMood = Mood.neutral
     @State private var notes = ""
+    @State private var selectedPuffInterval = PuffInterval.none
     @State private var showSuccessAnimation = false
     
     var body: some View {
@@ -34,6 +35,9 @@ struct CheckInModalView: View {
                     
                     // Mood selection
                     MoodSection(selectedMood: $selectedMood)
+                    
+                    // Puff count tracking
+                    PuffCountSection(selectedPuffInterval: $selectedPuffInterval)
                     
                     // Notes
                     NotesSection(notes: $notes)
@@ -64,7 +68,8 @@ struct CheckInModalView: View {
             wasVapeFree: wasVapeFree,
             cravingsLevel: cravingsLevel,
             mood: selectedMood,
-            notes: notes
+            notes: notes,
+            puffInterval: selectedPuffInterval
         )
         
         showSuccessAnimation = true
@@ -290,6 +295,49 @@ struct OptionButton: View {
             .foregroundColor(isSelected ? .pink : .primary)
         }
         .buttonStyle(PlainButtonStyle())
+    }
+}
+
+struct PuffCountSection: View {
+    @Binding var selectedPuffInterval: PuffInterval
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            Text("How many puffs did you take today?")
+                .font(.headline)
+                .fontWeight(.semibold)
+            
+            VStack(spacing: 12) {
+                ForEach(PuffInterval.allCases, id: \.self) { interval in
+                    OptionButton(
+                        title: interval.displayName,
+                        subtitle: getSubtitle(for: interval),
+                        isSelected: selectedPuffInterval == interval,
+                        action: { selectedPuffInterval = interval }
+                    )
+                }
+            }
+            
+            Text(selectedPuffInterval.description)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 15)
+                .fill(Color(.systemGray6))
+        )
+    }
+    
+    private func getSubtitle(for interval: PuffInterval) -> String {
+        switch interval {
+        case .none: return "Completely vape-free"
+        case .light: return "Light usage"
+        case .moderate: return "Moderate usage"
+        case .heavy: return "Heavy usage"
+        case .veryHeavy: return "Very heavy usage"
+        }
     }
 }
 

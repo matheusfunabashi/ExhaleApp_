@@ -75,6 +75,7 @@ struct DailyProgress: Codable, Identifiable {
     var notes: String
     var mood: Mood
     var completedQuests: [String] // Quest IDs
+    var puffInterval: PuffInterval // Interval-based tracking
     
     init(date: Date = Date(), wasVapeFree: Bool = true) {
         self.id = UUID().uuidString
@@ -84,6 +85,65 @@ struct DailyProgress: Codable, Identifiable {
         self.notes = ""
         self.mood = .neutral
         self.completedQuests = []
+        self.puffInterval = .none
+    }
+}
+
+enum PuffInterval: String, CaseIterable, Codable {
+    case none = "none"           // 0 puffs
+    case light = "light"         // 1-10 puffs
+    case moderate = "moderate"   // 11-30 puffs
+    case heavy = "heavy"         // 31-60 puffs
+    case veryHeavy = "veryHeavy" // 61+ puffs
+    
+    var displayName: String {
+        switch self {
+        case .none: return "0 puffs"
+        case .light: return "1-10 puffs"
+        case .moderate: return "11-30 puffs"
+        case .heavy: return "31-60 puffs"
+        case .veryHeavy: return "61+ puffs"
+        }
+    }
+    
+    var shortName: String {
+        switch self {
+        case .none: return "0"
+        case .light: return "1-10"
+        case .moderate: return "11-30"
+        case .heavy: return "31-60"
+        case .veryHeavy: return "61+"
+        }
+    }
+    
+    var color: Color {
+        switch self {
+        case .none: return .green
+        case .light: return .yellow
+        case .moderate: return .orange
+        case .heavy: return .red
+        case .veryHeavy: return .purple
+        }
+    }
+    
+    var description: String {
+        switch self {
+        case .none: return "Perfect! You stayed completely vape-free today! 🎉"
+        case .light: return "Great progress! You're significantly reducing your usage."
+        case .moderate: return "You're working on it. Every reduction counts!"
+        case .heavy: return "It's okay to have challenging days. Tomorrow is a new opportunity."
+        case .veryHeavy: return "Don't give up! Each day is a chance to do better."
+        }
+    }
+    
+    var numericValue: Int {
+        switch self {
+        case .none: return 0
+        case .light: return 1
+        case .moderate: return 2
+        case .heavy: return 3
+        case .veryHeavy: return 4
+        }
     }
 }
 

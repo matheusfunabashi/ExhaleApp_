@@ -8,6 +8,7 @@ struct HomeView: View {
     @State private var showCalendar = false
     @State private var showMoney = false
     @State private var showHealth = false
+    @State private var showSlipConfirmation = false
     #if DEBUG
     @State private var showDevMenu = false
     #endif
@@ -15,34 +16,23 @@ struct HomeView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 25) {
-                    // App Title
+                VStack(spacing: 20) {
+                    // App Title with Fire Streak
                     HStack {
                         Text("Exhale")
-                            .font(.title2)
+                            .font(.largeTitle)
                             .fontWeight(.bold)
                             .foregroundColor(.blue)
                         Spacer()
+                        FireStreakIcon()
                     }
 
-                    // Week check-in strip at top
-                    WeekCheckInStrip()
-
-                    // Hero Area: LungBuddy + Vape-free timer
-                    VStack(spacing: 16) {
-                        LungBuddyHero(
-                            healthLevel: appState.lungState.healthLevel,
-                            supportiveMessage: appState.getHealthImprovements()
-                        )
-                        
-                        QuitTimerView(
-                            startDate: appState.currentUser?.startDate ?? Date(),
-                            onMilestone: {
-                                // Show celebration overlay when hitting day milestones
-                                showCelebration = true
-                            }
-                        )
-                    }
+                    // Integrated Hero Section
+                    HeroSection(
+                        onMilestone: {
+                            showCelebration = true
+                        }
+                    )
                     #if DEBUG
                     .contentShape(Rectangle())
                     .onTapGesture(count: 5) {
@@ -58,7 +48,7 @@ struct HomeView: View {
                     )
                     
                     // Daily check-in
-                    SlipButton(resetAction: resetTimerForSlip)
+                    SlipButton(resetAction: { showSlipConfirmation = true })
                     
                     CheckInSectionWrapper(showCheckIn: $showCheckIn)
                     
@@ -129,6 +119,14 @@ struct HomeView: View {
         .overlay(
             CelebrationView(isShowing: $showCelebration)
         )
+        .alert("Reset Your Streak?", isPresented: $showSlipConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Yes, I vaped", role: .destructive) {
+                resetTimerForSlip()
+            }
+        } message: {
+            Text("This will reset your vape-free streak to 0. Are you sure you want to continue?")
+        }
         .onAppear {}
     }
     
@@ -290,73 +288,6 @@ struct CheckInSection: View {
     }
 }
 
-struct WeekCheckInStrip: View {
-    @EnvironmentObject var appState: AppState
-    
-    private var weekDays: [Date] {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)) ?? today
-        return (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: weekStart) }
-    }
-    
-    private func hasCheckIn(on date: Date) -> Bool {
-        appState.dailyProgress.contains { Calendar.current.isDate($0.date, inSameDayAs: date) && $0.wasVapeFree }
-    }
-    
-    private func shortWeekday(_ date: Date) -> String {
-        let df = DateFormatter()
-        df.locale = Locale.current
-        df.dateFormat = "EEE"
-        return df.string(from: date).uppercased()
-    }
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                HStack(spacing: 6) {
-                    Image(systemName: "flame.fill").foregroundColor(.orange)
-                    Text("\(appState.getDaysVapeFree())")
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                }
-                .padding(8)
-                .background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.9)))
-                Spacer()
-            }
-            
-            HStack(spacing: 16) {
-                ForEach(weekDays, id: \.self) { date in
-                    VStack(spacing: 6) {
-                        Text(shortWeekday(date))
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                        ZStack {
-                            Circle()
-                                .stroke(Color.gray.opacity(0.2), lineWidth: 2)
-                                .frame(width: 28, height: 28)
-                            if hasCheckIn(on: date) {
-                                Circle()
-                                    .fill(Color.pink)
-                                    .frame(width: 24, height: 24)
-                                    .overlay(Image(systemName: "checkmark").font(.caption2).foregroundColor(.white))
-                                    .transition(.scale)
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .center)
-                    }
-                }
-            }
-        }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 15)
-                .fill(Color.white.opacity(0.7))
-                .shadow(radius: 5)
-        )
-    }
-}
 
 struct LearningPreviewSection: View {
     var body: some View {
@@ -664,127 +595,6 @@ private struct SlipButton: View {
     }
 }
 
-struct QuitTimerView: View {
-    @EnvironmentObject var appState: AppState
-    let startDate: Date
-    var onMilestone: (() -> Void)? = nil
-    
-    @State private var now: Date = Date()
-    @AppStorage("lastMilestoneNotifiedDays") private var lastMilestoneNotifiedDays: Int = 0
-    
-    private var timer: Timer.TimerPublisher {
-        Timer.publish(every: 1, on: .main, in: .common)
-    }
-    
-    var body: some View {
-        VStack(spacing: 8) {
-            Text("Vape‑Free for")
-                .font(.headline)
-                .foregroundColor(.secondary)
-                .accessibilityHidden(true)
-            
-            Text(formattedTime)
-                .font(.system(size: 34, weight: .bold, design: .rounded))
-                .bold()
-                .monospacedDigit()
-                .minimumScaleFactor(0.5)
-                .lineLimit(1)
-                .accessibilityLabel(accessibilityTimeLabel)
-                .accessibilityAddTraits(.isStaticText)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white.opacity(0.85))
-                .shadow(radius: 10)
-        )
-        .onReceive(timer.autoconnect()) { newValue in
-            now = newValue
-            // Recompute health level as time advances
-            appState.updateLungHealth()
-            handleMilestonesIfNeeded()
-        }
-        .onAppear {
-            appState.updateLungHealth()
-        }
-    }
-    
-    private var elapsed: TimeInterval { now.timeIntervalSince(startDate) }
-    
-    private var formattedTime: String {
-        let totalSeconds = max(0, Int(elapsed))
-        let days = totalSeconds / 86_400
-        let hours = (totalSeconds % 86_400) / 3_600
-        let minutes = (totalSeconds % 3_600) / 60
-        let seconds = totalSeconds % 60
-        return days > 0
-        ? "\(days)d \(hours)h \(minutes)m \(seconds)s"
-        : "\(hours)h \(minutes)m \(seconds)s"
-    }
-    
-    private var accessibilityTimeLabel: String {
-        let totalSeconds = max(0, Int(elapsed))
-        let days = totalSeconds / 86_400
-        let hours = (totalSeconds % 86_400) / 3_600
-        let minutes = (totalSeconds % 3_600) / 60
-        var parts: [String] = []
-        if days >= 0 { parts.append("\(days) days") }
-        if hours > 0 { parts.append("\(hours) hours") }
-        parts.append("\(minutes) minutes")
-        return "Vape‑free for " + parts.joined(separator: ", ")
-    }
-    
-    private func handleMilestonesIfNeeded() {
-        let days = max(0, Int(elapsed) / 86_400)
-        guard let nextMilestone = nextMilestoneDay(after: lastMilestoneNotifiedDays) else { return }
-        if days >= nextMilestone {
-            let generator = UINotificationFeedbackGenerator()
-            generator.notificationOccurred(.success)
-            lastMilestoneNotifiedDays = nextMilestone
-            onMilestone?()
-        }
-    }
-    
-    private func nextMilestoneDay(after day: Int) -> Int? {
-        let milestones = [1, 3, 7, 14, 30, 60, 90, 120, 180, 365]
-        return milestones.first { $0 > day }
-    }
-}
-
-struct LungBuddyHero: View {
-    let healthLevel: Int // 0-100
-    let supportiveMessage: String
-    
-    @State private var isPressed: Bool = false
-    
-    var body: some View {
-        VStack(spacing: 14) {
-            BreathingLungCharacter(healthLevel: healthLevel)
-            
-            HealthIndicator(healthLevel: healthLevel)
-            
-            SupportMessage(text: supportiveMessage)
-        }
-        .padding(20)
-        .frame(maxWidth: .infinity)
-        .background(heroBackground)
-        .scaleEffect(isPressed ? 0.98 : 1.0)
-        .onLongPressGesture(minimumDuration: 0.05, perform: {}, onPressingChanged: { pressing in
-            withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
-                isPressed = pressing
-            }
-        })
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("LungBuddy. Health \(healthLevel) percent. \(supportiveMessage)")
-    }
-    
-    private var heroBackground: some View {
-        RoundedRectangle(cornerRadius: 20)
-            .fill(Color.white.opacity(0.85))
-            .shadow(radius: 10)
-    }
-}
 
 struct BreathingLungCharacter: View {
     let healthLevel: Int
@@ -929,6 +739,240 @@ struct DevMenuView: View {
     }
 }
 #endif
+
+// MARK: - New Integrated Hero Section
+struct HeroSection: View {
+    @EnvironmentObject var appState: AppState
+    let onMilestone: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // Top: Weekday streak row
+            WeekdayStreakRow()
+            
+            // Center: LungBuddy
+            LungBuddyCenter()
+            
+            // Bottom: Hero timer
+            HeroTimerView(
+                startDate: appState.currentUser?.startDate ?? Date(),
+                onMilestone: onMilestone
+            )
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Color.white.opacity(0.9))
+                .shadow(color: Color.black.opacity(0.1), radius: 20, x: 0, y: 10)
+        )
+    }
+}
+
+struct WeekdayStreakRow: View {
+    @EnvironmentObject var appState: AppState
+    
+    private var weekDays: [Date] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)) ?? today
+        return (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: weekStart) }
+    }
+    
+    private func hasCheckIn(on date: Date) -> Bool {
+        appState.dailyProgress.contains { Calendar.current.isDate($0.date, inSameDayAs: date) && $0.wasVapeFree }
+    }
+    
+    private func shortWeekday(_ date: Date) -> String {
+        let df = DateFormatter()
+        df.locale = Locale.current
+        df.dateFormat = "EEE"
+        return df.string(from: date).uppercased()
+    }
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            ForEach(weekDays, id: \.self) { date in
+                VStack(spacing: 8) {
+                    Text(shortWeekday(date))
+                        .font(.caption2)
+                        .fontWeight(.medium)
+                        .foregroundColor(.secondary)
+                    
+                    ZStack {
+                        Circle()
+                            .stroke(Color.gray.opacity(0.2), lineWidth: 2)
+                            .frame(width: 32, height: 32)
+                        
+                        if hasCheckIn(on: date) {
+                            Circle()
+                                .fill(Color.green)
+                                .frame(width: 28, height: 28)
+                                .overlay(
+                                    Image(systemName: "checkmark")
+                                        .font(.caption2)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.white)
+                                )
+                                .transition(.scale)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.bottom, 20)
+    }
+}
+
+struct LungBuddyCenter: View {
+    @EnvironmentObject var appState: AppState
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            BreathingLungCharacter(healthLevel: appState.lungState.healthLevel)
+                .scaleEffect(1.2) // Make LungBuddy bigger
+            
+            HealthIndicator(healthLevel: appState.lungState.healthLevel)
+        }
+        .padding(.vertical, 20)
+    }
+}
+
+struct HeroTimerView: View {
+    @EnvironmentObject var appState: AppState
+    let startDate: Date
+    var onMilestone: (() -> Void)? = nil
+    
+    @State private var now: Date = Date()
+    @AppStorage("lastMilestoneNotifiedDays") private var lastMilestoneNotifiedDays: Int = 0
+    
+    private var timer: Timer.TimerPublisher {
+        Timer.publish(every: 1, on: .main, in: .common)
+    }
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            // Timer label
+            Text("You have been vape-free for")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+            
+            // Main timer display
+            Text(formattedTime)
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .bold()
+                .monospacedDigit()
+                .minimumScaleFactor(0.7)
+                .lineLimit(1)
+                .foregroundColor(.primary)
+            
+            // Live seconds chip
+            HStack(spacing: 4) {
+                Circle()
+                    .fill(Color.green)
+                    .frame(width: 8, height: 8)
+                    .scaleEffect(now.timeIntervalSince1970.truncatingRemainder(dividingBy: 2) < 1 ? 1.0 : 0.8)
+                    .animation(.easeInOut(duration: 1).repeatForever(autoreverses: true), value: now)
+                
+                Text("\(seconds)s")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .onReceive(timer.autoconnect()) { newValue in
+            now = newValue
+            appState.updateLungHealth()
+            handleMilestonesIfNeeded()
+        }
+        .onAppear {
+            appState.updateLungHealth()
+        }
+    }
+    
+    private var elapsed: TimeInterval { now.timeIntervalSince(startDate) }
+    
+    private var formattedTime: String {
+        let totalSeconds = max(0, Int(elapsed))
+        let days = totalSeconds / 86_400
+        let hours = (totalSeconds % 86_400) / 3_600
+        let minutes = (totalSeconds % 3_600) / 60
+        
+        return "\(days)d \(hours)hrs \(minutes)mins"
+    }
+    
+    private var seconds: Int {
+        max(0, Int(elapsed) % 60)
+    }
+    
+    private func handleMilestonesIfNeeded() {
+        let days = max(0, Int(elapsed) / 86_400)
+        guard let nextMilestone = nextMilestoneDay(after: lastMilestoneNotifiedDays) else { return }
+        if days >= nextMilestone {
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.success)
+            lastMilestoneNotifiedDays = nextMilestone
+            onMilestone?()
+        }
+    }
+    
+    private func nextMilestoneDay(after day: Int) -> Int? {
+        let milestones = [1, 3, 7, 14, 30, 60, 90, 120, 180, 365]
+        return milestones.first { $0 > day }
+    }
+}
+
+struct FireStreakIcon: View {
+    @EnvironmentObject var appState: AppState
+    
+    private var consecutiveCheckInDays: Int {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        var consecutiveDays = 0
+        
+        // Get all check-in dates sorted by date (most recent first)
+        let checkInDates = appState.dailyProgress
+            .filter { $0.wasVapeFree }
+            .map { calendar.startOfDay(for: $0.date) }
+            .sorted { $0 > $1 }
+        
+        // Count consecutive days from today backwards
+        var currentDate = today
+        for checkInDate in checkInDates {
+            if calendar.isDate(checkInDate, inSameDayAs: currentDate) {
+                consecutiveDays += 1
+                currentDate = calendar.date(byAdding: .day, value: -1, to: currentDate) ?? currentDate
+            } else {
+                break
+            }
+        }
+        
+        return consecutiveDays
+    }
+    
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "flame.fill")
+                .font(.title3)
+                .foregroundColor(.orange)
+            
+            Text("\(consecutiveCheckInDays)")
+                .font(.headline)
+                .fontWeight(.bold)
+                .foregroundColor(.orange)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.orange.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+                )
+        )
+    }
+}
 
 #Preview {
     HomeView()
