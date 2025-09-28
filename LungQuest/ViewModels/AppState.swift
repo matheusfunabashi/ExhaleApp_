@@ -305,10 +305,10 @@ struct OnboardingQuestionnaire: Codable {
     var reasonToQuit: String? = nil
     var yearsVaping: String? = nil
     var frequency: String? = nil
-    var cravingTimes: String? = nil
+    var cravingTimes: [String] = [] // Changed to array for multiple selection
     var triedBefore: String? = nil
-    var hardestPart: String? = nil
-    var supportWanted: String? = nil
+    var hardestPart: [String] = [] // Changed to array for multiple selection
+    var supportWanted: [String] = [] // Changed to array for multiple selection
     var ageGroup: String? = nil
     var startPlan: String? = nil
     var freeText: String? = nil
