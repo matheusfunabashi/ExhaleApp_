@@ -29,7 +29,7 @@ struct PaywallView: View {
             
             VStack(alignment: .leading, spacing: 12) {
                 PaywallFeatureRow(text: "Daily motivation tailored to your reasons: \(appState.questionnaire.reasonToQuit ?? "Your goals")")
-                PaywallFeatureRow(text: "Craving tools for \(appState.questionnaire.hardestPart ?? "your triggers")")
+                PaywallFeatureRow(text: "Craving tools for \(appState.questionnaire.hardestPart.isEmpty ? "your triggers" : appState.questionnaire.hardestPart.joined(separator: ", "))")
                 PaywallFeatureRow(text: "Progress, badges, and money saved tracking")
                 PaywallFeatureRow(text: "Cancel anytime • 7‑day free trial")
             }
