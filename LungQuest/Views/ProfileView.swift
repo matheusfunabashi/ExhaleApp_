@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct ProfileView: View {
     @EnvironmentObject var appState: AppState
@@ -53,10 +54,10 @@ struct ProfileHeaderSection: View {
     @EnvironmentObject var appState: AppState
     
     var body: some View {
-        VStack(spacing: 20) {
-            // Avatar and lung character
-            HStack(spacing: 30) {
-                // User avatar placeholder
+        VStack(spacing: 12) {
+            // Avatar centered, lung buddy pinned top-right
+            ZStack(alignment: .topTrailing) {
+                // User avatar placeholder (centered)
                 ZStack {
                     Circle()
                         .fill(LinearGradient(
@@ -71,10 +72,15 @@ struct ProfileHeaderSection: View {
                         .fontWeight(.bold)
                         .foregroundColor(.white)
                 }
-                
-                // Lung buddy representation (updated)
-                BreathingLungCharacter(healthLevel: appState.lungState.healthLevel)
-                    .frame(width: 40, height: 32)
+                .frame(maxWidth: .infinity, alignment: .center)
+
+                // Static lung buddy (no animation) in top-right
+                Image(lungAssetName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 57.5, height: 50)
+                    .padding(.top, 3)
+                    .padding(.trailing, 6)
             }
             
             // User details
@@ -94,12 +100,20 @@ struct ProfileHeaderSection: View {
                 }
             }
         }
-        .padding()
+        .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color.white.opacity(0.7))
                 .shadow(radius: 5)
         )
+    }
+    
+    private var lungAssetName: String {
+        let level = appState.lungState.healthLevel
+        let clamped = max(0, min(100, level))
+        let buckets: [Int] = [0, 25, 50, 75, 100]
+        let nearest = buckets.min(by: { abs($0 - clamped) < abs($1 - clamped) }) ?? 0
+        return "LungBuddy_\(nearest)"
     }
     
     private var userInitials: String {
@@ -243,21 +257,6 @@ struct DataManagementSection: View {
                     action: { showExportData = true }
                 )
                 
-                DataActionRow(
-                    icon: "arrow.clockwise",
-                    title: "Sync Data",
-                    subtitle: "Backup to cloud storage",
-                    color: .blue,
-                    action: { /* Handle sync */ }
-                )
-                
-                DataActionRow(
-                    icon: "trash",
-                    title: "Clear Data",
-                    subtitle: "Reset all progress (careful!)",
-                    color: .red,
-                    action: { /* Handle clear with confirmation */ }
-                )
             }
             .padding()
             .background(
@@ -447,6 +446,43 @@ struct InfoRow: View {
     }
 }
 
+// Local, size-adaptive LungBuddy for ProfileView usage
+struct ProfileLungBuddyView: View {
+    let healthLevel: Int
+    @State private var bob: Bool = false
+    
+    private var bucketedLevel: Int {
+        let clamped = max(0, min(100, healthLevel))
+        let buckets: [Int] = [0, 25, 50, 75, 100]
+        return buckets.min(by: { abs($0 - clamped) < abs($1 - clamped) }) ?? 0
+    }
+    
+    private var assetName: String { "LungBuddy_\(bucketedLevel)" }
+    
+    var body: some View {
+        Group {
+            if UIImage(named: assetName) != nil {
+                Image(assetName)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                LungCharacter(healthLevel: healthLevel, isAnimating: true)
+            }
+        }
+        .aspectRatio(220.0/176.0, contentMode: .fit)
+        .offset(y: bob ? -3 : 3)
+        .animation(.easeInOut(duration: animationDuration).repeatForever(autoreverses: true), value: bob)
+        .onAppear { bob = true }
+        .accessibilityLabel("LungBuddy health image for level \(bucketedLevel)")
+    }
+    
+    private var animationDuration: Double {
+        let base = 2.0
+        let factor = 1.2 - (Double(healthLevel) / 100.0)
+        return max(0.9, base * factor)
+    }
+}
+
 // MARK: - Supporting Views
 struct EditProfileView: View {
     @EnvironmentObject var appState: AppState
@@ -576,7 +612,7 @@ private struct ShareStreakCard: View {
             }
             
             HStack(spacing: 16) {
-                BreathingLungCharacter(healthLevel: appState.lungState.healthLevel)
+                ProfileLungBuddyView(healthLevel: appState.lungState.healthLevel)
                     .frame(width: 80, height: 64)
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Vape‑Free Streak")
@@ -650,7 +686,7 @@ struct SupportView: View {
                     .fontWeight(.semibold)
                 
                 Text("Email: support@lungquest.app")
-                    .foregroundColor(.blue)
+                    .foregroundColor(.black)
                 
                 Spacer()
             }

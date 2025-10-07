@@ -160,3 +160,8 @@ struct TipsDetailView: View {
 
 
 
+
+
+
+
+
