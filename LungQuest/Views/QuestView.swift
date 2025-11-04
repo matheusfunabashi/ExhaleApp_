@@ -27,7 +27,7 @@ struct QuestView: View {
             .navigationTitle("Quests")
             .background(
                 LinearGradient(
-                    gradient: Gradient(colors: [Color.orange.opacity(0.05), Color.pink.opacity(0.05)]),
+                    gradient: Gradient(colors: [Color.cyan.opacity(0.15), Color.blue.opacity(0.25)]),
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )

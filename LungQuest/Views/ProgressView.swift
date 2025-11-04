@@ -43,7 +43,7 @@ struct ProgressView: View {
             .navigationTitle("Progress")
             .background(
                 LinearGradient(
-                    gradient: Gradient(colors: [Color.blue.opacity(0.05), Color.green.opacity(0.05)]),
+                    gradient: Gradient(colors: [Color.cyan.opacity(0.15), Color.blue.opacity(0.25)]),
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )

@@ -33,6 +33,14 @@ struct IntakeView: View {
     var body: some View {
         NavigationView {
             ZStack {
+                // Light blue gradient background
+                LinearGradient(
+                    gradient: Gradient(colors: [Color.cyan.opacity(0.15), Color.blue.opacity(0.25)]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+                
                 VStack(spacing: 0) {
                     // Top navigation with back arrow
                     HStack {
@@ -377,7 +385,14 @@ private struct CreatingPlanView: View {
                 .scaleEffect(1.4)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemBackground).ignoresSafeArea())
+        .background(
+            LinearGradient(
+                gradient: Gradient(colors: [Color.cyan.opacity(0.15), Color.blue.opacity(0.25)]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+        )
         .onAppear {
             // Simulate brief processing time before moving to paywall
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {

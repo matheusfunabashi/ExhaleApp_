@@ -16,7 +16,7 @@ struct HomeView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: 24) {
                     // App Title with Fire Streak
                     HStack {
                         Text("Exhale")
@@ -26,13 +26,54 @@ struct HomeView: View {
                         Spacer()
                         FireStreakIcon()
                     }
+                    .padding(.horizontal)
 
-                    // Integrated Hero Section
-                    HeroSection(
-                        onMilestone: {
-                            showCelebration = true
+                    // New Hero Layout - No white box
+                    VStack(spacing: 12) {
+                        // Weekdays at the very top
+                        WeekdayStreakRow()
+                            .padding(.horizontal)
+                        
+                        // Lung buddy (moved above timer section)
+                        LungBuddyCenter()
+                            .padding(.top, 4)
+                            .padding(.bottom, 0)
+                        
+                        // Timer section
+                        VStack(spacing: 8) {
+                            // "You have been vape free for" - very small and gray
+                            Text("You have been vape free for")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            
+                            // Days - large and bold, "Days" on same line with same font size
+                            DaysCounterView()
+                                .environmentObject(appState)
+                            
+                            // Hours, minutes, seconds in white oval box
+                            NewHeroTimerView(
+                                onMilestone: {
+                                    showCelebration = true
+                                }
+                            )
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(
+                                Capsule()
+                                    .fill(Color.white.opacity(0.9))
+                                    .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+                            )
                         }
-                    )
+                        .padding(.vertical, 4)
+                        
+                        // Check-in button (circular with pen icon) with text below
+                        VStack(spacing: 4) {
+                            CheckInButton(showCheckIn: $showCheckIn)
+                            Text("Check in")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                     #if DEBUG
                     .contentShape(Rectangle())
                     .onTapGesture(count: 5) {
@@ -46,23 +87,24 @@ struct HomeView: View {
                         onMoneyTapped: { showMoney = true },
                         onHealthTapped: { showHealth = true }
                     )
+                    .padding(.horizontal)
                     
-                    // Daily check-in
+                    // Slip button
                     SlipButton(resetAction: { showSlipConfirmation = true })
-                    
-                    CheckInSectionWrapper(showCheckIn: $showCheckIn)
+                        .padding(.horizontal)
                     
                     // Learn preview
                     LearningPreviewSection()
+                        .padding(.horizontal)
                     
                     Spacer(minLength: 20)
                 }
-                .padding()
+                .padding(.vertical)
             }
             .navigationBarHidden(true)
             .background(
                 LinearGradient(
-                    gradient: Gradient(colors: [Color.blue.opacity(0.05), Color.pink.opacity(0.05)]),
+                    gradient: Gradient(colors: [Color.cyan.opacity(0.15), Color.blue.opacity(0.25)]),
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
@@ -401,7 +443,7 @@ struct MonthlyCalendarView: View {
         .padding()
         .background(
             LinearGradient(
-                gradient: Gradient(colors: [Color.blue.opacity(0.05), Color.pink.opacity(0.05)]),
+                gradient: Gradient(colors: [Color.cyan.opacity(0.15), Color.blue.opacity(0.25)]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -457,7 +499,7 @@ struct MoneySavedView: View {
         .padding()
         .background(
             LinearGradient(
-                gradient: Gradient(colors: [Color.blue.opacity(0.05), Color.pink.opacity(0.05)]),
+                gradient: Gradient(colors: [Color.cyan.opacity(0.15), Color.blue.opacity(0.25)]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -509,7 +551,7 @@ struct HealthImprovementsView: View {
         }
         .background(
             LinearGradient(
-                gradient: Gradient(colors: [Color.blue.opacity(0.05), Color.pink.opacity(0.05)]),
+                gradient: Gradient(colors: [Color.cyan.opacity(0.15), Color.blue.opacity(0.25)]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -729,6 +771,7 @@ struct DevMenuView: View {
         appState.currentUser = user
         appState.persist()
         appState.updateLungHealth()
+        NotificationCenter.default.post(name: NSNotification.Name("UserStartDateChanged"), object: nil)
     }
     
     private func shiftStartDate(days: Int = 0, hours: Int = 0, minutes: Int = 0) {
@@ -740,31 +783,160 @@ struct DevMenuView: View {
 }
 #endif
 
-// MARK: - New Integrated Hero Section
-struct HeroSection: View {
+// MARK: - New Check-in Button (Circular with pen icon)
+struct CheckInButton: View {
     @EnvironmentObject var appState: AppState
-    let onMilestone: () -> Void
+    @Binding var showCheckIn: Bool
+    
+    private var hasCheckedInToday: Bool {
+        let today = Calendar.current.startOfDay(for: Date())
+        return appState.dailyProgress.contains { progress in
+            Calendar.current.isDate(progress.date, inSameDayAs: today)
+        }
+    }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Top: Weekday streak row
-            WeekdayStreakRow()
-            
-            // Center: LungBuddy
-            LungBuddyCenter()
-            
-            // Bottom: Hero timer
-            HeroTimerView(
-                startDate: appState.currentUser?.startDate ?? Date(),
-                onMilestone: onMilestone
-            )
+        Button(action: {
+            if !hasCheckedInToday {
+                showCheckIn = true
+            }
+        }) {
+            ZStack {
+                Circle()
+                    .fill(hasCheckedInToday ? Color.green : Color.pink)
+                    .frame(width: 48, height: 48)
+                    .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
+                
+                if hasCheckedInToday {
+                    Image(systemName: "checkmark")
+                        .foregroundColor(.white)
+                        .font(.title3)
+                        .fontWeight(.bold)
+                } else {
+                    Image(systemName: "pencil")
+                        .foregroundColor(.white)
+                        .font(.body)
+                        .fontWeight(.semibold)
+                }
+            }
         }
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(Color.white.opacity(0.9))
-                .shadow(color: Color.black.opacity(0.1), radius: 20, x: 0, y: 10)
-        )
+    }
+}
+
+// MARK: - Days Counter View
+struct DaysCounterView: View {
+    @EnvironmentObject var appState: AppState
+    @State private var now: Date = Date()
+    
+    private var timer: Timer.TimerPublisher {
+        Timer.publish(every: 1, on: .main, in: .common)
+    }
+    
+    private var startDate: Date {
+        appState.currentUser?.startDate ?? Date()
+    }
+    
+    private var days: Int {
+        let elapsed = now.timeIntervalSince(startDate)
+        return max(0, Int(elapsed) / 86_400)
+    }
+    
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text("\(days)")
+                .font(.system(size: 56, weight: .bold, design: .rounded))
+                .foregroundColor(.primary)
+                .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
+            Text("Days")
+                .font(.system(size: 56, weight: .bold, design: .rounded))
+                .foregroundColor(.primary)
+                .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
+        }
+        .onReceive(timer.autoconnect()) { newValue in
+            now = newValue
+        }
+        .onAppear {
+            now = Date()
+        }
+        .onChange(of: appState.currentUser?.startDate) { _ in
+            now = Date()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("UserStartDateChanged"))) { _ in
+            now = Date()
+        }
+    }
+}
+
+// MARK: - New Hero Timer View (days, hours, minutes, seconds format)
+struct NewHeroTimerView: View {
+    @EnvironmentObject var appState: AppState
+    var onMilestone: (() -> Void)? = nil
+    
+    @State private var now: Date = Date()
+    @AppStorage("lastMilestoneNotifiedDays") private var lastMilestoneNotifiedDays: Int = 0
+    
+    private var timer: Timer.TimerPublisher {
+        Timer.publish(every: 1, on: .main, in: .common)
+    }
+    
+    private var startDate: Date {
+        appState.currentUser?.startDate ?? Date()
+    }
+    
+    var body: some View {
+        let elapsed = now.timeIntervalSince(startDate)
+        let totalSeconds = max(0, Int(elapsed))
+        let days = totalSeconds / 86_400
+        let hours = (totalSeconds % 86_400) / 3_600
+        let minutes = (totalSeconds % 3_600) / 60
+        let seconds = totalSeconds % 60
+        
+        HStack(spacing: 4) {
+            Text("\(hours)h")
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(.primary)
+            Text("\(minutes)m")
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(.primary)
+            Text("\(seconds)s")
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(.primary)
+        }
+        .onReceive(timer.autoconnect()) { newValue in
+            now = newValue
+            appState.updateLungHealth()
+            handleMilestonesIfNeeded()
+        }
+        .onAppear {
+            now = Date()
+            appState.updateLungHealth()
+        }
+        .onChange(of: appState.currentUser?.startDate) { _ in
+            now = Date()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("UserStartDateChanged"))) { _ in
+            now = Date()
+        }
+    }
+    
+    private func handleMilestonesIfNeeded() {
+        let elapsed = now.timeIntervalSince(startDate)
+        let days = max(0, Int(elapsed) / 86_400)
+        guard let nextMilestone = nextMilestoneDay(after: lastMilestoneNotifiedDays) else { return }
+        if days >= nextMilestone {
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.success)
+            lastMilestoneNotifiedDays = nextMilestone
+            onMilestone?()
+        }
+    }
+    
+    private func nextMilestoneDay(after day: Int) -> Int? {
+        let milestones = [1, 3, 7, 14, 30, 60, 90, 120, 180, 365]
+        return milestones.first { $0 > day }
     }
 }
 
@@ -819,7 +991,6 @@ struct WeekdayStreakRow: View {
                 }
             }
         }
-        .padding(.bottom, 20)
     }
 }
 
@@ -827,13 +998,8 @@ struct LungBuddyCenter: View {
     @EnvironmentObject var appState: AppState
     
     var body: some View {
-        VStack(spacing: 16) {
-            BreathingLungCharacter(healthLevel: appState.lungState.healthLevel)
-                .scaleEffect(1.2) // Make LungBuddy bigger
-            
-            HealthIndicator(healthLevel: appState.lungState.healthLevel)
-        }
-        .padding(.vertical, 20)
+        BreathingLungCharacter(healthLevel: appState.lungState.healthLevel)
+            .scaleEffect(1.2) // Make LungBuddy bigger
     }
 }
 

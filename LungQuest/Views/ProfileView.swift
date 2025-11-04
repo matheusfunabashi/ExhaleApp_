@@ -36,6 +36,13 @@ struct ProfileView: View {
                     showEditProfile = true
                 }
             )
+            .background(
+                LinearGradient(
+                    gradient: Gradient(colors: [Color.cyan.opacity(0.15), Color.blue.opacity(0.25)]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
         }
         .sheet(isPresented: $showEditProfile) {
             EditProfileView()
