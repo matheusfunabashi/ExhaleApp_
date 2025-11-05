@@ -41,13 +41,7 @@ struct ProgressView: View {
                 .padding()
             }
             .navigationTitle("Progress")
-            .background(
-                LinearGradient(
-                    gradient: Gradient(colors: [Color.cyan.opacity(0.15), Color.blue.opacity(0.25)]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
+            .breathableBackground()
         }
     }
 }
@@ -56,28 +50,25 @@ struct StatsOverviewSection: View {
     @EnvironmentObject var appState: AppState
     
     var body: some View {
-        VStack(spacing: 20) {
-            // Main stat - days vape free
-            VStack(spacing: 8) {
-                Text("\(appState.getDaysVapeFree())")
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
-                    .foregroundColor(.green)
-                
-                Text("Days Vape-Free")
-                    .font(.title3)
+        VStack(spacing: 24) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Days vape-free")
+                    .font(.caption)
                     .fontWeight(.medium)
                     .foregroundColor(.secondary)
+                
+                Text("\(appState.getDaysVapeFree())")
+                    .font(.system(size: 52, weight: .heavy, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundColor(Color.orange)
+                
+                Text("Your streak keeps lungs brighter and cravings quieter.")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
             }
-            .padding()
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.green.opacity(0.1))
-                    .stroke(Color.green.opacity(0.3), lineWidth: 1)
-            )
+            .softCard(accent: .orange, cornerRadius: 34)
             
-            // Secondary stats grid
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 15) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: 2), spacing: 16) {
                 StatCard(
                     title: "Money Saved",
                     value: String(format: "$%.0f", appState.getMoneySaved()),
@@ -110,6 +101,26 @@ struct StatsOverviewSection: View {
                     subtitle: "Challenges conquered"
                 )
             }
+            
+            if let highlight = savingsHighlight {
+                MotivationTile(icon: highlight.icon, accent: highlight.color, message: highlight.message)
+            }
+        }
+    }
+    
+    private var savingsHighlight: (icon: String, message: String, color: Color)? {
+        let savings = appState.getMoneySaved()
+        switch savings {
+        case ..<5:
+            return ("leaf", "Every dollar counts—$\(Int(savings)) saved already is a fresh start fund.", Color.green)
+        case 5..<12:
+            return ("cup.and.saucer.fill", "You’ve saved enough for a cozy coffee break—treat yourself mindfully!", Color.brown)
+        case 12..<25:
+            return ("takeoutbag.and.cup.and.straw.fill", "That’s a lunch paid for by your lungs. Savor the win!", Color.orange)
+        case 25..<60:
+            return ("movieclapper.fill", "Tickets covered—plan a celebration night with your savings.", Color.purple)
+        default:
+            return ("airplane", "Your savings could fund a weekend getaway. Keep investing in freedom!", Color.blue)
         }
     }
 }
@@ -141,34 +152,39 @@ struct ProgressVsPlanSection: View {
     let timeFrame: ProgressView.TimeFrame
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 15) {
-            Text("Your Progress vs. Your Plan")
-                .font(.headline)
-                .fontWeight(.semibold)
+        VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Your progress vs. your plan")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                Text("See how consistently you’re staying vape-free against your goal.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
             
             if progressData.isEmpty {
                 EmptyChartView(message: "No data available for this period")
             } else {
                 Chart {
-                    // Plan line (target = 100% vape-free)
                     ForEach(progressData, id: \.date) { item in
                         LineMark(
                             x: .value("Date", item.date, unit: .day),
                             y: .value("Plan", 1.0)
                         )
-                        .foregroundStyle(.green.opacity(0.4))
+                        .foregroundStyle(Color.green.opacity(0.35))
+                        .lineStyle(StrokeStyle(lineWidth: 2, dash: [6, 4]))
                     }
                     
-                    // Actual cumulative progress (ratio of vape-free days)
                     ForEach(progressData, id: \.date) { item in
                         LineMark(
                             x: .value("Date", item.date, unit: .day),
                             y: .value("Progress", item.cumulativeSuccessRatio)
                         )
-                        .foregroundStyle(.pink)
+                        .foregroundStyle(Color(red: 0.85, green: 0.32, blue: 0.57))
+                        .lineStyle(StrokeStyle(lineWidth: 3))
                     }
                 }
-                .frame(height: 200)
+                .frame(height: 210)
                 .chartYScale(domain: 0...1)
                 .chartYAxis {
                     AxisMarks(values: [0, 0.25, 0.5, 0.75, 1.0]) { value in
@@ -187,14 +203,14 @@ struct ProgressVsPlanSection: View {
                         AxisValueLabel(format: .dateTime.day().month(.abbreviated))
                     }
                 }
+                
+                Text(progressSummary)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.top, 6)
             }
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 15)
-                .fill(Color.white.opacity(0.7))
-                .shadow(radius: 5)
-        )
+        .softCard(accent: Color(red: 0.31, green: 0.57, blue: 0.99), cornerRadius: 28)
     }
     
     private struct ProgressPoint { let date: Date; let cumulativeSuccessRatio: Double }
@@ -233,6 +249,23 @@ struct ProgressVsPlanSection: View {
         }
         return cumulative
     }
+    
+    private var progressSummary: String {
+        guard let latest = progressData.last?.cumulativeSuccessRatio else {
+            return "Log a few more days to see how your streak stacks up."
+        }
+        let percent = Int(latest * 100)
+        switch percent {
+        case ..<40:
+            return "You’re laying the groundwork—each day logged raises your progress curve."
+        case 40..<70:
+            return "Your streak is above halfway. Keep noting wins to reach full momentum!"
+        case 70..<95:
+            return "You’re ahead of plan—consistency is clearly paying off."
+        default:
+            return "You’re staying amazingly consistent. Celebrate how steady your journey feels!"
+        }
+    }
 }
 
 struct CravingsChartSection: View {
@@ -240,10 +273,15 @@ struct CravingsChartSection: View {
     let timeFrame: ProgressView.TimeFrame
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 15) {
-            Text("Cravings Level")
-                .font(.headline)
-                .fontWeight(.semibold)
+        VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Cravings level")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                Text("Track how urges change so you can plan calming rituals.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
             
             if chartData.isEmpty {
                 EmptyChartView(message: "No craving data available")
@@ -254,18 +292,18 @@ struct CravingsChartSection: View {
                             x: .value("Date", item.date, unit: .day),
                             y: .value("Cravings", item.cravingsLevel)
                         )
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Color.orange)
                         .interpolationMethod(.catmullRom)
                         
                         AreaMark(
                             x: .value("Date", item.date, unit: .day),
                             y: .value("Cravings", item.cravingsLevel)
                         )
-                        .foregroundStyle(.orange.opacity(0.2))
+                        .foregroundStyle(Color.orange.opacity(0.2))
                         .interpolationMethod(.catmullRom)
                     }
                 }
-                .frame(height: 150)
+                .frame(height: 180)
                 .chartYScale(domain: 1...5)
                 .chartYAxis {
                     AxisMarks(values: [1, 2, 3, 4, 5]) { value in
@@ -286,7 +324,6 @@ struct CravingsChartSection: View {
                 }
             }
             
-            // Legend
             HStack {
                 Text("Lower is better")
                     .font(.caption)
@@ -299,12 +336,7 @@ struct CravingsChartSection: View {
                 }
             }
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 15)
-                .fill(Color.white.opacity(0.7))
-                .shadow(radius: 5)
-        )
+        .softCard(accent: Color.orange, cornerRadius: 28)
     }
     
     private var chartData: [DailyProgress] {
@@ -330,32 +362,32 @@ struct AchievementsSection: View {
     @EnvironmentObject var appState: AppState
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 15) {
-            Text("Recent Achievements")
-                .font(.headline)
-                .fontWeight(.semibold)
+        VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Recent achievements")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                Text("Badges reflect your consistency and courage—collect your latest wins.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
             
             if appState.statistics.badges.isEmpty {
                 Text("Complete quests and maintain streaks to unlock badges!")
-                    .font(.body)
+                    .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
-                    .padding()
+                    .padding(.vertical, 24)
             } else {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 15) {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 16) {
                     ForEach(Array(appState.statistics.badges.suffix(6))) { badge in
                         BadgeView(badge: badge)
                     }
                 }
             }
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 15)
-                .fill(Color.white.opacity(0.7))
-                .shadow(radius: 5)
-        )
+        .softCard(accent: .purple, cornerRadius: 28)
     }
 }
 
@@ -372,12 +404,17 @@ struct HealthMilestonesSection: View {
     ]
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 15) {
-            Text("Health Milestones")
-                .font(.headline)
-                .fontWeight(.semibold)
+        VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Health milestones")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                Text("Every day vape-free unlocks new healing moments for your body.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
             
-            LazyVStack(spacing: 12) {
+            LazyVStack(spacing: 14) {
                 ForEach(milestones, id: \.days) { milestone in
                     MilestoneRow(
                         title: milestone.title,
@@ -389,12 +426,7 @@ struct HealthMilestonesSection: View {
                 }
             }
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 15)
-                .fill(Color.white.opacity(0.7))
-                .shadow(radius: 5)
-        )
+        .softCard(accent: .green, cornerRadius: 28)
     }
 }
 
@@ -406,32 +438,30 @@ struct MilestoneRow: View {
     let currentDays: Int
     
     var body: some View {
-        HStack(spacing: 15) {
-            // Status icon
+        HStack(spacing: 16) {
             ZStack {
                 Circle()
-                    .fill(isCompleted ? Color.green.opacity(0.2) : Color.gray.opacity(0.1))
-                    .frame(width: 40, height: 40)
-                
+                    .fill((isCompleted ? Color.green : Color.orange).opacity(0.18))
+                    .frame(width: 48, height: 48)
+                    .overlay(
+                        Circle()
+                            .stroke((isCompleted ? Color.green : Color.orange).opacity(0.3), lineWidth: 1)
+                    )
                 Image(systemName: isCompleted ? "checkmark" : "clock")
-                    .foregroundColor(isCompleted ? .green : .gray)
-                    .font(.title3)
+                    .foregroundColor(isCompleted ? .green : .orange)
+                    .font(.headline)
             }
             
-            // Content
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
+                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
                     .foregroundColor(isCompleted ? .green : .primary)
-                
                 Text(description)
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .lineLimit(2)
-                
                 if !isCompleted {
-                    Text("\(daysRequired - currentDays) days to go")
+                    Text("\(max(0, daysRequired - currentDays)) days to go")
                         .font(.caption2)
                         .foregroundColor(.orange)
                 }
@@ -439,8 +469,16 @@ struct MilestoneRow: View {
             
             Spacer()
         }
-        .padding(.vertical, 4)
-        .opacity(isCompleted ? 1.0 : 0.7)
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.white.opacity(isCompleted ? 0.85 : 0.7))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color.white.opacity(0.4), lineWidth: 1)
+        )
+        .opacity(isCompleted ? 1.0 : 0.85)
     }
 }
 
@@ -460,34 +498,45 @@ struct StatCard: View {
     }
     
     var body: some View {
-        VStack(spacing: 10) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(color)
+        VStack(alignment: .leading, spacing: 16) {
+            ZStack(alignment: .leading) {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [color.opacity(0.35), color.opacity(0.15)]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 48, height: 48)
+                    .overlay(
+                        Circle()
+                            .stroke(color.opacity(0.25), lineWidth: 1)
+                    )
+                Image(systemName: icon)
+                    .foregroundColor(color.opacity(0.9))
+                    .font(.headline)
+                    .offset(x: 10)
+            }
             
-            VStack(spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(value)
-                    .font(.title3)
-                    .fontWeight(.bold)
-                
-                Text(title)
-                    .font(.caption)
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundColor(.primary)
+                    .monospacedDigit()
+                Text(title.uppercased())
+                    .font(.caption2)
+                    .kerning(0.8)
                     .foregroundColor(.secondary)
-                
                 if let subtitle = subtitle {
                     Text(subtitle)
                         .font(.caption2)
-                        .foregroundColor(color)
+                        .foregroundColor(color.opacity(0.8))
                 }
             }
         }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 15)
-                .fill(Color.white.opacity(0.7))
-                .shadow(radius: 5)
-        )
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .softCard(accent: color, cornerRadius: 26)
     }
 }
 
@@ -520,14 +569,17 @@ struct PuffCountChartSection: View {
     let timeFrame: ProgressView.TimeFrame
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 15) {
+        VStack(alignment: .leading, spacing: 18) {
             HStack {
-                Text("Daily Puff Count")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Daily puff count")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                    Text("Notice how your puffs shrink as your streak grows.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
                 Spacer()
-                
                 Image(systemName: "lungs.fill")
                     .foregroundColor(.orange)
             }
@@ -562,7 +614,7 @@ struct PuffCountChartSection: View {
                     .foregroundStyle(progress.puffInterval.color)
                     .symbolSize(50)
                 }
-                .frame(height: 200)
+                .frame(height: 210)
                 .chartYScale(domain: 0...4)
                 .chartXAxis {
                     AxisMarks(values: .stride(by: .day, count: timeFrame == .week ? 1 : 7)) { value in
@@ -581,47 +633,38 @@ struct PuffCountChartSection: View {
                 }
             }
             
-            // Summary stats
             HStack(spacing: 20) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Most Common")
+                    Text("Most common")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Text(mostCommonInterval.displayName)
-                        .font(.headline)
-                        .fontWeight(.semibold)
+                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
                         .foregroundColor(mostCommonInterval.color)
                 }
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Best Day")
+                    Text("Best day")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Text(bestInterval.displayName)
-                        .font(.headline)
-                        .fontWeight(.semibold)
+                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
                         .foregroundColor(.green)
                 }
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Vape-Free Days")
+                    Text("Vape-free days")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Text("\(vapeFreeDays)")
-                        .font(.headline)
-                        .fontWeight(.semibold)
+                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
                         .foregroundColor(.blue)
                 }
                 
                 Spacer()
             }
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 15)
-                .fill(Color.white.opacity(0.7))
-                .shadow(radius: 5)
-        )
+        .softCard(accent: Color.orange, cornerRadius: 28)
     }
     
     private var filteredProgressData: [DailyProgress] {
@@ -691,6 +734,31 @@ struct LegendItem: View {
                 .font(.caption2)
                 .foregroundColor(.secondary)
         }
+    }
+}
+
+struct MotivationTile: View {
+    let icon: String
+    var accent: Color = .pink
+    let message: String
+    
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .foregroundColor(accent)
+                .font(.headline)
+                .padding(10)
+                .background(
+                    Circle().fill(accent.opacity(0.15))
+                )
+            Text(message).font(.caption).foregroundColor(.secondary)
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(accent.opacity(0.12))
+        )
     }
 }
 
