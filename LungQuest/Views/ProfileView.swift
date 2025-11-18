@@ -69,19 +69,28 @@ struct ProfileView: View {
         }
         .sheet(isPresented: $showEditProfile) {
             EditProfileView()
+                .preferredColorScheme(.light)
         }
         .sheet(isPresented: $showExportData) {
             ExportDataView()
+                .preferredColorScheme(.light)
         }
         .sheet(isPresented: $showShareStreak) {
             ShareStreakView(isPresented: $showShareStreak)
                 .environmentObject(appState)
+                .preferredColorScheme(.light)
         }
     }
 }
 
 struct ProfileHeaderSection: View {
     @EnvironmentObject var appState: AppState
+    
+    private var daysFromStartDate: Int {
+        guard let startDate = appState.currentUser?.startDate else { return 0 }
+        let elapsed = Date().timeIntervalSince(startDate)
+        return max(0, Int(elapsed) / 86_400)
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -100,7 +109,7 @@ struct ProfileHeaderSection: View {
                 Text(appState.currentUser?.name ?? "User")
                     .font(.title2.weight(.bold))
                 
-                Text("Level \(appState.statistics.currentLevel) • \(appState.getDaysVapeFree()) days strong")
+                Text("Level \(appState.statistics.currentLevel) • \(daysFromStartDate) days strong")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 
@@ -228,33 +237,84 @@ struct QuickStatsSection: View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: 2), spacing: 16) {
             QuickStatCard(
                 title: "Current Streak",
-                value: "\(appState.getDaysVapeFree()) days",
-                icon: "flame.fill",
+                value: "\(daysFromStartDate) days",
+                emoji: "🔥",
                 color: .orange,
                 onTap: onCurrentStreakTap
             )
             
             QuickStatCard(
                 title: "Best Streak",
-                value: "\(appState.currentUser?.quitGoal.longestStreak ?? 0) days",
-                icon: "trophy.fill",
+                value: "\(longestStreakFromStartDate) days",
+                emoji: "🏆",
                 color: .orange.opacity(0.9)
             )
             
             QuickStatCard(
                 title: "Money Saved",
-                value: String(format: "$%.0f", appState.getMoneySaved()),
-                icon: "dollarsign.circle.fill",
+                value: String(format: "$%.0f", moneySavedFromStartDate),
+                emoji: "💰",
                 color: .blue
             )
             
             QuickStatCard(
                 title: "Badges Earned",
                 value: "\(appState.statistics.badges.count)",
-                icon: "star.circle.fill",
+                emoji: "⭐",
                 color: .purple
             )
         }
+    }
+    
+    private var daysFromStartDate: Int {
+        guard let startDate = appState.currentUser?.startDate else { return 0 }
+        let elapsed = Date().timeIntervalSince(startDate)
+        return max(0, Int(elapsed) / 86_400)
+    }
+    
+    private var moneySavedFromStartDate: Double {
+        guard let user = appState.currentUser else { return 0 }
+        
+        // Get daily cost from onboarding, or use $20/week as fallback
+        let weeklyCost = user.profile.vapingHistory.dailyCost > 0 
+            ? user.profile.vapingHistory.dailyCost 
+            : 20.0
+        let dailyCost = weeklyCost / 7.0
+        
+        // Calculate days from startDate (same as main counter)
+        let days = daysFromStartDate
+        
+        return Double(days) * dailyCost
+    }
+    
+    private var longestStreakFromStartDate: Int {
+        guard let startDate = appState.currentUser?.startDate else { return 0 }
+        
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        var longestStreak = 0
+        var currentStreak = 0
+        var currentDate = startDate
+        
+        // Calculate longest streak from startDate
+        while currentDate <= today {
+            let dayStart = calendar.startOfDay(for: currentDate)
+            let hasCheckIn = appState.dailyProgress.contains { progress in
+                calendar.isDate(progress.date, inSameDayAs: dayStart) && progress.wasVapeFree
+            }
+            
+            if hasCheckIn {
+                currentStreak += 1
+                longestStreak = max(longestStreak, currentStreak)
+            } else {
+                currentStreak = 0
+            }
+            
+            guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else { break }
+            currentDate = nextDate
+        }
+        
+        return longestStreak
     }
 }
 
@@ -330,7 +390,7 @@ struct ProgressionRewardsSection: View {
     }
     
     private var streakMessage: String {
-        let days = appState.getDaysVapeFree()
+        let days = daysFromStartDate
         switch days {
         case ..<1:
             return "Your restart is ready—today counts."
@@ -343,6 +403,12 @@ struct ProgressionRewardsSection: View {
         default:
             return "Long-haul streak legend—your resilience lights the way."
         }
+    }
+    
+    private var daysFromStartDate: Int {
+        guard let startDate = appState.currentUser?.startDate else { return 0 }
+        let elapsed = Date().timeIntervalSince(startDate)
+        return max(0, Int(elapsed) / 86_400)
     }
     
     private var rewardTagline: String {
@@ -470,7 +536,7 @@ struct AppInfoSection: View {
 struct QuickStatCard: View {
     let title: String
     let value: String
-    let icon: String
+    let emoji: String
     let color: Color
     var onTap: (() -> Void)? = nil
     
@@ -490,9 +556,8 @@ struct QuickStatCard: View {
                         Circle()
                             .stroke(color.opacity(0.25), lineWidth: 1)
                     )
-                Image(systemName: icon)
-                    .foregroundColor(color.opacity(0.95))
-                    .font(.headline)
+                Text(emoji)
+                    .font(.system(size: 24))
                     .offset(x: 10)
             }
             
@@ -942,7 +1007,12 @@ struct ShareStreakView: View {
 private struct ShareStreakCard: View {
     @EnvironmentObject var appState: AppState
     private var name: String { appState.currentUser?.name ?? "LungQuest" }
-    private var days: Int { appState.getDaysVapeFree() }
+    
+    private var days: Int {
+        guard let startDate = appState.currentUser?.startDate else { return 0 }
+        let elapsed = Date().timeIntervalSince(startDate)
+        return max(0, Int(elapsed) / 86_400)
+    }
     
     var body: some View {
         VStack(spacing: 12) {
