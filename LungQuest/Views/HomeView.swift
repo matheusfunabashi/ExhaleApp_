@@ -50,13 +50,6 @@ struct HomeView: View {
                         LungBuddyCenter()
                             .padding(.top, 8)
                         
-                        Text(lungMoodCopy)
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .foregroundColor(Color(red: 0.16, green: 0.36, blue: 0.87))
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 12)
-                        
                         VStack(spacing: 10) {
                             Text("You’ve been vape-free for")
                                 .font(.system(.footnote, design: .rounded).weight(.medium))
@@ -92,10 +85,6 @@ struct HomeView: View {
                         }
                         
                         VStack(alignment: .leading, spacing: 10) {
-                            Text(healthInsight)
-                                .font(.footnote)
-                                .foregroundColor(.primary)
-                                .transition(.opacity.combined(with: .move(edge: .top)))
                             EncouragementBubble(message: encouragementMessage)
                                 .id(encouragementTick)
                         }
@@ -163,6 +152,7 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showCheckIn) {
             CheckInModalView()
+                .preferredColorScheme(.light)
         }
         .sheet(isPresented: $showCalendar) {
             NavigationView {
@@ -176,6 +166,7 @@ struct HomeView: View {
                     }
             }
             .environmentObject(appState)
+            .preferredColorScheme(.light)
         }
         .sheet(isPresented: $showMoney) {
             NavigationView {
@@ -189,6 +180,7 @@ struct HomeView: View {
                     }
             }
             .environmentObject(appState)
+            .preferredColorScheme(.light)
         }
         .sheet(isPresented: $showHealth) {
             NavigationView {
@@ -202,11 +194,13 @@ struct HomeView: View {
                     }
             }
             .environmentObject(appState)
+            .preferredColorScheme(.light)
         }
         #if DEBUG
         .sheet(isPresented: $showDevMenu) {
             DevMenuView()
                 .environmentObject(appState)
+                .preferredColorScheme(.light)
         }
         #endif
         .overlay(
@@ -345,8 +339,8 @@ struct StatsSection: View {
         HStack(spacing: 16) {
             StatsCard(
                 title: "Days Free",
-                value: "\(appState.getDaysVapeFree())",
-                icon: "calendar",
+                value: "\(daysFromStartDate)",
+                emoji: "📅",
                 color: .orange,
                 onTap: { onDaysTapped?() }
             )
@@ -354,7 +348,7 @@ struct StatsSection: View {
             StatsCard(
                 title: "Money Saved",
                 value: formattedMoneySaved,
-                icon: "dollarsign.circle.fill",
+                emoji: "💰",
                 color: .blue,
                 onTap: { onMoneyTapped?() }
             )
@@ -362,11 +356,17 @@ struct StatsSection: View {
             StatsCard(
                 title: "Lung Boost",
                 value: "\(appState.lungState.healthLevel)%",
-                icon: "heart.text.square.fill",
+                emoji: "💚",
                 color: .green,
                 onTap: { onHealthTapped?() }
             )
         }
+    }
+    
+    private var daysFromStartDate: Int {
+        guard let startDate = appState.currentUser?.startDate else { return 0 }
+        let elapsed = Date().timeIntervalSince(startDate)
+        return max(0, Int(elapsed) / 86_400)
     }
     
     private var formattedMoneySaved: String {
@@ -374,14 +374,29 @@ struct StatsSection: View {
         formatter.numberStyle = .currency
         formatter.maximumFractionDigits = 0
         formatter.currencySymbol = "$"
-        return formatter.string(from: NSNumber(value: appState.getMoneySaved())) ?? "$0"
+        return formatter.string(from: NSNumber(value: moneySavedFromStartDate)) ?? "$0"
+    }
+    
+    private var moneySavedFromStartDate: Double {
+        guard let user = appState.currentUser else { return 0 }
+        
+        // Get daily cost from onboarding, or use $20/week as fallback
+        let weeklyCost = user.profile.vapingHistory.dailyCost > 0 
+            ? user.profile.vapingHistory.dailyCost 
+            : 20.0
+        let dailyCost = weeklyCost / 7.0
+        
+        // Calculate days from startDate (same as main counter)
+        let days = daysFromStartDate
+        
+        return Double(days) * dailyCost
     }
 }
 
 struct StatsCard: View {
     let title: String
     let value: String
-    let icon: String
+    let emoji: String
     let color: Color
     var onTap: (() -> Void)? = nil
     var valueFont: Font = .headline
@@ -402,9 +417,8 @@ struct StatsCard: View {
                         Circle()
                             .stroke(color.opacity(0.25), lineWidth: 1)
                     )
-                Image(systemName: icon)
-                    .font(.title3)
-                    .foregroundColor(color.opacity(0.9))
+                Text(emoji)
+                    .font(.system(size: 24))
             }
             
             VStack(spacing: 4) {
@@ -625,8 +639,11 @@ struct MonthlyCalendarView: View {
 struct MoneySavedView: View {
     @EnvironmentObject var appState: AppState
     private var perDay: Double {
-        let weekly = appState.currentUser?.profile.vapingHistory.dailyCost ?? 0
-        return weekly / 7.0
+        // Get weekly cost from onboarding, or use $20/week as fallback
+        let weeklyCost = (appState.currentUser?.profile.vapingHistory.dailyCost ?? 0) > 0
+            ? (appState.currentUser?.profile.vapingHistory.dailyCost ?? 0)
+            : 20.0
+        return weeklyCost / 7.0
     }
     private var projections: [(title: String, days: Int)] {
         [("1 Month", 30), ("6 Months", 182), ("1 Year", 365)]
@@ -657,7 +674,10 @@ struct MoneySavedView: View {
             .shadow(radius: 4)
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("Your weekly cost: $\(Int((appState.currentUser?.profile.vapingHistory.dailyCost ?? 0)))")
+                let weeklyCost = (appState.currentUser?.profile.vapingHistory.dailyCost ?? 0) > 0
+                    ? (appState.currentUser?.profile.vapingHistory.dailyCost ?? 0)
+                    : 20.0
+                Text("Your weekly cost: $\(Int(weeklyCost))")
                     .font(.footnote)
                     .foregroundColor(.secondary)
                 Text("Estimated savings assume consistent avoidance of vaping.")
@@ -1125,10 +1145,12 @@ struct DevMenuView: View {
         .sheet(isPresented: $showIntake) {
             IntakeView()
                 .environmentObject(appState)
+                .preferredColorScheme(.light)
         }
         .sheet(isPresented: $showDevCheckIn) {
             CheckInModalView()
                 .environmentObject(appState)
+                .preferredColorScheme(.light)
         }
     }
     

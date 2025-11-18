@@ -57,7 +57,7 @@ struct StatsOverviewSection: View {
                     .fontWeight(.medium)
                     .foregroundColor(.secondary)
                 
-                Text("\(appState.getDaysVapeFree())")
+                Text("\(daysFromStartDate)")
                     .font(.system(size: 52, weight: .heavy, design: .rounded))
                     .monospacedDigit()
                     .foregroundColor(Color.orange)
@@ -71,16 +71,16 @@ struct StatsOverviewSection: View {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: 2), spacing: 16) {
                 StatCard(
                     title: "Money Saved",
-                    value: String(format: "$%.0f", appState.getMoneySaved()),
-                    icon: "dollarsign.circle.fill",
+                    value: String(format: "$%.0f", moneySavedFromStartDate),
+                    emoji: "💰",
                     color: .blue,
                     subtitle: "Keep it up!"
                 )
                 
                 StatCard(
                     title: "Longest Streak",
-                    value: "\(appState.currentUser?.quitGoal.longestStreak ?? 0)",
-                    icon: "flame.fill",
+                    value: "\(longestStreakFromStartDate)",
+                    emoji: "🏆",
                     color: .orange,
                     subtitle: "Personal best"
                 )
@@ -88,7 +88,7 @@ struct StatsOverviewSection: View {
                 StatCard(
                     title: "Total XP",
                     value: "\(appState.statistics.totalXP)",
-                    icon: "star.fill",
+                    emoji: "⭐",
                     color: .purple,
                     subtitle: "Level \(appState.statistics.currentLevel)"
                 )
@@ -96,31 +96,82 @@ struct StatsOverviewSection: View {
                 StatCard(
                     title: "Quests Done",
                     value: "\(appState.statistics.completedQuests)",
-                    icon: "target",
+                    emoji: "🎯",
                     color: .pink,
                     subtitle: "Challenges conquered"
                 )
             }
             
             if let highlight = savingsHighlight {
-                MotivationTile(icon: highlight.icon, accent: highlight.color, message: highlight.message)
+                MotivationTile(emoji: highlight.emoji, accent: highlight.color, message: highlight.message)
             }
         }
     }
     
-    private var savingsHighlight: (icon: String, message: String, color: Color)? {
-        let savings = appState.getMoneySaved()
+    private var daysFromStartDate: Int {
+        guard let startDate = appState.currentUser?.startDate else { return 0 }
+        let elapsed = Date().timeIntervalSince(startDate)
+        return max(0, Int(elapsed) / 86_400)
+    }
+    
+    private var moneySavedFromStartDate: Double {
+        guard let user = appState.currentUser else { return 0 }
+        
+        // Get daily cost from onboarding, or use $20/week as fallback
+        let weeklyCost = user.profile.vapingHistory.dailyCost > 0 
+            ? user.profile.vapingHistory.dailyCost 
+            : 20.0
+        let dailyCost = weeklyCost / 7.0
+        
+        // Calculate days from startDate (same as main counter)
+        let days = daysFromStartDate
+        
+        return Double(days) * dailyCost
+    }
+    
+    private var longestStreakFromStartDate: Int {
+        guard let startDate = appState.currentUser?.startDate else { return 0 }
+        
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        var longestStreak = 0
+        var currentStreak = 0
+        var currentDate = startDate
+        
+        // Calculate longest streak from startDate
+        while currentDate <= today {
+            let dayStart = calendar.startOfDay(for: currentDate)
+            let hasCheckIn = appState.dailyProgress.contains { progress in
+                calendar.isDate(progress.date, inSameDayAs: dayStart) && progress.wasVapeFree
+            }
+            
+            if hasCheckIn {
+                currentStreak += 1
+                longestStreak = max(longestStreak, currentStreak)
+            } else {
+                currentStreak = 0
+            }
+            
+            guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else { break }
+            currentDate = nextDate
+        }
+        
+        return longestStreak
+    }
+    
+    private var savingsHighlight: (emoji: String, message: String, color: Color)? {
+        let savings = moneySavedFromStartDate
         switch savings {
         case ..<5:
-            return ("leaf", "Every dollar counts—$\(Int(savings)) saved already is a fresh start fund.", Color.green)
+            return ("🍃", "Every dollar counts—$\(Int(savings)) saved already is a fresh start fund.", Color.green)
         case 5..<12:
-            return ("cup.and.saucer.fill", "You’ve saved enough for a cozy coffee break—treat yourself mindfully!", Color.brown)
+            return ("☕", "You've saved enough for a cozy coffee break—treat yourself mindfully!", Color.brown)
         case 12..<25:
-            return ("takeoutbag.and.cup.and.straw.fill", "That’s a lunch paid for by your lungs. Savor the win!", Color.orange)
+            return ("🍔", "That's a lunch paid for by your lungs. Savor the win!", Color.orange)
         case 25..<60:
-            return ("movieclapper.fill", "Tickets covered—plan a celebration night with your savings.", Color.purple)
+            return ("🎬", "Tickets covered—plan a celebration night with your savings.", Color.purple)
         default:
-            return ("airplane", "Your savings could fund a weekend getaway. Keep investing in freedom!", Color.blue)
+            return ("✈️", "Your savings could fund a weekend getaway. Keep investing in freedom!", Color.blue)
         }
     }
 }
@@ -403,6 +454,12 @@ struct HealthMilestonesSection: View {
         (days: 365, title: "1 year", description: "Risk of heart disease cut in half")
     ]
     
+    private var daysFromStartDate: Int {
+        guard let startDate = appState.currentUser?.startDate else { return 0 }
+        let elapsed = Date().timeIntervalSince(startDate)
+        return max(0, Int(elapsed) / 86_400)
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 4) {
@@ -419,9 +476,9 @@ struct HealthMilestonesSection: View {
                     MilestoneRow(
                         title: milestone.title,
                         description: milestone.description,
-                        isCompleted: appState.getDaysVapeFree() >= milestone.days,
+                        isCompleted: daysFromStartDate >= milestone.days,
                         daysRequired: milestone.days,
-                        currentDays: appState.getDaysVapeFree()
+                        currentDays: daysFromStartDate
                     )
                 }
             }
@@ -485,14 +542,14 @@ struct MilestoneRow: View {
 struct StatCard: View {
     let title: String
     let value: String
-    let icon: String
+    let emoji: String
     let color: Color
     let subtitle: String?
     
-    init(title: String, value: String, icon: String, color: Color, subtitle: String? = nil) {
+    init(title: String, value: String, emoji: String, color: Color, subtitle: String? = nil) {
         self.title = title
         self.value = value
-        self.icon = icon
+        self.emoji = emoji
         self.color = color
         self.subtitle = subtitle
     }
@@ -513,9 +570,8 @@ struct StatCard: View {
                         Circle()
                             .stroke(color.opacity(0.25), lineWidth: 1)
                     )
-                Image(systemName: icon)
-                    .foregroundColor(color.opacity(0.9))
-                    .font(.headline)
+                Text(emoji)
+                    .font(.system(size: 24))
                     .offset(x: 10)
             }
             
@@ -738,15 +794,14 @@ struct LegendItem: View {
 }
 
 struct MotivationTile: View {
-    let icon: String
+    let emoji: String
     var accent: Color = .pink
     let message: String
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Image(systemName: icon)
-                .foregroundColor(accent)
-                .font(.headline)
+            Text(emoji)
+                .font(.system(size: 24))
                 .padding(10)
                 .background(
                     Circle().fill(accent.opacity(0.15))
