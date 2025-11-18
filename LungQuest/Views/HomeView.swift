@@ -152,7 +152,6 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showCheckIn) {
             CheckInModalView()
-                .preferredColorScheme(.light)
         }
         .sheet(isPresented: $showCalendar) {
             NavigationView {
@@ -166,7 +165,6 @@ struct HomeView: View {
                     }
             }
             .environmentObject(appState)
-            .preferredColorScheme(.light)
         }
         .sheet(isPresented: $showMoney) {
             NavigationView {
@@ -180,7 +178,6 @@ struct HomeView: View {
                     }
             }
             .environmentObject(appState)
-            .preferredColorScheme(.light)
         }
         .sheet(isPresented: $showHealth) {
             NavigationView {
@@ -194,13 +191,11 @@ struct HomeView: View {
                     }
             }
             .environmentObject(appState)
-            .preferredColorScheme(.light)
         }
         #if DEBUG
         .sheet(isPresented: $showDevMenu) {
             DevMenuView()
                 .environmentObject(appState)
-                .preferredColorScheme(.light)
         }
         #endif
         .overlay(
@@ -1145,12 +1140,10 @@ struct DevMenuView: View {
         .sheet(isPresented: $showIntake) {
             IntakeView()
                 .environmentObject(appState)
-                .preferredColorScheme(.light)
         }
         .sheet(isPresented: $showDevCheckIn) {
             CheckInModalView()
                 .environmentObject(appState)
-                .preferredColorScheme(.light)
         }
     }
     

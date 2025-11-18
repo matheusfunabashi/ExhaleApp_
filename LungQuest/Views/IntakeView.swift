@@ -116,15 +116,12 @@ struct IntakeView: View {
             .sheet(isPresented: $showPaywall) {
                 PaywallView(isPresented: $showPaywall)
                     .environmentObject(appState)
-                    .preferredColorScheme(.light)
             }
             .fullScreenCover(isPresented: $showCreatingPlan) {
                 CreatingPlanView {
                     showCreatingPlan = false
                     showPaywall = true
                 }
-                .preferredColorScheme(.light)
-            }
             }
         }
         .onAppear {

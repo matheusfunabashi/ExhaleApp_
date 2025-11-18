@@ -11,7 +11,6 @@ struct ContentView: View {
                 MainTabView()
             }
         }
-        .preferredColorScheme(.light)
         .animation(.easeInOut(duration: 0.3), value: appState.isOnboarding)
         .animation(.easeInOut(duration: 0.3), value: appState.isLoading)
     }
@@ -53,11 +52,9 @@ struct MainTabView: View {
             if appState.isOnboarding {
                 IntakeView()
                     .environmentObject(appState)
-                    .preferredColorScheme(.light)
             } else if !appState.isSubscribed {
                 IntakeView()
                     .environmentObject(appState)
-                    .preferredColorScheme(.light)
                     .onAppear {
                         // If questionnaire is completed, immediately show paywall
                         if appState.questionnaire.isCompleted {
@@ -95,7 +92,6 @@ struct MainTabView: View {
                     .tag(3)
                 }
                 .accentColor(Color(red: 0.16, green: 0.36, blue: 0.87))
-                .preferredColorScheme(.light)
                 .onReceive(NotificationCenter.default.publisher(for: Notification.Name("SwitchToLearnTab"))) { _ in
                     selectedTab = 1
                 }
@@ -114,7 +110,6 @@ struct MainTabView: View {
         }
         .fullScreenCover(isPresented: $showPanic) {
             PanicHelpView(isPresented: $showPanic)
-                .preferredColorScheme(.light)
         }
     }
 }

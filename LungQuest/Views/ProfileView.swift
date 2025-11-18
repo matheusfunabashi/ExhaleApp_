@@ -69,16 +69,13 @@ struct ProfileView: View {
         }
         .sheet(isPresented: $showEditProfile) {
             EditProfileView()
-                .preferredColorScheme(.light)
         }
         .sheet(isPresented: $showExportData) {
             ExportDataView()
-                .preferredColorScheme(.light)
         }
         .sheet(isPresented: $showShareStreak) {
             ShareStreakView(isPresented: $showShareStreak)
                 .environmentObject(appState)
-                .preferredColorScheme(.light)
         }
     }
 }
