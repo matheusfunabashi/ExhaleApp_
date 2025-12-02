@@ -7,6 +7,11 @@ struct ContentView: View {
         Group {
             if appState.isLoading {
                 LoadingView()
+            } else if appState.isOnboarding {
+                OnboardingView(onSkipAll: {
+                    appState.skipOnboarding()
+                })
+                .environmentObject(appState)
             } else {
                 MainTabView()
             }
@@ -49,20 +54,7 @@ struct MainTabView: View {
     
     var body: some View {
         ZStack {
-            if appState.isOnboarding {
-                IntakeView()
-                    .environmentObject(appState)
-            } else if !appState.isSubscribed {
-                IntakeView()
-                    .environmentObject(appState)
-                    .onAppear {
-                        // If questionnaire is completed, immediately show paywall
-                        if appState.questionnaire.isCompleted {
-                            // Present paywall on first render using fullScreenCover from parent
-                        }
-                    }
-            } else {
-                TabView(selection: $selectedTab) {
+            TabView(selection: $selectedTab) {
                 HomeView()
                     .tabItem {
                         Image(systemName: "house.fill")
@@ -90,23 +82,22 @@ struct MainTabView: View {
                         Text("Profile")
                     }
                     .tag(3)
-                }
-                .accentColor(Color(red: 0.16, green: 0.36, blue: 0.87))
-                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("SwitchToLearnTab"))) { _ in
-                    selectedTab = 1
-                }
-            
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        PanicButton { showPanic = true }
-                        Spacer()
-                    }
-                    .padding(.bottom, 24)
-                }
-                .allowsHitTesting(true)
             }
+            .accentColor(Color(red: 0.16, green: 0.36, blue: 0.87))
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("SwitchToLearnTab"))) { _ in
+                selectedTab = 1
+            }
+        
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    PanicButton { showPanic = true }
+                    Spacer()
+                }
+                .padding(.bottom, 24)
+            }
+            .allowsHitTesting(true)
         }
         .fullScreenCover(isPresented: $showPanic) {
             PanicHelpView(isPresented: $showPanic)
