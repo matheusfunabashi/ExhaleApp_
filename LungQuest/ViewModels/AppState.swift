@@ -273,6 +273,15 @@ class AppState: ObservableObject {
         return currentUser?.quitGoal.currentStreak ?? 0
     }
     
+    func daysSinceQuitStartDate() -> Int {
+        guard let startDate = currentUser?.startDate else { return 0 }
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(for: startDate)
+        let today = calendar.startOfDay(for: Date())
+        let components = calendar.dateComponents([.day], from: start, to: today)
+        return max(0, components.day ?? 0)
+    }
+    
     func getMoneySaved() -> Double {
         guard let user = currentUser else { return 0 }
         let perDayCost = user.profile.vapingHistory.dailyCost / 7.0

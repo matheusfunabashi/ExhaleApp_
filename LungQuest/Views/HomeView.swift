@@ -14,6 +14,8 @@ struct HomeView: View {
     @State private var encouragementTimer: Timer?
     #if DEBUG
     @State private var showDevMenu = false
+    @State private var showDevOptions = false
+    @State private var devDestination: DevDestination?
     #endif
     
     var body: some View {
@@ -109,7 +111,7 @@ struct HomeView: View {
                     #if DEBUG
                     .contentShape(Rectangle())
                     .onTapGesture(count: 5) {
-                        showDevMenu = true
+                        showDevOptions = true
                     }
                     #endif
                     
@@ -211,6 +213,24 @@ struct HomeView: View {
         }
         .onAppear { startEncouragementRotation() }
         .onDisappear { stopEncouragementRotation() }
+        #if DEBUG
+        .confirmationDialog(
+            "Debug options",
+            isPresented: $showDevOptions,
+            titleVisibility: .visible
+        ) {
+            Button("Open Onboarding preview") { devDestination = .onboarding }
+            Button("Developer menu") { showDevMenu = true }
+            Button("Cancel", role: .cancel) { }
+        }
+        .sheet(item: $devDestination) { destination in
+            switch destination {
+            case .onboarding:
+                OnboardingView()
+                    .environmentObject(appState)
+            }
+        }
+        #endif
     }
     
     private func checkForNewStreak() { }
@@ -794,6 +814,14 @@ struct CheckInSectionWrapper: View {
     }
 }
 
+#if DEBUG
+private enum DevDestination: Identifiable {
+    case onboarding
+    
+    var id: Int { hashValue }
+}
+#endif
+
 // MARK: - New Hero Views
 
 private struct EncouragementBubble: View {
@@ -1021,19 +1049,28 @@ private struct SlipButton: View {
 
 
 struct BreathingLungCharacter: View {
-    let healthLevel: Int
+    let daysSinceStart: Int
     @State private var breathe: Bool = false
     @State private var bob: Bool = false
     
-    private var bucketedLevel: Int {
-        let clamped = max(0, min(100, healthLevel))
-        let buckets: [Int] = [0, 25, 50, 75, 100]
-        if let nearest = buckets.min(by: { abs($0 - clamped) < abs($1 - clamped) }) { return nearest }
-        return 0
+    private var stage: Int {
+        switch daysSinceStart {
+        case ..<5:
+            return 0
+        case 5..<15:
+            return 25
+        case 15..<30:
+            return 50
+        case 30..<50:
+            return 75
+        default:
+            return 100
+        }
     }
     
-    private var assetName: String { "LungBuddy_\(bucketedLevel)" }
+    private var assetName: String { "LungBuddy_\(stage)" }
     private var hasAsset: Bool { UIImage(named: assetName) != nil }
+    private var progress: Double { Double(stage) / 100.0 }
     
     var body: some View {
         Group {
@@ -1042,7 +1079,7 @@ struct BreathingLungCharacter: View {
                     .resizable()
                     .scaledToFit()
             } else {
-                LungCharacter(healthLevel: healthLevel, isAnimating: true)
+                LungCharacter(healthLevel: stage, isAnimating: true)
             }
         }
             .frame(width: 220 * 1.4, height: 176 * 1.4)
@@ -1056,7 +1093,7 @@ struct BreathingLungCharacter: View {
     
     private var animationDuration: Double {
         let base = 2.2
-        let factor = 1.2 - (Double(healthLevel) / 100.0)
+        let factor = 1.2 - progress
         return max(0.9, base * factor)
     }
     
@@ -1065,7 +1102,8 @@ struct BreathingLungCharacter: View {
     }
     
     private var bobbingAnimation: Animation {
-        .easeInOut(duration: max(0.9, 2.0 * (1.2 - (Double(healthLevel) / 100.0)))).repeatForever(autoreverses: true)
+        let duration = max(0.9, 2.0 * (1.2 - progress))
+        return .easeInOut(duration: duration).repeatForever(autoreverses: true)
     }
 }
 
@@ -1108,7 +1146,6 @@ struct SupportMessage: View {
 struct DevMenuView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.presentationMode) var presentationMode
-    @State private var showIntake: Bool = false
     @State private var showDevCheckIn: Bool = false
     
     var body: some View {
@@ -1121,10 +1158,6 @@ struct DevMenuView: View {
                     Button("Advance +7 days") { shiftStartDate(days: 7) }
                 }
                 
-                Section(header: Text("Questionnaire")) {
-                    Button("Open Onboarding Questionnaire") { showIntake = true }
-                }
-
                 Section(header: Text("Check-in")) {
                     Button("Re-do today's check-in") { showDevCheckIn = true }
                 }
@@ -1136,10 +1169,6 @@ struct DevMenuView: View {
                     Button("Close") { presentationMode.wrappedValue.dismiss() }
                 }
             }
-        }
-        .sheet(isPresented: $showIntake) {
-            IntakeView()
-                .environmentObject(appState)
         }
         .sheet(isPresented: $showDevCheckIn) {
             CheckInModalView()
@@ -1412,7 +1441,7 @@ struct LungBuddyCenter: View {
     @EnvironmentObject var appState: AppState
     
     var body: some View {
-        BreathingLungCharacter(healthLevel: appState.lungState.healthLevel)
+        BreathingLungCharacter(daysSinceStart: appState.daysSinceQuitStartDate())
             .scaleEffect(1.2) // Make LungBuddy bigger
     }
 }

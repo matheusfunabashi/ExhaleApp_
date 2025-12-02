@@ -22,13 +22,25 @@ struct User: Codable, Identifiable {
 }
 
 // MARK: - User Profile
-struct UserProfile: Codable {
+struct UserProfile: Codable, Identifiable {
+    var id: UUID
+    var quitStartDate: Date?
+    var lastRelapseDate: Date?
     var vapingHistory: VapingHistory
     var preferences: UserPreferences
     
-    init() {
-        self.vapingHistory = VapingHistory()
-        self.preferences = UserPreferences()
+    init(
+        id: UUID = UUID(),
+        quitStartDate: Date? = nil,
+        lastRelapseDate: Date? = nil,
+        vapingHistory: VapingHistory = VapingHistory(),
+        preferences: UserPreferences = UserPreferences()
+    ) {
+        self.id = id
+        self.quitStartDate = quitStartDate
+        self.lastRelapseDate = lastRelapseDate
+        self.vapingHistory = vapingHistory
+        self.preferences = preferences
     }
 }
 
