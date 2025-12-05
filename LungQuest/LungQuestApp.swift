@@ -1,11 +1,12 @@
 import SwiftUI
+import SuperwallKit
 
 @main
 struct LungQuestApp: App {
     @StateObject private var appState = AppState()
     
     init() {
-        // No-op init. Firebase intentionally disabled for MVP frontend-only build.
+        Superwall.configure(apiKey: "pk_632iyoKuponK4hKuK_GL9")
     }
     
     var body: some Scene {

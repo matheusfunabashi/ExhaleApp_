@@ -1,4 +1,5 @@
 import SwiftUI
+import SuperwallKit
 
 struct OnboardingStep13View: View {
     let onContinue: () -> Void
@@ -146,7 +147,10 @@ struct OnboardingStep13View: View {
                 
                 Spacer()
                 
-                Button(action: onContinue) {
+                Button(action: {
+                    onContinue()  // whatever you currently do when finishing onboarding
+                    Superwall.shared.register(placement: "onboarding_end") // <-- must match your rule’s event name
+                }) {
                     Text("Continue")
                         .font(.headline)
                         .foregroundColor(Color(red: 0.45, green: 0.05, blue: 0.05))
@@ -154,11 +158,12 @@ struct OnboardingStep13View: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.white.opacity(0.9))
                         .clipShape(Capsule())
-                        .shadow(color: Color.black.opacity(0.12), radius: 18, x: 0, y: 15)
+                        .shadow(color: .black.opacity(0.12), radius: 18, x: 0, y: 15)
                 }
                 .buttonStyle(.plain)
                 .padding(.horizontal, 32)
                 .padding(.bottom, 48)
+
             }
             .padding(.top, 48)
         }
