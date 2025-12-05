@@ -3,6 +3,7 @@ import SwiftUI
 struct OnboardingStep11View: View {
     let onNext: () -> Void
     let onBack: () -> Void
+    let onNameCollected: (String, String) -> Void
     
     @State private var name: String = ""
     @State private var age: String = ""
@@ -40,7 +41,10 @@ struct OnboardingStep11View: View {
                 Spacer()
                 
                 VStack(spacing: 20) {
-                    Button(action: onNext) {
+                    Button(action: {
+                        onNameCollected(name, age)
+                        onNext()
+                    }) {
                         Text("Continue")
                             .font(.headline)
                             .foregroundColor(textColor)
@@ -52,13 +56,17 @@ struct OnboardingStep11View: View {
                     }
                     .buttonStyle(.plain)
                     
-                    SkipButton(title: "Skip", action: onNext)
+                    SkipButton(title: "Skip", action: {
+                        onNameCollected("", "")
+                        onNext()
+                    })
                 }
             }
             .padding(.horizontal, 24)
             .padding(.top, 52)
             .padding(.bottom, 32)
         }
+        .navigationBarBackButtonHidden(true)
     }
     
     private var header: some View {
@@ -201,7 +209,8 @@ private struct SkipButton: View {
 #Preview {
     OnboardingStep11View(
         onNext: {},
-        onBack: {}
+        onBack: {},
+        onNameCollected: { _, _ in }
     )
 }
 

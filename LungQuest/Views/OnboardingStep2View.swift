@@ -32,16 +32,17 @@ fileprivate struct CardPalette: Hashable {
 }
 
 struct OnboardingStep2View: View {
-    init(onSkip: (() -> Void)? = nil, onNext: (() -> Void)? = nil) {
+    init(onSkip: (() -> Void)? = nil, onNext: (() -> Void)? = nil, onBack: (() -> Void)? = nil) {
         self.onSkip = onSkip
         self.onNext = onNext
+        self.onBack = onBack
     }
     
     private let onSkip: (() -> Void)?
     private let onNext: (() -> Void)?
+    private let onBack: (() -> Void)?
     
     @EnvironmentObject var profileStore: ProfileStore
-    @Environment(\.dismiss) private var dismiss
     private let palettes = CardPalette.defaultPalettes
     
     var body: some View {
@@ -51,6 +52,7 @@ struct OnboardingStep2View: View {
             
             content
         }
+        .navigationBarBackButtonHidden(true)
         .accessibilitySortPriority(1)
     }
     
@@ -106,23 +108,19 @@ struct OnboardingStep2View: View {
     
     private var topBar: some View {
         HStack(spacing: 16) {
-            Button(action: {
-                dismiss()
-            }) {
-                Image(systemName: "chevron.left")
-                    .font(.title3.weight(.semibold))
-                    .padding(12)
-                    .background(Color.white.opacity(0.2), in: Circle())
-                    .foregroundStyle(Color.white.opacity(0.95))
+            if let onBack {
+                Button(action: onBack) {
+                    Image(systemName: "chevron.left")
+                        .font(.title3.weight(.semibold))
+                        .padding(12)
+                        .background(Color.white.opacity(0.2), in: Circle())
+                        .foregroundStyle(Color.white.opacity(0.95))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Go back")
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Go back")
             
             Spacer()
-            
-            if let onSkip {
-                SkipAllButton(action: onSkip)
-            }
         }
     }
     
@@ -139,7 +137,9 @@ struct OnboardingStep2View: View {
                 .font(.title3)
                 .foregroundColor(Color.black.opacity(0.85))
                 .multilineTextAlignment(.center)
-                .frame(maxWidth: 500)
+                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity)
         }
         .frame(maxWidth: .infinity)
     }
@@ -241,22 +241,6 @@ private struct ProfileCardView: View {
     }
 }
 
-fileprivate struct SkipAllButton: View {
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Text("Skip All")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Color.black.opacity(0.8))
-                .padding(.horizontal, 18)
-                .padding(.vertical, 10)
-                .background(Color.white.opacity(0.3), in: Capsule())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Skip onboarding")
-    }
-}
 
 #Preview {
     NavigationStack {

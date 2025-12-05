@@ -27,7 +27,7 @@ struct OnboardingStep7View: View {
                 header
                 
                 QuestionTitleView(
-                    title: "Question #7",
+                    title: "Question #4",
                     subtitle: "Are you dependent on nicotine to perform daily tasks?",
                     progress: 7.0 / 13.0
                 )
@@ -58,6 +58,7 @@ struct OnboardingStep7View: View {
             .padding(.top, 52)
             .padding(.bottom, 32)
         }
+        .navigationBarBackButtonHidden(true)
     }
     
     private var header: some View {

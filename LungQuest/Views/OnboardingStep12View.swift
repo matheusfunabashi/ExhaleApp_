@@ -47,6 +47,7 @@ struct OnboardingStep12View: View {
                 hasStarted = false
             }
         }
+        .navigationBarBackButtonHidden(true)
     }
     
     private func startSequence() {

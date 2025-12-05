@@ -28,6 +28,7 @@ struct OnboardingStep3View: View {
             
             content
         }
+        .navigationBarBackButtonHidden(true)
         .onAppear(perform: handleAppear)
     }
     
@@ -46,13 +47,6 @@ struct OnboardingStep3View: View {
         }
         .padding(.vertical, 48)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .overlay(alignment: .topTrailing) {
-            if let onSkip {
-                SkipAllButton(action: onSkip)
-                    .padding(.top, 20)
-                    .padding(.trailing, 20)
-            }
-        }
     }
     
     private var header: some View {
@@ -182,22 +176,6 @@ private struct TitleBlock: View {
     }
 }
 
-private struct SkipAllButton: View {
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Text("Skip All")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Color.black.opacity(0.8))
-                .padding(.horizontal, 18)
-                .padding(.vertical, 10)
-                .background(Color.white.opacity(0.3), in: Capsule())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Skip onboarding")
-    }
-}
 
 #Preview {
     NavigationStack {

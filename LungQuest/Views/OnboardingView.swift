@@ -18,14 +18,16 @@ private enum OnboardingRoute: Hashable {
 }
 
 struct OnboardingView: View {
-    init(onSkipAll: @escaping () -> Void = {}) {
+    init(onSkipAll: @escaping (String?, Int?) -> Void = { _, _ in }) {
         self.onSkipAll = onSkipAll
     }
     
     @State private var showContinue = false
     @State private var navigationPath: [OnboardingRoute] = []
     @StateObject private var profileStore = ProfileStore()
-    private let onSkipAll: () -> Void
+    @State private var collectedName: String = ""
+    @State private var collectedAge: String = ""
+    private let onSkipAll: (String?, Int?) -> Void
     
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -61,23 +63,23 @@ struct OnboardingView: View {
                 }
                 .padding(.horizontal, 32)
                 .padding(.vertical, 40)
-                .overlay(alignment: .topTrailing) {
-                    SkipAllButton(action: skipAll)
-                        .padding(.top, 20)
-                        .padding(.trailing, 20)
-                }
             }
+            .navigationBarBackButtonHidden(true)
             .navigationDestination(for: OnboardingRoute.self) { route in
                 switch route {
                 case .step2:
-                    OnboardingStep2View(onSkip: skipAll, onNext: {
-                        navigationPath.append(.step3)
-                    })
+                    OnboardingStep2View(
+                        onSkip: { skipAll() },
+                        onNext: {
+                            navigationPath.append(.step3)
+                        },
+                        onBack: { popRoute() }
+                    )
                     .environmentObject(profileStore)
                 case .step3:
                     OnboardingStep3View(onBegin: {
                         navigationPath.append(.step4)
-                    }, onSkip: skipAll)
+                    }, onSkip: { skipAll() })
                 case .step4:
                     OnboardingStep4View(
                         onNext: { navigationPath.append(.step5) },
@@ -116,7 +118,11 @@ struct OnboardingView: View {
                 case .step11:
                     OnboardingStep11View(
                         onNext: { navigationPath.append(.step12) },
-                        onBack: { popRoute() }
+                        onBack: { popRoute() },
+                        onNameCollected: { name, age in
+                            collectedName = name
+                            collectedAge = age
+                        }
                     )
                 case .step12:
                     OnboardingStep12View(
@@ -125,7 +131,10 @@ struct OnboardingView: View {
                     )
                 case .step13:
                     OnboardingStep13View(
-                        onContinue: { skipAll() },
+                        onContinue: { 
+                            let ageInt = collectedAge.isEmpty ? nil : Int(collectedAge)
+                            skipAll(withName: collectedName.isEmpty ? nil : collectedName, age: ageInt)
+                        },
                         onBack: { popRoute() }
                     )
                 }
@@ -235,9 +244,9 @@ private struct ContinueButtonView: View {
 }
 
 private extension OnboardingView {
-    func skipAll() {
+    func skipAll(withName name: String? = nil, age: Int? = nil) {
         navigationPath.removeAll()
-        onSkipAll()
+        onSkipAll(name, age)
     }
     
     func popRoute() {
@@ -247,22 +256,6 @@ private extension OnboardingView {
     }
 }
 
-private struct SkipAllButton: View {
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Text("Skip All")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Color.black.opacity(0.85))
-                .padding(.horizontal, 18)
-                .padding(.vertical, 10)
-                .background(Color.white.opacity(0.3), in: Capsule())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Skip onboarding")
-    }
-}
 
 // MARK: - Haptics
 

@@ -45,6 +45,7 @@ struct OnboardingStep6View: View {
             .padding(.top, 52)
             .padding(.bottom, 32)
         }
+        .navigationBarBackButtonHidden(true)
     }
     
     private var header: some View {

@@ -45,6 +45,18 @@ class AppState: ObservableObject {
         generateDailyQuests()
     }
     
+    func completeOnboarding(name: String?, age: Int?) {
+        let userName = name?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Guest"
+        var user = User(name: userName.isEmpty ? "Guest" : userName)
+        if let age = age {
+            user.age = age
+        }
+        currentUser = user
+        isOnboarding = false
+        saveUserData()
+        generateDailyQuests()
+    }
+    
     // MARK: - Progress Tracking
     func checkIn(wasVapeFree: Bool, cravingsLevel: Int = 1, mood: Mood = .neutral, notes: String = "", puffInterval: PuffInterval = .none) {
         guard currentUser != nil else { return }
