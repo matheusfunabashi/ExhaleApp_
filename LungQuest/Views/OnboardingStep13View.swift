@@ -26,6 +26,7 @@ struct OnboardingStep13View: View {
             .gesture(dragGesture(for: height))
             .animation(pagingAnimation, value: currentPage)
         }
+        .navigationBarBackButtonHidden(true)
         .ignoresSafeArea()
     }
     

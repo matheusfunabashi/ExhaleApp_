@@ -8,8 +8,8 @@ struct ContentView: View {
             if appState.isLoading {
                 LoadingView()
             } else if appState.isOnboarding {
-                OnboardingView(onSkipAll: {
-                    appState.skipOnboarding()
+                OnboardingView(onSkipAll: { name, age in
+                    appState.completeOnboarding(name: name, age: age)
                 })
                 .environmentObject(appState)
             } else {
@@ -87,17 +87,15 @@ struct MainTabView: View {
             .onReceive(NotificationCenter.default.publisher(for: Notification.Name("SwitchToLearnTab"))) { _ in
                 selectedTab = 1
             }
-        
-            VStack {
-                Spacer()
+            .overlay(
                 HStack {
                     Spacer()
                     PanicButton { showPanic = true }
                     Spacer()
                 }
-                .padding(.bottom, 24)
-            }
-            .allowsHitTesting(true)
+                .padding(.bottom, 24),
+                alignment: .bottom
+            )
         }
         .fullScreenCover(isPresented: $showPanic) {
             PanicHelpView(isPresented: $showPanic)
