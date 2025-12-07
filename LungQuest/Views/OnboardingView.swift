@@ -71,7 +71,7 @@ struct OnboardingView: View {
                     OnboardingStep2View(
                         onSkip: { skipAll() },
                         onNext: {
-                            navigationPath.append(.step3)
+                        navigationPath.append(.step3)
                         },
                         onBack: { popRoute() }
                     )
