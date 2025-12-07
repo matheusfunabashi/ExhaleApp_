@@ -110,14 +110,14 @@ struct OnboardingStep2View: View {
         HStack(spacing: 16) {
             if let onBack {
                 Button(action: onBack) {
-                    Image(systemName: "chevron.left")
-                        .font(.title3.weight(.semibold))
-                        .padding(12)
-                        .background(Color.white.opacity(0.2), in: Circle())
-                        .foregroundStyle(Color.white.opacity(0.95))
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Go back")
+                Image(systemName: "chevron.left")
+                    .font(.title3.weight(.semibold))
+                    .padding(12)
+                    .background(Color.white.opacity(0.2), in: Circle())
+                    .foregroundStyle(Color.white.opacity(0.95))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Go back")
             }
             
             Spacer()

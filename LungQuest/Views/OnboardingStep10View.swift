@@ -34,17 +34,17 @@ struct OnboardingStep10View: View {
                 
                 Spacer()
                 
-                Button(action: onNext) {
-                    Text("Next")
-                        .font(.headline)
-                        .foregroundColor(textColor)
-                        .padding(.vertical, 18)
-                        .frame(maxWidth: .infinity)
-                        .background(buttonColor.opacity(0.95))
-                        .clipShape(Capsule())
-                        .shadow(color: Color.black.opacity(0.1), radius: 18, x: 0, y: 15)
-                }
-                .buttonStyle(.plain)
+                    Button(action: onNext) {
+                        Text("Next")
+                            .font(.headline)
+                            .foregroundColor(textColor)
+                            .padding(.vertical, 18)
+                            .frame(maxWidth: .infinity)
+                            .background(buttonColor.opacity(0.95))
+                            .clipShape(Capsule())
+                            .shadow(color: Color.black.opacity(0.1), radius: 18, x: 0, y: 15)
+                    }
+                    .buttonStyle(.plain)
             }
             .padding(.horizontal, 24)
             .padding(.top, 52)

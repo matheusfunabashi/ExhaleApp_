@@ -18,14 +18,8 @@ struct ProgressView: View {
                     // Header stats
                     StatsOverviewSection()
                     
-                    // Time frame selector
-                    TimeFrameSelector(selectedTimeFrame: $selectedTimeFrame)
-                    
-                    // Progress vs Plan chart
-                    ProgressVsPlanSection(timeFrame: selectedTimeFrame)
-                    
-                    // Cravings chart
-                    CravingsChartSection(timeFrame: selectedTimeFrame)
+                    // Goal progress and calendar
+                    GoalProgressSection()
                     
                     // Puff count chart
                     PuffCountChartSection(timeFrame: selectedTimeFrame)
@@ -50,24 +44,36 @@ struct StatsOverviewSection: View {
     @EnvironmentObject var appState: AppState
     
     var body: some View {
-        VStack(spacing: 24) {
-            VStack(alignment: .leading, spacing: 12) {
+        VStack(spacing: 20) {
+            // Large Days vape-free card (centered)
+            VStack(spacing: 12) {
                 Text("Days vape-free")
                     .font(.caption)
                     .fontWeight(.medium)
                     .foregroundColor(.secondary)
                 
                 Text("\(daysFromStartDate)")
-                    .font(.system(size: 52, weight: .heavy, design: .rounded))
+                    .font(.system(size: 48, weight: .bold, design: .rounded))
                     .monospacedDigit()
-                    .foregroundColor(Color.orange)
+                    .foregroundColor(.primary)
                 
                 Text("Your streak keeps lungs brighter and cravings quieter.")
                     .font(.footnote)
                     .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
             }
-            .softCard(accent: .orange, cornerRadius: 34)
+            .frame(maxWidth: .infinity)
+            .padding(24)
+            .background(
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(Color(UIColor.systemBackground))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .stroke(Color.orange.opacity(0.2), lineWidth: 1)
+                    )
+            )
             
+            // Grid of 4 cards
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: 2), spacing: 16) {
                 StatCard(
                     title: "Money Saved",
@@ -555,44 +561,41 @@ struct StatCard: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            ZStack(alignment: .leading) {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [color.opacity(0.35), color.opacity(0.15)]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 48, height: 48)
-                    .overlay(
-                        Circle()
-                            .stroke(color.opacity(0.25), lineWidth: 1)
-                    )
-                Text(emoji)
-                    .font(.system(size: 24))
-                    .offset(x: 10)
-            }
+        VStack(spacing: 12) {
+            // Emoji at top
+            Text(emoji)
+                .font(.system(size: 36))
             
-            VStack(alignment: .leading, spacing: 6) {
-                Text(value)
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundColor(.primary)
-                    .monospacedDigit()
-                Text(title.uppercased())
+            // Value
+            Text(value)
+                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .foregroundColor(.primary)
+                .monospacedDigit()
+            
+            // Title
+            Text(title.uppercased())
+                .font(.caption2)
+                .kerning(0.8)
+                .foregroundColor(.secondary)
+            
+            // Subtitle if available
+            if let subtitle = subtitle {
+                Text(subtitle)
                     .font(.caption2)
-                    .kerning(0.8)
-                    .foregroundColor(.secondary)
-                if let subtitle = subtitle {
-                    Text(subtitle)
-                        .font(.caption2)
-                        .foregroundColor(color.opacity(0.8))
-                }
+                    .foregroundColor(color.opacity(0.7))
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .softCard(accent: color, cornerRadius: 26)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 18)
+        .padding(.horizontal, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color(UIColor.systemBackground))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .stroke(color.opacity(0.2), lineWidth: 1)
+                )
+        )
     }
 }
 
@@ -814,6 +817,373 @@ struct MotivationTile: View {
             RoundedRectangle(cornerRadius: 16)
                 .fill(accent.opacity(0.12))
         )
+    }
+}
+
+struct GoalProgressSection: View {
+    @EnvironmentObject var appState: AppState
+    @State private var currentDate = Date()
+    @State private var selectedMonth = Date()
+    @State private var timer: Timer?
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            // Goal Progress Card
+            VStack(alignment: .leading, spacing: 16) {
+                // Today's date
+                Text("Today is \(formattedDate)")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                
+                // Progress to Goal
+                HStack(spacing: 12) {
+                    // Target icon
+                    ZStack {
+                        Circle()
+                            .fill(Color.green.opacity(0.15))
+                            .frame(width: 50, height: 50)
+                        Image(systemName: "target")
+                            .font(.system(size: 24))
+                            .foregroundColor(.green)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Progress to Goal: \(progressPercentage)% complete")
+                            .font(.subheadline)
+                            .foregroundColor(.primary)
+                        
+                        // Progress bar
+                        GeometryReader { geometry in
+                            ZStack(alignment: .leading) {
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(Color.gray.opacity(0.2))
+                                    .frame(height: 8)
+                                
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(Color.green)
+                                    .frame(width: geometry.size.width * CGFloat(progressPercentage) / 100, height: 8)
+                            }
+                        }
+                        .frame(height: 8)
+                        
+                        Text("\(currentDays)/\(targetDays) Days")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                Divider()
+                
+                // Next Milestone
+                HStack(spacing: 12) {
+                    // Mountain icon
+                    ZStack {
+                        Circle()
+                            .fill(Color.yellow.opacity(0.15))
+                            .frame(width: 50, height: 50)
+                        Image(systemName: "mountain.2.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.gray)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Next Milestone: Final Goal!")
+                            .font(.subheadline)
+                            .foregroundColor(.primary)
+                        
+                        Text(countdownTimer)
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color(UIColor.systemBackground))
+            )
+            
+            // Calendar Card
+            VStack(spacing: 16) {
+                // Calendar header
+                HStack {
+                    Button(action: { changeMonth(-1) }) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.primary)
+                    }
+                    
+                    Spacer()
+                    
+                    Text(monthYearString)
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
+                    
+                    Spacer()
+                    
+                    Button(action: { changeMonth(1) }) {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.primary)
+                    }
+                }
+                .padding(.horizontal, 4)
+                
+                // Days of week
+                HStack(spacing: 0) {
+                    ForEach(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], id: \.self) { day in
+                        Text(day)
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.primary)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+                
+                // Calendar grid
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 8) {
+                    ForEach(calendarDays, id: \.id) { day in
+                        CalendarDayView(
+                            day: day,
+                            isToday: isToday(day.date),
+                            isStartDate: isStartDate(day.date),
+                            isGoalDate: isGoalDate(day.date),
+                            isInProgressRange: isInProgressRange(day.date)
+                        )
+                    }
+                }
+            }
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color(UIColor.systemBackground))
+            )
+        }
+        .softCard(accent: Color.gray, cornerRadius: 28)
+        .onAppear {
+            currentDate = Date()
+            selectedMonth = Date()
+            // Start timer to update countdown every second
+            timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+                currentDate = Date()
+            }
+        }
+        .onDisappear {
+            timer?.invalidate()
+            timer = nil
+        }
+    }
+    
+    private var formattedDate: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d'\(daySuffix)' MMMM"
+        return formatter.string(from: currentDate)
+    }
+    
+    private var daySuffix: String {
+        let day = Calendar.current.component(.day, from: currentDate)
+        switch day {
+        case 1, 21, 31: return "st"
+        case 2, 22: return "nd"
+        case 3, 23: return "rd"
+        default: return "th"
+        }
+    }
+    
+    private var currentDays: Int {
+        appState.daysSinceQuitStartDate()
+    }
+    
+    private var targetDays: Int {
+        appState.currentUser?.quitGoal.targetDays ?? 30
+    }
+    
+    private var progressPercentage: Int {
+        guard targetDays > 0 else { return 0 }
+        return min(100, Int((Double(currentDays) / Double(targetDays)) * 100))
+    }
+    
+    private var countdownTimer: String {
+        let daysRemaining = max(0, targetDays - currentDays)
+        guard let startDate = appState.currentUser?.startDate,
+              let goalDate = Calendar.current.date(byAdding: .day, value: targetDays, to: startDate) else {
+            return "\(daysRemaining)d 23h 59m 08s"
+        }
+        
+        let now = Date()
+        let components = Calendar.current.dateComponents([.hour, .minute, .second], from: now, to: goalDate)
+        let hours = max(0, components.hour ?? 0)
+        let minutes = max(0, components.minute ?? 0)
+        let seconds = max(0, components.second ?? 0)
+        
+        return "\(daysRemaining)d \(hours)h \(minutes)m \(seconds)s"
+    }
+    
+    private var monthYearString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        return formatter.string(from: selectedMonth)
+    }
+    
+    private func changeMonth(_ direction: Int) {
+        if let newMonth = Calendar.current.date(byAdding: .month, value: direction, to: selectedMonth) {
+            selectedMonth = newMonth
+        }
+    }
+    
+    private var calendarDays: [CalendarDay] {
+        let calendar = Calendar.current
+        guard let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: selectedMonth)) else {
+            return []
+        }
+        
+        let firstWeekday = calendar.component(.weekday, from: startOfMonth) - 1
+        guard let daysInMonth = calendar.range(of: .day, in: .month, for: selectedMonth) else {
+            return []
+        }
+        
+        var days: [CalendarDay] = []
+        
+        // Previous month's days
+        if firstWeekday > 0 {
+            if let prevMonth = calendar.date(byAdding: .month, value: -1, to: selectedMonth),
+               let prevMonthRange = calendar.range(of: .day, in: .month, for: prevMonth) {
+                let lastDayOfPrevMonth = prevMonthRange.upperBound - 1
+                let startDay = lastDayOfPrevMonth - firstWeekday + 1
+                
+                for i in startDay...lastDayOfPrevMonth {
+                    if let date = calendar.date(byAdding: .day, value: i - lastDayOfPrevMonth, to: startOfMonth) {
+                        days.append(CalendarDay(date: date, dayNumber: i, isCurrentMonth: false))
+                    }
+                }
+            }
+        }
+        
+        // Current month's days
+        for day in daysInMonth {
+            if let date = calendar.date(byAdding: .day, value: day - 1, to: startOfMonth) {
+                days.append(CalendarDay(date: date, dayNumber: day, isCurrentMonth: true))
+            }
+        }
+        
+        // Next month's days to fill the grid (6 weeks = 42 days)
+        let remainingDays = 42 - days.count
+        if remainingDays > 0 {
+            for day in 1...remainingDays {
+                if let nextMonth = calendar.date(byAdding: .month, value: 1, to: startOfMonth),
+                   let date = calendar.date(byAdding: .day, value: day - 1, to: nextMonth) {
+                    days.append(CalendarDay(date: date, dayNumber: day, isCurrentMonth: false))
+                }
+            }
+        }
+        
+        return days
+    }
+    
+    private func isToday(_ date: Date) -> Bool {
+        Calendar.current.isDateInToday(date)
+    }
+    
+    private func isStartDate(_ date: Date) -> Bool {
+        guard let startDate = appState.currentUser?.startDate else { return false }
+        return Calendar.current.isDate(date, inSameDayAs: startDate)
+    }
+    
+    private func isGoalDate(_ date: Date) -> Bool {
+        guard let startDate = appState.currentUser?.startDate,
+              let goalDate = Calendar.current.date(byAdding: .day, value: targetDays, to: startDate) else {
+            return false
+        }
+        return Calendar.current.isDate(date, inSameDayAs: goalDate)
+    }
+    
+    private func isInProgressRange(_ date: Date) -> Bool {
+        guard let startDate = appState.currentUser?.startDate else { return false }
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let checkDate = calendar.startOfDay(for: date)
+        let start = calendar.startOfDay(for: startDate)
+        
+        return checkDate >= start && checkDate < today && !isStartDate(date)
+    }
+}
+
+struct CalendarDay: Identifiable {
+    let id = UUID()
+    let date: Date
+    let dayNumber: Int
+    let isCurrentMonth: Bool
+}
+
+struct CalendarDayView: View {
+    let day: CalendarDay
+    let isToday: Bool
+    let isStartDate: Bool
+    let isGoalDate: Bool
+    let isInProgressRange: Bool
+    
+    var body: some View {
+        VStack(spacing: 2) {
+            Text("\(day.dayNumber)")
+                .font(.system(size: 14, weight: isToday ? .bold : .regular))
+                .foregroundColor(dayColor)
+                .frame(width: 32, height: 32)
+                .background(backgroundShape)
+            
+            if isStartDate {
+                Image(systemName: "circle.fill")
+                    .font(.system(size: 4))
+                    .foregroundColor(.red)
+                    .offset(y: -2)
+            } else if isGoalDate {
+                ZStack {
+                    Circle()
+                        .stroke(Color.green, lineWidth: 1.5)
+                        .frame(width: 16, height: 16)
+                    Image(systemName: "target")
+                        .font(.system(size: 7))
+                        .foregroundColor(.green)
+                }
+                .offset(y: -2)
+            } else {
+                Spacer()
+                    .frame(height: 4)
+            }
+        }
+        .frame(height: 44)
+    }
+    
+    private var dayColor: Color {
+        if !day.isCurrentMonth {
+            return .gray.opacity(0.3)
+        } else if isToday {
+            return .primary
+        } else if isStartDate {
+            return .green
+        } else if isInProgressRange {
+            return .green
+        } else {
+            return .primary
+        }
+    }
+    
+    @ViewBuilder
+    private var backgroundShape: some View {
+        if isToday {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.gray.opacity(0.2))
+        } else if isStartDate && day.isCurrentMonth {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.green.opacity(0.15))
+        } else if isInProgressRange && day.isCurrentMonth {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.green.opacity(0.1))
+        } else {
+            Color.clear
+        }
     }
 }
 

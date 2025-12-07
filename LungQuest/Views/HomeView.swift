@@ -12,6 +12,7 @@ struct HomeView: View {
     @State private var showHeroGlow = false
     @State private var encouragementTick: Int = 0
     @State private var encouragementTimer: Timer?
+    @State private var selectedLesson: HomeLearningLesson? = nil
     #if DEBUG
     @State private var showDevMenu = false
     @State private var showDevOptions = false
@@ -141,7 +142,9 @@ struct HomeView: View {
                         title: "Learn & reflect",
                         subtitle: "Short reads to reinforce your progress and calm cravings."
                     ) {
-                        LearningPreviewSection()
+                        LearningPreviewSection(onLessonTap: { lesson in
+                            selectedLesson = lesson
+                        })
                     }
                     .padding(.horizontal)
                     
@@ -213,6 +216,11 @@ struct HomeView: View {
         }
         .onAppear { startEncouragementRotation() }
         .onDisappear { stopEncouragementRotation() }
+        .sheet(item: $selectedLesson) { lesson in
+            if let fullLesson = getFullLesson(from: lesson) {
+                LessonDetailModal(lesson: fullLesson, accent: Color(red: 0.95, green: 0.65, blue: 0.75))
+            }
+        }
         #if DEBUG
         .confirmationDialog(
             "Debug options",
@@ -342,6 +350,45 @@ struct HomeView: View {
         appState.updateLungHealth()
         appState.persist()
     }
+    
+    private func getFullLesson(from homeLesson: HomeLearningLesson) -> Lesson? {
+        // Get the full lesson data from LearningView's structure
+        let learnAndReflectLessons = [
+            Lesson.withContent(
+                title: "Benefits of quitting",
+                summary: "Your body heals from day one.",
+                durationMinutes: 3,
+                icon: "heart.text.square.fill",
+                content: "Your body begins healing the moment you stop vaping. Understanding these benefits can strengthen your motivation during challenging moments.\n\nImmediate benefits (within hours):\n\n• 20 minutes: Heart rate and blood pressure start to normalize.\n• 12 hours: Carbon monoxide levels drop, allowing more oxygen to reach your cells.\n• 24 hours: Your risk of heart attack begins to decrease.\n\nShort-term benefits (days to weeks):\n\n• 2-3 days: Your sense of taste and smell begin to improve.\n• 1 week: Circulation improves, making physical activity easier.\n• 2-4 weeks: Lung function increases, and you'll notice easier breathing.\n\nLong-term benefits (months to years):\n\n• 1-3 months: Cilia in your lungs fully recover, reducing infection risk.\n• 1 year: Your risk of heart disease drops by 50%.\n• 5 years: Stroke risk decreases significantly.\n• 10 years: Lung cancer risk drops by 50% compared to continued vaping.\n\nEvery moment without vaping is a step toward better health. Your body is designed to heal—you just need to give it the chance.",
+                sources: ["American Heart Association - Benefits of Quitting Smoking", "Centers for Disease Control and Prevention - Health Benefits Timeline", "Mayo Clinic - Quitting Smoking: Health Benefits"]
+            ),
+            Lesson.withContent(
+                title: "What vaping does",
+                summary: "Understand short and long-term risks.",
+                durationMinutes: 4,
+                icon: "lungs.fill",
+                content: "Understanding what happens in your body when you vape can help clarify why quitting matters.\n\nShort-term effects:\n\n• Nicotine constricts blood vessels: This increases heart rate and blood pressure, making your heart work harder.\n• Reduces oxygen delivery: Carbon monoxide from vaping binds to red blood cells, reducing the amount of oxygen your body receives.\n• Affects brain chemistry: Nicotine triggers dopamine release, creating dependency and altering reward pathways.\n• Impairs lung function: Vaping can cause inflammation and reduce lung capacity, even in the short term.\n\nLong-term risks:\n\n• Cardiovascular disease: Chronic exposure increases the risk of heart attack, stroke, and peripheral artery disease.\n• Respiratory problems: Long-term vaping can lead to chronic bronchitis, emphysema, and reduced lung function.\n• Cancer risk: While research is ongoing, vaping exposes you to carcinogens and increases cancer risk.\n• Immune system: Vaping weakens your immune response, making you more susceptible to infections.\n• Mental health: Nicotine dependency can increase anxiety and depression over time.\n\nKnowledge is power: Understanding these effects isn't meant to create fear, but to empower you with information. Your body has remarkable healing abilities once you stop vaping.",
+                sources: ["National Institute on Drug Abuse - Vaping Health Effects", "American Lung Association - Health Risks of Vaping", "World Health Organization - Electronic Nicotine Delivery Systems"]
+            ),
+            Lesson.withContent(
+                title: "Tips to quit",
+                summary: "Craving hacks and routines that work.",
+                durationMinutes: 3,
+                icon: "lightbulb.fill",
+                content: "Quitting vaping is a journey, and having practical strategies makes all the difference. Here are evidence-based tips that work:\n\n1. Prepare before you quit:\n\nSet a quit date and stick to it. Remove all vaping devices and supplies from your environment. Tell friends and family about your decision for accountability.\n\n2. Replace the habit:\n\nCarry water, sugar-free gum, or healthy snacks. When a craving hits, reach for these instead. Swap your vaping routine with a new activity—walking, reading, or calling a friend.\n\nCravings typically last 3-5 minutes. Try the 4-7-8 breathing technique: inhale for 4, hold for 7, exhale for 8. Do 10 push-ups or take a short walk. Distract yourself with an engaging activity.\n\n4. Manage withdrawal:\n\nExpect some discomfort—it's temporary. Stay hydrated and get plenty of sleep. Consider nicotine replacement therapy if needed, under medical guidance.\n\n5. Recover from slips:\n\nIf you slip, don't give up. Log what happened, identify the trigger, and adjust your strategy. Progress over perfection—every moment vape-free counts.\n\nRemember: Millions of people have successfully quit. You have the tools and the strength to do it too.",
+                sources: ["Centers for Disease Control and Prevention - Tips for Quitting", "American Cancer Society - Quitting Guide", "Smokefree.gov - Quit Plan"]
+            )
+        ]
+        
+        return learnAndReflectLessons.first { $0.title == homeLesson.title }
+    }
+}
+
+// MARK: - Home Learning Lesson Model
+struct HomeLearningLesson: Identifiable {
+    let id = UUID()
+    let title: String
+    let icon: String
 }
 
 struct StatsSection: View {
@@ -371,7 +418,7 @@ struct StatsSection: View {
             StatsCard(
                 title: "Lung Boost",
                 value: "\(appState.lungState.healthLevel)%",
-                emoji: "💚",
+                emoji: "🫁",
                 color: .green,
                 onTap: { onHealthTapped?() }
             )
@@ -417,42 +464,33 @@ struct StatsCard: View {
     var valueFont: Font = .headline
     
     var body: some View {
-        VStack(spacing: 14) {
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [color.opacity(0.35), color.opacity(0.12)]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 50, height: 50)
-                    .overlay(
-                        Circle()
-                            .stroke(color.opacity(0.25), lineWidth: 1)
-                    )
-                Text(emoji)
-                    .font(.system(size: 24))
-            }
+        VStack(spacing: 12) {
+            // Emoji at top
+            Text(emoji)
+                .font(.system(size: 40))
             
-            VStack(spacing: 4) {
-                Text(value)
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundColor(.primary)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.8)
-                if !title.isEmpty {
-                    Text(title)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
+            // Value
+            Text(value)
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .foregroundColor(.primary)
+                .monospacedDigit()
+            
+            // Title
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.secondary)
         }
-        .frame(maxWidth: .infinity, alignment: .center)
-        .softCard(accent: color, cornerRadius: 26)
         .frame(maxWidth: .infinity)
+        .padding(.vertical, 20)
+        .padding(.horizontal, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color(UIColor.systemBackground))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .stroke(color.opacity(0.2), lineWidth: 1)
+                )
+        )
         .contentShape(Rectangle())
         .onTapGesture { onTap?() }
     }
@@ -530,11 +568,34 @@ struct CheckInSection: View {
 
 
 struct LearningPreviewSection: View {
+    let onLessonTap: (HomeLearningLesson) -> Void
+    
     var body: some View {
         VStack(spacing: 14) {
-            LearningRow(icon: "heart.text.square.fill", title: "Benefits of quitting", subtitle: "Your body heals from day one")
-            LearningRow(icon: "lungs.fill", title: "What vaping does", subtitle: "Understand short and long-term risks")
-            LearningRow(icon: "lightbulb.fill", title: "Tips to quit", subtitle: "Craving hacks and routines that work")
+            LearningRow(
+                icon: "heart.text.square.fill",
+                title: "Benefits of quitting",
+                subtitle: "Your body heals from day one",
+                onTap: {
+                    onLessonTap(HomeLearningLesson(title: "Benefits of quitting", icon: "heart.text.square.fill"))
+                }
+            )
+            LearningRow(
+                icon: "lungs.fill",
+                title: "What vaping does",
+                subtitle: "Understand short and long-term risks",
+                onTap: {
+                    onLessonTap(HomeLearningLesson(title: "What vaping does", icon: "lungs.fill"))
+                }
+            )
+            LearningRow(
+                icon: "lightbulb.fill",
+                title: "Tips to quit",
+                subtitle: "Craving hacks and routines that work",
+                onTap: {
+                    onLessonTap(HomeLearningLesson(title: "Tips to quit", icon: "lightbulb.fill"))
+                }
+            )
             Button(action: { NotificationCenter.default.post(name: Notification.Name("SwitchToLearnTab"), object: nil) }) {
                 HStack(spacing: 6) {
                     Text("Explore the full library")
@@ -560,41 +621,46 @@ struct LearningRow: View {
     let icon: String
     let title: String
     let subtitle: String
+    let onTap: () -> Void
     
     var body: some View {
-        HStack(spacing: 16) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color(red: 0.85, green: 0.32, blue: 0.57).opacity(0.15))
-                    .frame(width: 48, height: 48)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(Color(red: 0.85, green: 0.32, blue: 0.57).opacity(0.25), lineWidth: 1)
-                    )
-                Image(systemName: icon)
-                    .foregroundColor(Color(red: 0.85, green: 0.32, blue: 0.57))
-                    .font(.headline)
-            }
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(2)
-            }
-            Spacer()
-            Circle()
-                .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
-                .frame(width: 24, height: 24)
-                .overlay(
-                    Image(systemName: "chevron.right")
-                        .font(.caption2.weight(.bold))
+        Button(action: onTap) {
+            HStack(spacing: 16) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color(red: 0.85, green: 0.32, blue: 0.57).opacity(0.15))
+                        .frame(width: 48, height: 48)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .stroke(Color(red: 0.85, green: 0.32, blue: 0.57).opacity(0.25), lineWidth: 1)
+                        )
+                    Image(systemName: icon)
+                        .foregroundColor(Color(red: 0.85, green: 0.32, blue: 0.57))
+                        .font(.headline)
+                }
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                        .foregroundColor(.primary)
+                    Text(subtitle)
+                        .font(.caption)
                         .foregroundColor(.secondary)
-                )
+                        .lineLimit(2)
+                }
+                Spacer()
+                Circle()
+                    .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
+                    .frame(width: 24, height: 24)
+                    .overlay(
+                        Image(systemName: "chevron.right")
+                            .font(.caption2.weight(.bold))
+                            .foregroundColor(.secondary)
+                    )
+            }
+            .padding(.vertical, 6)
         }
-        .padding(.vertical, 6)
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
