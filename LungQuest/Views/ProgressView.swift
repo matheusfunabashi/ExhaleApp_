@@ -2,7 +2,7 @@ import SwiftUI
 import Charts
 
 struct ProgressView: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     @State private var selectedTimeFrame: TimeFrame = .week
     
     enum TimeFrame: String, CaseIterable {
@@ -41,7 +41,7 @@ struct ProgressView: View {
 }
 
 struct StatsOverviewSection: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     
     var body: some View {
         VStack(spacing: 20) {
@@ -93,15 +93,15 @@ struct StatsOverviewSection: View {
                 
                 StatCard(
                     title: "Total XP",
-                    value: "\(appState.statistics.totalXP)",
+                    value: "\(dataStore.statistics.totalXP)",
                     emoji: "⭐",
                     color: .purple,
-                    subtitle: "Level \(appState.statistics.currentLevel)"
+                    subtitle: "Level \(dataStore.statistics.currentLevel)"
                 )
                 
                 StatCard(
                     title: "Quests Done",
-                    value: "\(appState.statistics.completedQuests)",
+                    value: "\(dataStore.statistics.completedQuests)",
                     emoji: "🎯",
                     color: .pink,
                     subtitle: "Challenges conquered"
@@ -115,13 +115,13 @@ struct StatsOverviewSection: View {
     }
     
     private var daysFromStartDate: Int {
-        guard let startDate = appState.currentUser?.startDate else { return 0 }
+        guard let startDate = dataStore.currentUser?.startDate else { return 0 }
         let elapsed = Date().timeIntervalSince(startDate)
         return max(0, Int(elapsed) / 86_400)
     }
     
     private var moneySavedFromStartDate: Double {
-        guard let user = appState.currentUser else { return 0 }
+        guard let user = dataStore.currentUser else { return 0 }
         
         // Get daily cost from onboarding, or use $20/week as fallback
         let weeklyCost = user.profile.vapingHistory.dailyCost > 0 
@@ -136,7 +136,7 @@ struct StatsOverviewSection: View {
     }
     
     private var longestStreakFromStartDate: Int {
-        guard let startDate = appState.currentUser?.startDate else { return 0 }
+        guard let startDate = dataStore.currentUser?.startDate else { return 0 }
         
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
@@ -147,7 +147,7 @@ struct StatsOverviewSection: View {
         // Calculate longest streak from startDate
         while currentDate <= today {
             let dayStart = calendar.startOfDay(for: currentDate)
-            let hasCheckIn = appState.dailyProgress.contains { progress in
+            let hasCheckIn = dataStore.dailyProgress.contains { progress in
                 calendar.isDate(progress.date, inSameDayAs: dayStart) && progress.wasVapeFree
             }
             
@@ -205,7 +205,7 @@ struct TimeFrameSelector: View {
 }
 
 struct ProgressVsPlanSection: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     let timeFrame: ProgressView.TimeFrame
     
     var body: some View {
@@ -280,11 +280,11 @@ struct ProgressVsPlanSection: View {
         switch timeFrame {
         case .week: days = 7
         case .month: days = 30
-        case .all: days = Int(now.timeIntervalSince(appState.currentUser?.startDate ?? now) / 86400) + 1
+        case .all: days = Int(now.timeIntervalSince(dataStore.currentUser?.startDate ?? now) / 86400) + 1
         }
         
         let startDate = calendar.date(byAdding: .day, value: -days + 1, to: now) ?? now
-        let slice = appState.dailyProgress
+        let slice = dataStore.dailyProgress
             .filter { $0.date >= startDate }
             .sorted { $0.date < $1.date }
         
@@ -326,7 +326,7 @@ struct ProgressVsPlanSection: View {
 }
 
 struct CravingsChartSection: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     let timeFrame: ProgressView.TimeFrame
     
     var body: some View {
@@ -404,19 +404,19 @@ struct CravingsChartSection: View {
         switch timeFrame {
         case .week: days = 7
         case .month: days = 30
-        case .all: days = Int(now.timeIntervalSince(appState.currentUser?.startDate ?? now) / 86400) + 1
+        case .all: days = Int(now.timeIntervalSince(dataStore.currentUser?.startDate ?? now) / 86400) + 1
         }
         
         let startDate = calendar.date(byAdding: .day, value: -days + 1, to: now) ?? now
         
-        return appState.dailyProgress
+        return dataStore.dailyProgress
             .filter { $0.date >= startDate && $0.cravingsLevel > 0 }
             .sorted { $0.date < $1.date }
     }
 }
 
 struct AchievementsSection: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -429,7 +429,7 @@ struct AchievementsSection: View {
                     .foregroundColor(.secondary)
             }
             
-            if appState.statistics.badges.isEmpty {
+            if dataStore.statistics.badges.isEmpty {
                 Text("Complete quests and maintain streaks to unlock badges!")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
@@ -438,7 +438,7 @@ struct AchievementsSection: View {
                     .padding(.vertical, 24)
             } else {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 16) {
-                    ForEach(Array(appState.statistics.badges.suffix(6))) { badge in
+                    ForEach(Array(dataStore.statistics.badges.suffix(6))) { badge in
                         BadgeView(badge: badge)
                     }
                 }
@@ -449,7 +449,7 @@ struct AchievementsSection: View {
 }
 
 struct HealthMilestonesSection: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     
     private let milestones = [
         (days: 1, title: "20 minutes", description: "Heart rate and blood pressure drop"),
@@ -461,7 +461,7 @@ struct HealthMilestonesSection: View {
     ]
     
     private var daysFromStartDate: Int {
-        guard let startDate = appState.currentUser?.startDate else { return 0 }
+        guard let startDate = dataStore.currentUser?.startDate else { return 0 }
         let elapsed = Date().timeIntervalSince(startDate)
         return max(0, Int(elapsed) / 86_400)
     }
@@ -624,7 +624,7 @@ struct BadgeView: View {
 }
 
 struct PuffCountChartSection: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     let timeFrame: ProgressView.TimeFrame
     
     var body: some View {
@@ -737,10 +737,10 @@ struct PuffCountChartSection: View {
         case .month:
             startDate = calendar.date(byAdding: .month, value: -1, to: now) ?? now
         case .all:
-            startDate = appState.dailyProgress.first?.date ?? now
+            startDate = dataStore.dailyProgress.first?.date ?? now
         }
         
-        return appState.dailyProgress
+        return dataStore.dailyProgress
             .filter { $0.date >= startDate }
             .sorted { $0.date < $1.date }
     }
@@ -821,7 +821,7 @@ struct MotivationTile: View {
 }
 
 struct GoalProgressSection: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     @State private var currentDate = Date()
     @State private var selectedMonth = Date()
     @State private var timer: Timer?
@@ -994,11 +994,11 @@ struct GoalProgressSection: View {
     }
     
     private var currentDays: Int {
-        appState.daysSinceQuitStartDate()
+        dataStore.daysSinceQuitStartDate()
     }
     
     private var targetDays: Int {
-        appState.currentUser?.quitGoal.targetDays ?? 30
+        dataStore.currentUser?.quitGoal.targetDays ?? 30
     }
     
     private var progressPercentage: Int {
@@ -1008,7 +1008,7 @@ struct GoalProgressSection: View {
     
     private var countdownTimer: String {
         let daysRemaining = max(0, targetDays - currentDays)
-        guard let startDate = appState.currentUser?.startDate,
+        guard let startDate = dataStore.currentUser?.startDate,
               let goalDate = Calendar.current.date(byAdding: .day, value: targetDays, to: startDate) else {
             return "\(daysRemaining)d 23h 59m 08s"
         }
@@ -1088,12 +1088,12 @@ struct GoalProgressSection: View {
     }
     
     private func isStartDate(_ date: Date) -> Bool {
-        guard let startDate = appState.currentUser?.startDate else { return false }
+        guard let startDate = dataStore.currentUser?.startDate else { return false }
         return Calendar.current.isDate(date, inSameDayAs: startDate)
     }
     
     private func isGoalDate(_ date: Date) -> Bool {
-        guard let startDate = appState.currentUser?.startDate,
+        guard let startDate = dataStore.currentUser?.startDate,
               let goalDate = Calendar.current.date(byAdding: .day, value: targetDays, to: startDate) else {
             return false
         }
@@ -1101,7 +1101,7 @@ struct GoalProgressSection: View {
     }
     
     private func isInProgressRange(_ date: Date) -> Bool {
-        guard let startDate = appState.currentUser?.startDate else { return false }
+        guard let startDate = dataStore.currentUser?.startDate else { return false }
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         let checkDate = calendar.startOfDay(for: date)
@@ -1189,5 +1189,5 @@ struct CalendarDayView: View {
 
 #Preview {
     ProgressView()
-        .environmentObject(AppState())
+        .environmentObject(AppDataStore())
 }

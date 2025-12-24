@@ -5,6 +5,7 @@ struct OnboardingStep13View: View {
     let onContinue: () -> Void
     let onBack: () -> Void
     
+    @EnvironmentObject private var flowManager: AppFlowManager
     @State private var userScore: Double = Double.random(in: 0.60...0.85)
     @State private var currentPage: Int = 0
     @GestureState private var dragOffset: CGFloat = 0
@@ -147,10 +148,7 @@ struct OnboardingStep13View: View {
                 
                 Spacer()
                 
-                Button(action: {
-                    onContinue()  // whatever you currently do when finishing onboarding
-                    Superwall.shared.register(placement: "onboarding_end") // <-- must match your rule’s event name
-                }) {
+                Button(action: handleContinue) {
                     Text("Continue")
                         .font(.headline)
                         .foregroundColor(Color(red: 0.45, green: 0.05, blue: 0.05))
@@ -162,10 +160,11 @@ struct OnboardingStep13View: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.horizontal, 32)
-                .padding(.bottom, 48)
+                .padding(.bottom, 20)
 
             }
             .padding(.top, 48)
+            .padding(.bottom, 28)
         }
     }
     
@@ -199,6 +198,13 @@ struct OnboardingStep13View: View {
                     }
                 }
             }
+    }
+    
+    private func handleContinue() {
+        onContinue()
+        if !flowManager.isSubscribed {
+            Superwall.shared.register(placement: "onboarding_end")
+        }
     }
 }
 
@@ -298,10 +304,14 @@ private struct ScoreComparisonView: View {
 }
 
 #Preview {
-    OnboardingStep13View(
+    let store = AppDataStore()
+    let flow = AppFlowManager(dataStore: store)
+    return OnboardingStep13View(
         onContinue: {},
         onBack: {}
     )
+    .environmentObject(flow)
+    .environmentObject(store)
 }
 
 

@@ -1,23 +1,27 @@
 import SwiftUI
 
 struct ContentView: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var flowManager: AppFlowManager
+    @EnvironmentObject var dataStore: AppDataStore
     
     var body: some View {
         Group {
-            if appState.isLoading {
+            if flowManager.isLoading {
                 LoadingView()
-            } else if appState.isOnboarding {
+            } else if flowManager.isOnboarding {
                 OnboardingView(onSkipAll: { name, age in
-                    appState.completeOnboarding(name: name, age: age)
+                    flowManager.completeOnboarding(name: name, age: age)
                 })
-                .environmentObject(appState)
+                .environmentObject(flowManager)
+                .environmentObject(dataStore)
             } else {
                 MainTabView()
+                    .environmentObject(flowManager)
+                    .environmentObject(dataStore)
             }
         }
-        .animation(.easeInOut(duration: 0.3), value: appState.isOnboarding)
-        .animation(.easeInOut(duration: 0.3), value: appState.isLoading)
+        .animation(.easeInOut(duration: 0.3), value: flowManager.isOnboarding)
+        .animation(.easeInOut(duration: 0.3), value: flowManager.isLoading)
     }
 }
 
@@ -48,7 +52,7 @@ struct LoadingView: View {
 }
 
 struct MainTabView: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     @State private var showPanic: Bool = false
     @State private var selectedTab: Int = 0
     
@@ -104,7 +108,10 @@ struct MainTabView: View {
 }
 
 #Preview {
-    ContentView()
-        .environmentObject(AppState())
+    let store = AppDataStore()
+    let flow = AppFlowManager(dataStore: store)
+    return ContentView()
+        .environmentObject(flow)
+        .environmentObject(store)
 }
 

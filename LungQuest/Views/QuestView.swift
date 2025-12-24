@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct QuestView: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     @State private var selectedCategory: QuestCategory? = nil
     
     var body: some View {
@@ -37,18 +37,18 @@ struct QuestView: View {
 }
 
 struct HeaderSection: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     
     var body: some View {
         VStack(spacing: 15) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Level \(appState.statistics.currentLevel)")
+                    Text("Level \(dataStore.statistics.currentLevel)")
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(.orange)
                     
-                    Text("\(appState.statistics.totalXP) XP")
+                    Text("\(dataStore.statistics.totalXP) XP")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
@@ -82,8 +82,8 @@ struct HeaderSection: View {
     }
     
     private var xpProgress: Double {
-        let currentLevelXP = (appState.statistics.currentLevel - 1) * 100
-        let progressInCurrentLevel = appState.statistics.totalXP - currentLevelXP
+        let currentLevelXP = (dataStore.statistics.currentLevel - 1) * 100
+        let progressInCurrentLevel = dataStore.statistics.totalXP - currentLevelXP
         return Double(progressInCurrentLevel)
     }
 }
@@ -154,7 +154,7 @@ struct CategoryChip: View {
 }
 
 struct ActiveQuestsSection: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     let selectedCategory: QuestCategory?
     
     var body: some View {
@@ -176,7 +176,7 @@ struct ActiveQuestsSection: View {
     }
     
     private var filteredActiveQuests: [Quest] {
-        let activeQuests = appState.activeQuests.filter { !$0.isCompleted }
+        let activeQuests = dataStore.activeQuests.filter { !$0.isCompleted }
         
         if let category = selectedCategory {
             return activeQuests.filter { $0.category == category }
@@ -187,7 +187,7 @@ struct ActiveQuestsSection: View {
 }
 
 struct CompletedQuestsSection: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
@@ -222,7 +222,7 @@ struct CompletedQuestsSection: View {
     
     private var completedQuests: [Quest] {
         let today = Calendar.current.startOfDay(for: Date())
-        return appState.activeQuests.filter { quest in
+        return dataStore.activeQuests.filter { quest in
             quest.isCompleted && Calendar.current.isDate(quest.dateAssigned, inSameDayAs: today)
         }
     }
@@ -230,7 +230,7 @@ struct CompletedQuestsSection: View {
 
 struct QuestCard: View {
     let quest: Quest
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     @State private var showCompletionAnimation = false
     
     var body: some View {
@@ -322,7 +322,7 @@ struct QuestCard: View {
     }
     
     private func completeQuest() {
-        appState.completeQuest(quest.id)
+        dataStore.completeQuest(quest.id)
         showCompletionAnimation = true
         
         // Reset animation after a delay
@@ -389,5 +389,5 @@ struct CircularProgressView: View {
 
 #Preview {
     QuestView()
-        .environmentObject(AppState())
+        .environmentObject(AppDataStore())
 }
