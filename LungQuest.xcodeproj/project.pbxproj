@@ -10,7 +10,7 @@
 		8D1107310486CEB800E47090 /* LungQuestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1107300486CEB800E47090 /* LungQuestApp.swift */; };
 		8D1107330486CEB800E47090 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1107320486CEB800E47090 /* ContentView.swift */; };
 		8D1107400486CEB800E47090 /* DataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D11073F0486CEB800E47090 /* DataModels.swift */; };
-		8D1107420486CEB800E47090 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1107410486CEB800E47090 /* AppState.swift */; };
+		8D1107420486CEB800E47090 /* AppFlowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1107410486CEB800E47090 /* AppFlowManager.swift */; };
 		8D1107440486CEB800E47090 /* DataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1107430486CEB800E47090 /* DataService.swift */; };
 		8D1107480486CEB800E47090 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1107470486CEB800E47090 /* HomeView.swift */; };
 		8D11074C0486CEB800E47090 /* ProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D11074B0486CEB800E47090 /* ProgressView.swift */; };
@@ -42,6 +42,7 @@
 		97FE9EC82FCFE4F3006FDDE7 /* OnboardingStep12View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FE9EC72FCFE4F3006FDDE7 /* OnboardingStep12View.swift */; };
 		97FE9ECA2FCFE5C7006FDDE7 /* OnboardingStep13View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FE9EC92FCFE5C7006FDDE7 /* OnboardingStep13View.swift */; };
 		9E1E15DD2EE33C1C00BF4D96 /* SuperwallKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9E1E15DC2EE33C1C00BF4D96 /* SuperwallKit */; };
+		9E9B7F2F2FE4B32E00A77077 /* AppDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9B7F2E2FE4B32E00A77077 /* AppDataStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,7 +51,7 @@
 		8D1107320486CEB800E47090 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		8D1107390486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D11073F0486CEB800E47090 /* DataModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataModels.swift; sourceTree = "<group>"; };
-		8D1107410486CEB800E47090 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		8D1107410486CEB800E47090 /* AppFlowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowManager.swift; sourceTree = "<group>"; };
 		8D1107430486CEB800E47090 /* DataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataService.swift; sourceTree = "<group>"; };
 		8D1107470486CEB800E47090 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		8D11074B0486CEB800E47090 /* ProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressView.swift; sourceTree = "<group>"; };
@@ -77,6 +78,7 @@
 		97FE9EC52FCFE36A006FDDE7 /* OnboardingStep11View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStep11View.swift; sourceTree = "<group>"; };
 		97FE9EC72FCFE4F3006FDDE7 /* OnboardingStep12View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStep12View.swift; sourceTree = "<group>"; };
 		97FE9EC92FCFE5C7006FDDE7 /* OnboardingStep13View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStep13View.swift; sourceTree = "<group>"; };
+		9E9B7F2E2FE4B32E00A77077 /* AppDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDataStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,7 +139,8 @@
 		8D1107550486CEB800E47090 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107410486CEB800E47090 /* AppState.swift */,
+				8D1107410486CEB800E47090 /* AppFlowManager.swift */,
+				9E9B7F2E2FE4B32E00A77077 /* AppDataStore.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -273,7 +276,8 @@
 				8D1107330486CEB800E47090 /* ContentView.swift in Sources */,
 				8D1107310486CEB800E47090 /* LungQuestApp.swift in Sources */,
 				8D1107400486CEB800E47090 /* DataModels.swift in Sources */,
-				8D1107420486CEB800E47090 /* AppState.swift in Sources */,
+				8D1107420486CEB800E47090 /* AppFlowManager.swift in Sources */,
+				9E9B7F2F2FE4B32E00A77077 /* AppDataStore.swift in Sources */,
 				8D1107440486CEB800E47090 /* DataService.swift in Sources */,
 				8D1107480486CEB800E47090 /* HomeView.swift in Sources */,
 				8D1107600486CEB800E47090 /* LearningView.swift in Sources */,

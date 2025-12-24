@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CheckInModalView: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     @Environment(\.presentationMode) var presentationMode
     
     @State private var wasVapeFree = true
@@ -89,7 +89,7 @@ struct CheckInModalView: View {
     }
     
     private func saveCheckIn() {
-        appState.checkIn(
+        dataStore.checkIn(
             wasVapeFree: wasVapeFree,
             cravingsLevel: cravingsLevel,
             mood: selectedMood,
@@ -550,5 +550,5 @@ struct SuccessAnimationView: View {
 
 #Preview {
     CheckInModalView()
-        .environmentObject(AppState())
+        .environmentObject(AppDataStore())
 }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct LearningView: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     @State private var selectedLesson: Lesson? = nil
     
     private var topics: [LearningTopic] {
@@ -174,16 +174,16 @@ struct LearningView: View {
     private func progressValue(for topic: LearningTopic) -> Double {
         switch topic.kind {
         case .physical:
-            return Double(appState.lungState.healthLevel) / 100.0
+            return Double(dataStore.lungState.healthLevel) / 100.0
         case .mental:
-            let cappedXP = min(Double(appState.statistics.totalXP), 400)
+            let cappedXP = min(Double(dataStore.statistics.totalXP), 400)
             return max(0, cappedXP / 400.0)
         case .lifestyle:
-            let completed = Double(appState.statistics.completedQuests)
+            let completed = Double(dataStore.statistics.completedQuests)
             return min(1.0, completed / 10.0)
         case .learnAndReflect:
             // Progress based on days vape-free
-            let days = Double(appState.statistics.daysVapeFree)
+            let days = Double(dataStore.statistics.daysVapeFree)
             return min(1.0, days / 30.0)
         }
     }

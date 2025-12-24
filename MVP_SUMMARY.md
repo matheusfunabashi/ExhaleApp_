@@ -35,7 +35,8 @@ LungQuest/
 ├── Models/
 │   └── DataModels.swift            # User, Progress, Quest, LungState models
 ├── ViewModels/
-│   └── AppState.swift              # Main app state management
+│   ├── AppFlowManager.swift       # Onboarding + subscription flow coordinator
+│   └── AppDataStore.swift         # User data, progress, and persistence
 ├── Services/
 │   └── DataService.swift           # Firebase and quest services
 ├── Views/
@@ -132,7 +133,7 @@ For full cloud functionality:
 
 ### State Management
 - **Reactive Design**: Uses Combine for real-time UI updates
-- **Centralized State**: Single AppState manages all app data
+- **Coordinated State**: AppFlowManager handles flow & paywall state while AppDataStore persists user data/progress
 - **Data Persistence**: Automatic saving/loading of user progress
 - **Offline Support**: Works without internet connection
 

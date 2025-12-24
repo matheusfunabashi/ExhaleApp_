@@ -2,7 +2,7 @@ import SwiftUI
 import UIKit
 
 struct ProfileView: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     @State private var showEditProfile = false
     @State private var showExportData = false
     @State private var showShareStreak = false
@@ -28,7 +28,7 @@ struct ProfileView: View {
                         ProgressionRewardsSection()
                     }
                     
-                    if appState.statistics.badges.count > 0 {
+                    if dataStore.statistics.badges.count > 0 {
                         ProfileSection(
                             title: "Achievements",
                             subtitle: "Recent badges cheering you on."
@@ -75,16 +75,16 @@ struct ProfileView: View {
         }
         .sheet(isPresented: $showShareStreak) {
             ShareStreakView(isPresented: $showShareStreak)
-                .environmentObject(appState)
+                .environmentObject(dataStore)
         }
     }
 }
 
 struct ProfileHeaderSection: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     
     private var daysFromStartDate: Int {
-        guard let startDate = appState.currentUser?.startDate else { return 0 }
+        guard let startDate = dataStore.currentUser?.startDate else { return 0 }
         let elapsed = Date().timeIntervalSince(startDate)
         return max(0, Int(elapsed) / 86_400)
     }
@@ -94,7 +94,7 @@ struct ProfileHeaderSection: View {
             HStack(alignment: .top) {
                 avatarView
                 Spacer(minLength: 12)
-                ProfileLungBuddyView(healthLevel: appState.lungState.healthLevel)
+                ProfileLungBuddyView(healthLevel: dataStore.lungState.healthLevel)
                     .frame(width: 128)
                     .padding(.trailing, 4)
                     .overlay(alignment: .topTrailing) {
@@ -103,14 +103,14 @@ struct ProfileHeaderSection: View {
             }
             
             VStack(alignment: .leading, spacing: 8) {
-                Text(appState.currentUser?.name ?? "User")
+                Text(dataStore.currentUser?.name ?? "User")
                     .font(.title2.weight(.bold))
                 
-                Text("Level \(appState.statistics.currentLevel) • \(daysFromStartDate) days strong")
+                Text("Level \(dataStore.statistics.currentLevel) • \(daysFromStartDate) days strong")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 
-                if let startDate = appState.currentUser?.startDate {
+                if let startDate = dataStore.currentUser?.startDate {
                     Text("Journey started \(startDate, style: .date)")
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -129,14 +129,14 @@ struct ProfileHeaderSection: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Spacer()
-                        Text("\(appState.lungState.healthLevel)%")
+                        Text("\(dataStore.lungState.healthLevel)%")
                             .font(.caption2.bold())
                             .foregroundColor(.primary)
                     }
-                    SwiftUI.ProgressView(value: Double(appState.lungState.healthLevel), total: 100)
+                    SwiftUI.ProgressView(value: Double(dataStore.lungState.healthLevel), total: 100)
                         .tint(.green)
                         .accessibilityLabel("Lung health progress")
-                        .accessibilityValue("\(appState.lungState.healthLevel) percent")
+                        .accessibilityValue("\(dataStore.lungState.healthLevel) percent")
                 }
             }
         }
@@ -182,7 +182,7 @@ struct ProfileHeaderSection: View {
     }
     
     private var lungMoodCopy: String {
-        let level = appState.lungState.healthLevel
+        let level = dataStore.lungState.healthLevel
         switch level {
         case 0..<25:
             return "Let’s help your lungs feel lighter today."
@@ -196,7 +196,7 @@ struct ProfileHeaderSection: View {
     }
     
     private var moodEmoji: String {
-        let level = appState.lungState.healthLevel
+        let level = dataStore.lungState.healthLevel
         switch level {
         case 0..<25: return "🌧"
         case 25..<50: return "🌤"
@@ -206,7 +206,7 @@ struct ProfileHeaderSection: View {
     }
 
     private var headerAccentColor: Color {
-        let level = appState.lungState.healthLevel
+        let level = dataStore.lungState.healthLevel
         switch level {
         case 0..<25: return Color(red: 0.84, green: 0.41, blue: 0.46)
         case 25..<50: return Color(red: 0.67, green: 0.52, blue: 0.93)
@@ -216,7 +216,7 @@ struct ProfileHeaderSection: View {
     }
     
     private var userInitials: String {
-        let name = appState.currentUser?.name ?? "U"
+        let name = dataStore.currentUser?.name ?? "U"
         let components = name.split(separator: " ")
         if components.count >= 2 {
             return "\(components[0].prefix(1))\(components[1].prefix(1))".uppercased()
@@ -227,7 +227,7 @@ struct ProfileHeaderSection: View {
 }
 
 struct QuickStatsSection: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     var onCurrentStreakTap: (() -> Void)? = nil
     
     var body: some View {
@@ -256,7 +256,7 @@ struct QuickStatsSection: View {
             
             QuickStatCard(
                 title: "Badges Earned",
-                value: "\(appState.statistics.badges.count)",
+                value: "\(dataStore.statistics.badges.count)",
                 emoji: "⭐",
                 color: .purple
             )
@@ -264,13 +264,13 @@ struct QuickStatsSection: View {
     }
     
     private var daysFromStartDate: Int {
-        guard let startDate = appState.currentUser?.startDate else { return 0 }
+        guard let startDate = dataStore.currentUser?.startDate else { return 0 }
         let elapsed = Date().timeIntervalSince(startDate)
         return max(0, Int(elapsed) / 86_400)
     }
     
     private var moneySavedFromStartDate: Double {
-        guard let user = appState.currentUser else { return 0 }
+        guard let user = dataStore.currentUser else { return 0 }
         
         // Get daily cost from onboarding, or use $20/week as fallback
         let weeklyCost = user.profile.vapingHistory.dailyCost > 0 
@@ -285,7 +285,7 @@ struct QuickStatsSection: View {
     }
     
     private var longestStreakFromStartDate: Int {
-        guard let startDate = appState.currentUser?.startDate else { return 0 }
+        guard let startDate = dataStore.currentUser?.startDate else { return 0 }
         
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
@@ -296,7 +296,7 @@ struct QuickStatsSection: View {
         // Calculate longest streak from startDate
         while currentDate <= today {
             let dayStart = calendar.startOfDay(for: currentDate)
-            let hasCheckIn = appState.dailyProgress.contains { progress in
+            let hasCheckIn = dataStore.dailyProgress.contains { progress in
                 calendar.isDate(progress.date, inSameDayAs: dayStart) && progress.wasVapeFree
             }
             
@@ -316,22 +316,22 @@ struct QuickStatsSection: View {
 }
 
 struct ProgressionRewardsSection: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Text("Level \(appState.statistics.currentLevel)")
+                    Text("Level \(dataStore.statistics.currentLevel)")
                         .font(.subheadline.weight(.semibold))
                     Spacer()
-                    Text("\(appState.statistics.totalXP) XP")
+                    Text("\(dataStore.statistics.totalXP) XP")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
                 SwiftUI.ProgressView(value: xpProgress, total: 100)
                     .tint(progressAccent)
-                Text("\(xpToNextLevel) XP until Level \(appState.statistics.currentLevel + 1)")
+                Text("\(xpToNextLevel) XP until Level \(dataStore.statistics.currentLevel + 1)")
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }
@@ -348,18 +348,18 @@ struct ProgressionRewardsSection: View {
     }
     
     private var xpProgress: Double {
-        let currentLevelXP = max(0, (appState.statistics.currentLevel - 1) * 100)
-        let progressInLevel = appState.statistics.totalXP - currentLevelXP
+        let currentLevelXP = max(0, (dataStore.statistics.currentLevel - 1) * 100)
+        let progressInLevel = dataStore.statistics.totalXP - currentLevelXP
         return Double(max(0, min(100, progressInLevel)))
     }
     
     private var xpToNextLevel: Int {
-        let target = appState.statistics.currentLevel * 100
-        return max(0, target - appState.statistics.totalXP)
+        let target = dataStore.statistics.currentLevel * 100
+        return max(0, target - dataStore.statistics.totalXP)
     }
     
     private var badgeMessage: String {
-        let count = appState.statistics.badges.count
+        let count = dataStore.statistics.badges.count
         switch count {
         case 0:
             return "Complete quests or streaks to earn your first badge."
@@ -373,7 +373,7 @@ struct ProgressionRewardsSection: View {
     }
     
     private var nextRewardSummary: String {
-        let nextLevel = appState.statistics.currentLevel + 1
+        let nextLevel = dataStore.statistics.currentLevel + 1
         switch nextLevel {
         case 2:
             return "Unlock a calming breathing quest at Level 2."
@@ -403,7 +403,7 @@ struct ProgressionRewardsSection: View {
     }
     
     private var daysFromStartDate: Int {
-        guard let startDate = appState.currentUser?.startDate else { return 0 }
+        guard let startDate = dataStore.currentUser?.startDate else { return 0 }
         let elapsed = Date().timeIntervalSince(startDate)
         return max(0, Int(elapsed) / 86_400)
     }
@@ -417,7 +417,7 @@ struct ProgressionRewardsSection: View {
     }
     
     private var progressAccent: Color {
-        let currentLevel = appState.statistics.currentLevel
+        let currentLevel = dataStore.statistics.currentLevel
         switch currentLevel {
         case 1:
             return Color(red: 0.84, green: 0.41, blue: 0.46)
@@ -432,7 +432,7 @@ struct ProgressionRewardsSection: View {
 }
 
 struct SettingsSection: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     @State private var notificationsEnabled = true
     @State private var selectedReminderFreq = ReminderFrequency.daily
     
@@ -488,8 +488,8 @@ struct SettingsSection: View {
             }
         }
         .onAppear {
-            notificationsEnabled = appState.currentUser?.profile.preferences.notificationsEnabled ?? true
-            selectedReminderFreq = appState.currentUser?.profile.preferences.reminderFrequency ?? .daily
+            notificationsEnabled = dataStore.currentUser?.profile.preferences.notificationsEnabled ?? true
+            selectedReminderFreq = dataStore.currentUser?.profile.preferences.reminderFrequency ?? .daily
         }
     }
 }
@@ -698,10 +698,10 @@ struct DataActionRow: View {
 }
 
 private struct BadgeShowcaseSection: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     
     private var badges: [Badge] {
-        Array(appState.statistics.badges.suffix(6)).reversed()
+        Array(dataStore.statistics.badges.suffix(6)).reversed()
     }
     
     var body: some View {
@@ -892,7 +892,7 @@ struct ProfileLungBuddyView: View {
 
 // MARK: - Supporting Views
 struct EditProfileView: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     @Environment(\.presentationMode) var presentationMode
     @State private var name = ""
     @State private var email = ""
@@ -928,9 +928,9 @@ struct EditProfileView: View {
     }
     
     private func loadCurrentData() {
-        name = appState.currentUser?.name ?? ""
-        email = appState.currentUser?.email ?? ""
-        dailyCost = String(appState.currentUser?.profile.vapingHistory.dailyCost ?? 0)
+        name = dataStore.currentUser?.name ?? ""
+        email = dataStore.currentUser?.email ?? ""
+        dailyCost = String(dataStore.currentUser?.profile.vapingHistory.dailyCost ?? 0)
     }
     
     private func saveChanges() {
@@ -973,7 +973,7 @@ struct ExportDataView: View {
 
 // MARK: - Share Streak Card
 struct ShareStreakView: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     @Binding var isPresented: Bool
     
     var body: some View {
@@ -1002,11 +1002,11 @@ struct ShareStreakView: View {
 }
 
 private struct ShareStreakCard: View {
-    @EnvironmentObject var appState: AppState
-    private var name: String { appState.currentUser?.name ?? "LungQuest" }
+    @EnvironmentObject var dataStore: AppDataStore
+    private var name: String { dataStore.currentUser?.name ?? "LungQuest" }
     
     private var days: Int {
-        guard let startDate = appState.currentUser?.startDate else { return 0 }
+        guard let startDate = dataStore.currentUser?.startDate else { return 0 }
         let elapsed = Date().timeIntervalSince(startDate)
         return max(0, Int(elapsed) / 86_400)
     }
@@ -1148,5 +1148,5 @@ struct DataManagementSectionWrapper: View {
 
 #Preview {
     ProfileView()
-        .environmentObject(AppState())
+        .environmentObject(AppDataStore())
 }

@@ -1,8 +1,9 @@
 import SwiftUI
 import UIKit
+import SuperwallKit
 
 struct HomeView: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     @State private var showCheckIn = false
     @State private var showCelebration = false
     @State private var showCalendar = false
@@ -59,7 +60,7 @@ struct HomeView: View {
                                 .foregroundColor(.secondary)
                             
                             DaysCounterView()
-                                .environmentObject(appState)
+                                .environmentObject(dataStore)
                             
                             NewHeroTimerView(
                                 onMilestone: {
@@ -169,7 +170,7 @@ struct HomeView: View {
                         }
                     }
             }
-            .environmentObject(appState)
+            .environmentObject(dataStore)
         }
         .sheet(isPresented: $showMoney) {
             NavigationView {
@@ -182,7 +183,7 @@ struct HomeView: View {
                         }
                     }
             }
-            .environmentObject(appState)
+            .environmentObject(dataStore)
         }
         .sheet(isPresented: $showHealth) {
             NavigationView {
@@ -195,12 +196,12 @@ struct HomeView: View {
                         }
                     }
             }
-            .environmentObject(appState)
+            .environmentObject(dataStore)
         }
         #if DEBUG
         .sheet(isPresented: $showDevMenu) {
             DevMenuView()
-                .environmentObject(appState)
+                .environmentObject(dataStore)
         }
         #endif
         .overlay(
@@ -229,13 +230,18 @@ struct HomeView: View {
         ) {
             Button("Open Onboarding preview") { devDestination = .onboarding }
             Button("Developer menu") { showDevMenu = true }
+            Button("Test Superwall") {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    Superwall.shared.register(placement: "onboarding_end")
+                }
+            }
             Button("Cancel", role: .cancel) { }
         }
         .sheet(item: $devDestination) { destination in
             switch destination {
             case .onboarding:
                 OnboardingView()
-                    .environmentObject(appState)
+                    .environmentObject(dataStore)
             }
         }
         #endif
@@ -267,19 +273,19 @@ struct HomeView: View {
     }
 
     private var greetingName: String {
-        let fullName = appState.currentUser?.name ?? ""
+        let fullName = dataStore.currentUser?.name ?? ""
         return fullName.split(separator: " ").first.map(String.init) ?? ""
     }
 
     private var hasCheckedInToday: Bool {
         let today = Calendar.current.startOfDay(for: Date())
-        return appState.dailyProgress.contains { progress in
+        return dataStore.dailyProgress.contains { progress in
             Calendar.current.isDate(progress.date, inSameDayAs: today)
         }
     }
     
     private var healthInsight: String {
-        let days = appState.getDaysVapeFree()
+        let days = dataStore.getDaysVapeFree()
         switch days {
         case ..<1:
             return "Every single pass on a vape gives your lungs more room to recover."
@@ -297,7 +303,7 @@ struct HomeView: View {
     }
 
     private var lungMoodCopy: String {
-        let health = appState.lungState.healthLevel
+        let health = dataStore.lungState.healthLevel
         switch health {
         case 0..<25:
             return "Your lungs are ready for tiny breaths of reset—every calm moment helps."
@@ -326,7 +332,7 @@ struct HomeView: View {
     }
 
     private var heroAccentColor: Color {
-        let health = appState.lungState.healthLevel
+        let health = dataStore.lungState.healthLevel
         switch health {
         case 0..<25:
             return Color(red: 0.84, green: 0.41, blue: 0.46)
@@ -341,14 +347,14 @@ struct HomeView: View {
 
     private func resetTimerForSlip() {
         // Record slip for today and reset timer to now
-        appState.checkIn(wasVapeFree: false)
-        if var user = appState.currentUser {
+        dataStore.checkIn(wasVapeFree: false)
+        if var user = dataStore.currentUser {
             user.startDate = Date()
-            appState.currentUser = user
+            dataStore.currentUser = user
         }
         UserDefaults.standard.set(0, forKey: "lastMilestoneNotifiedDays")
-        appState.updateLungHealth()
-        appState.persist()
+        dataStore.updateLungHealth()
+        dataStore.persist()
     }
     
     private func getFullLesson(from homeLesson: HomeLearningLesson) -> Lesson? {
@@ -392,7 +398,7 @@ struct HomeLearningLesson: Identifiable {
 }
 
 struct StatsSection: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     var onDaysTapped: (() -> Void)? = nil
     var onMoneyTapped: (() -> Void)? = nil
     var onHealthTapped: (() -> Void)? = nil
@@ -417,7 +423,7 @@ struct StatsSection: View {
             
             StatsCard(
                 title: "Lung Boost",
-                value: "\(appState.lungState.healthLevel)%",
+                value: "\(dataStore.lungState.healthLevel)%",
                 emoji: "🫁",
                 color: .green,
                 onTap: { onHealthTapped?() }
@@ -426,7 +432,7 @@ struct StatsSection: View {
     }
     
     private var daysFromStartDate: Int {
-        guard let startDate = appState.currentUser?.startDate else { return 0 }
+        guard let startDate = dataStore.currentUser?.startDate else { return 0 }
         let elapsed = Date().timeIntervalSince(startDate)
         return max(0, Int(elapsed) / 86_400)
     }
@@ -440,7 +446,7 @@ struct StatsSection: View {
     }
     
     private var moneySavedFromStartDate: Double {
-        guard let user = appState.currentUser else { return 0 }
+        guard let user = dataStore.currentUser else { return 0 }
         
         // Get daily cost from onboarding, or use $20/week as fallback
         let weeklyCost = user.profile.vapingHistory.dailyCost > 0 
@@ -497,7 +503,7 @@ struct StatsCard: View {
 }
 
 struct CheckInSection: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     @Binding var showCheckIn: Bool
     
     var body: some View {
@@ -560,7 +566,7 @@ struct CheckInSection: View {
     
     private var hasCheckedInToday: Bool {
         let today = Calendar.current.startOfDay(for: Date())
-        return appState.dailyProgress.contains { progress in
+        return dataStore.dailyProgress.contains { progress in
             Calendar.current.isDate(progress.date, inSameDayAs: today)
         }
     }
@@ -666,7 +672,7 @@ struct LearningRow: View {
 
 // MARK: - Calendar Modal
 struct MonthlyCalendarView: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     private let calendar = Calendar.current
     private var monthDays: [Date] {
         let today = Date()
@@ -679,7 +685,7 @@ struct MonthlyCalendarView: View {
         }
     }
     private func isVapeFree(_ date: Date) -> Bool {
-        appState.dailyProgress.contains { p in
+        dataStore.dailyProgress.contains { p in
             Calendar.current.isDate(p.date, inSameDayAs: date) && p.wasVapeFree
         }
     }
@@ -718,11 +724,11 @@ struct MonthlyCalendarView: View {
 
 // MARK: - Money Saved View
 struct MoneySavedView: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     private var perDay: Double {
         // Get weekly cost from onboarding, or use $20/week as fallback
-        let weeklyCost = (appState.currentUser?.profile.vapingHistory.dailyCost ?? 0) > 0
-            ? (appState.currentUser?.profile.vapingHistory.dailyCost ?? 0)
+        let weeklyCost = (dataStore.currentUser?.profile.vapingHistory.dailyCost ?? 0) > 0
+            ? (dataStore.currentUser?.profile.vapingHistory.dailyCost ?? 0)
             : 20.0
         return weeklyCost / 7.0
     }
@@ -755,8 +761,8 @@ struct MoneySavedView: View {
             .shadow(radius: 4)
 
             VStack(alignment: .leading, spacing: 6) {
-                let weeklyCost = (appState.currentUser?.profile.vapingHistory.dailyCost ?? 0) > 0
-                    ? (appState.currentUser?.profile.vapingHistory.dailyCost ?? 0)
+                let weeklyCost = (dataStore.currentUser?.profile.vapingHistory.dailyCost ?? 0) > 0
+                    ? (dataStore.currentUser?.profile.vapingHistory.dailyCost ?? 0)
                     : 20.0
                 Text("Your weekly cost: $\(Int(weeklyCost))")
                     .font(.footnote)
@@ -774,9 +780,9 @@ struct MoneySavedView: View {
 
 // MARK: - Health Improvements Detail
 struct HealthImprovementsView: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     private var days: Int {
-        appState.getDaysVapeFree()
+        dataStore.getDaysVapeFree()
     }
     private var timeline: [(when: String, description: String, minDays: Int)] {
         [
@@ -950,13 +956,13 @@ private struct HomeSection<Content: View>: View {
 }
 
 private struct ActionsCard: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     @Binding var showCheckIn: Bool
     let slipTapped: () -> Void
     
     private var hasCheckedInToday: Bool {
         let today = Calendar.current.startOfDay(for: Date())
-        return appState.dailyProgress.contains { progress in
+        return dataStore.dailyProgress.contains { progress in
             Calendar.current.isDate(progress.date, inSameDayAs: today)
         }
     }
@@ -1210,7 +1216,7 @@ struct SupportMessage: View {
 #if DEBUG
 // MARK: - Developer Menu (DEBUG only)
 struct DevMenuView: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     @Environment(\.presentationMode) var presentationMode
     @State private var showDevCheckIn: Bool = false
     
@@ -1227,6 +1233,10 @@ struct DevMenuView: View {
                 Section(header: Text("Check-in")) {
                     Button("Re-do today's check-in") { showDevCheckIn = true }
                 }
+                
+                Section(header: Text("Superwall")) {
+                    Button("Test 'onboarding_end' placement") {Superwall.shared.register(placement: "onboarding_end")}
+                }
             }
             .navigationTitle("Developer Tools")
             .navigationBarTitleDisplayMode(.inline)
@@ -1238,22 +1248,22 @@ struct DevMenuView: View {
         }
         .sheet(isPresented: $showDevCheckIn) {
             CheckInModalView()
-                .environmentObject(appState)
+                .environmentObject(dataStore)
         }
     }
     
     private func setStartDate(to date: Date) {
-        guard var user = appState.currentUser else { return }
+        guard var user = dataStore.currentUser else { return }
         user.startDate = date
-        appState.currentUser = user
-        appState.persist()
-        appState.updateLungHealth()
+        dataStore.currentUser = user
+        dataStore.persist()
+        dataStore.updateLungHealth()
         NotificationCenter.default.post(name: NSNotification.Name("UserStartDateChanged"), object: nil)
     }
     
     private func shiftStartDate(days: Int = 0, hours: Int = 0, minutes: Int = 0) {
         let seconds = (days * 86_400) + (hours * 3_600) + (minutes * 60)
-        guard let current = appState.currentUser?.startDate else { return }
+        guard let current = dataStore.currentUser?.startDate else { return }
         let newDate = current.addingTimeInterval(TimeInterval(-seconds))
         setStartDate(to: newDate)
     }
@@ -1262,14 +1272,14 @@ struct DevMenuView: View {
 
 // MARK: - New Check-in Button (Circular with pen icon)
 struct CheckInButton: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     @Binding var showCheckIn: Bool
     
     @State private var isPulsing: Bool = false
     
     private var hasCheckedInToday: Bool {
         let today = Calendar.current.startOfDay(for: Date())
-        return appState.dailyProgress.contains { progress in
+        return dataStore.dailyProgress.contains { progress in
             Calendar.current.isDate(progress.date, inSameDayAs: today)
         }
     }
@@ -1329,7 +1339,7 @@ struct CheckInButton: View {
 
 // MARK: - Days Counter View
 struct DaysCounterView: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     @State private var now: Date = Date()
     
     private var timer: Timer.TimerPublisher {
@@ -1337,7 +1347,7 @@ struct DaysCounterView: View {
     }
     
     private var startDate: Date {
-        appState.currentUser?.startDate ?? Date()
+        dataStore.currentUser?.startDate ?? Date()
     }
     
     private var days: Int {
@@ -1362,7 +1372,7 @@ struct DaysCounterView: View {
         .onAppear {
             now = Date()
         }
-        .onChange(of: appState.currentUser?.startDate) { _ in
+        .onChange(of: dataStore.currentUser?.startDate) { _ in
             now = Date()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("UserStartDateChanged"))) { _ in
@@ -1373,7 +1383,7 @@ struct DaysCounterView: View {
 
 // MARK: - New Hero Timer View (days, hours, minutes, seconds format)
 struct NewHeroTimerView: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     var onMilestone: (() -> Void)? = nil
     
     @State private var now: Date = Date()
@@ -1384,7 +1394,7 @@ struct NewHeroTimerView: View {
     }
     
     private var startDate: Date {
-        appState.currentUser?.startDate ?? Date()
+        dataStore.currentUser?.startDate ?? Date()
     }
     
     var body: some View {
@@ -1402,14 +1412,14 @@ struct NewHeroTimerView: View {
         }
         .onReceive(timer.autoconnect()) { newValue in
             now = newValue
-            appState.updateLungHealth()
+            dataStore.updateLungHealth()
             handleMilestonesIfNeeded()
         }
         .onAppear {
             now = Date()
-            appState.updateLungHealth()
+            dataStore.updateLungHealth()
         }
-        .onChange(of: appState.currentUser?.startDate) { _ in
+        .onChange(of: dataStore.currentUser?.startDate) { _ in
             now = Date()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("UserStartDateChanged"))) { _ in
@@ -1450,7 +1460,7 @@ struct NewHeroTimerView: View {
 }
 
 struct WeekdayStreakRow: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     
     private var weekDays: [Date] {
         let calendar = Calendar.current
@@ -1460,7 +1470,7 @@ struct WeekdayStreakRow: View {
     }
     
     private func hasCheckIn(on date: Date) -> Bool {
-        appState.dailyProgress.contains { Calendar.current.isDate($0.date, inSameDayAs: date) && $0.wasVapeFree }
+        dataStore.dailyProgress.contains { Calendar.current.isDate($0.date, inSameDayAs: date) && $0.wasVapeFree }
     }
     
     private func shortWeekday(_ date: Date) -> String {
@@ -1504,16 +1514,16 @@ struct WeekdayStreakRow: View {
 }
 
 struct LungBuddyCenter: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     
     var body: some View {
-        BreathingLungCharacter(daysSinceStart: appState.daysSinceQuitStartDate())
+        BreathingLungCharacter(daysSinceStart: dataStore.daysSinceQuitStartDate())
             .scaleEffect(1.2) // Make LungBuddy bigger
     }
 }
 
 struct HeroTimerView: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     let startDate: Date
     var onMilestone: (() -> Void)? = nil
     
@@ -1557,11 +1567,11 @@ struct HeroTimerView: View {
         }
         .onReceive(timer.autoconnect()) { newValue in
             now = newValue
-            appState.updateLungHealth()
+            dataStore.updateLungHealth()
             handleMilestonesIfNeeded()
         }
         .onAppear {
-            appState.updateLungHealth()
+            dataStore.updateLungHealth()
         }
     }
     
@@ -1598,7 +1608,7 @@ struct HeroTimerView: View {
 }
 
 struct FireStreakIcon: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dataStore: AppDataStore
     
     private var consecutiveCheckInDays: Int {
         let calendar = Calendar.current
@@ -1606,7 +1616,7 @@ struct FireStreakIcon: View {
         var consecutiveDays = 0
         
         // Get all check-in dates sorted by date (most recent first)
-        let checkInDates = appState.dailyProgress
+        let checkInDates = dataStore.dailyProgress
             .filter { $0.wasVapeFree }
             .map { calendar.startOfDay(for: $0.date) }
             .sorted { $0 > $1 }
@@ -1651,5 +1661,5 @@ struct FireStreakIcon: View {
 
 #Preview {
     HomeView()
-        .environmentObject(AppState())
+        .environmentObject(AppDataStore())
 }

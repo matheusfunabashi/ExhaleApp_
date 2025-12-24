@@ -1,12 +1,13 @@
 import SwiftUI
 
 struct PaywallView: View {
-    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var flowManager: AppFlowManager
+    @EnvironmentObject var dataStore: AppDataStore
     @Binding var isPresented: Bool
     
     var body: some View {
         VStack(spacing: 20) {
-            if let reason = appState.questionnaire.reasonToQuit, !reason.isEmpty {
+            if let reason = dataStore.questionnaire.reasonToQuit, !reason.isEmpty {
                 VStack(spacing: 8) {
                     Text("Why do you want to quit?")
                         .font(.caption)
@@ -28,8 +29,8 @@ struct PaywallView: View {
                 .padding(.top, 32)
             
             VStack(alignment: .leading, spacing: 12) {
-                PaywallFeatureRow(text: "Daily motivation tailored to your reasons: \(appState.questionnaire.reasonToQuit ?? "Your goals")")
-                PaywallFeatureRow(text: "Craving tools for \(appState.questionnaire.hardestPart.isEmpty ? "your triggers" : appState.questionnaire.hardestPart.joined(separator: ", "))")
+                PaywallFeatureRow(text: "Daily motivation tailored to your reasons: \(dataStore.questionnaire.reasonToQuit ?? "Your goals")")
+                PaywallFeatureRow(text: "Craving tools for \(dataStore.questionnaire.hardestPart.isEmpty ? "your triggers" : dataStore.questionnaire.hardestPart.joined(separator: ", "))")
                 PaywallFeatureRow(text: "Progress, badges, and money saved tracking")
                 PaywallFeatureRow(text: "Cancel anytime • 7‑day free trial")
             }
@@ -61,8 +62,8 @@ struct PaywallView: View {
     
     private func subscribe() {
         // Simulate success (replace with StoreKit later)
-        appState.isSubscribed = true
-        appState.persist()
+        flowManager.setSubscription(active: true)
+        dataStore.persist()
         isPresented = false
     }
 }
