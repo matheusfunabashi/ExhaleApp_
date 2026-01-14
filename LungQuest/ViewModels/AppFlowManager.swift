@@ -1,5 +1,68 @@
 import Foundation
 import Combine
+import StoreKit
+
+// MARK: - Subscription Manager
+/// Tracks subscription entitlements using StoreKit 2.
+/// Keeps a simple boolean that the rest of the app can observe.
+final class SubscriptionManager: ObservableObject {
+    static let shared = SubscriptionManager()
+    
+    @Published private(set) var isSubscribed: Bool = false
+    
+    /// Keep product IDs aligned with StoreKit config and Superwall.
+    private let subscribedProductIDs: Set<String> = [
+        "exhale_monthly_799",
+        "exhale_annual_3999"
+    ]
+    
+    private var updatesTask: Task<Void, Never>?
+    
+    deinit {
+        updatesTask?.cancel()
+    }
+    
+    /// Start listening for entitlement and transaction updates.
+    func start() {
+        updatesTask = Task { [weak self] in
+            await self?.refreshEntitlements()
+            await self?.listenForTransactions()
+        }
+    }
+    
+    /// Manually re-check current entitlements (e.g., after a restore action).
+    func refresh() {
+        Task { [weak self] in
+            await self?.refreshEntitlements()
+        }
+    }
+    
+    /// Checks current entitlements to see if the user is active.
+    @MainActor
+    private func refreshEntitlements() async {
+        var found = false
+        for await result in Transaction.currentEntitlements {
+            if case .verified(let transaction) = result,
+               subscribedProductIDs.contains(transaction.productID) {
+                found = true
+                break
+            }
+        }
+        isSubscribed = found
+    }
+    
+    /// Listens to new transactions and updates subscription state accordingly.
+    private func listenForTransactions() async {
+        for await result in Transaction.updates {
+            if case .verified(let transaction) = result {
+                if subscribedProductIDs.contains(transaction.productID) {
+                    await MainActor.run { self.isSubscribed = true }
+                }
+                await transaction.finish()
+            }
+        }
+    }
+}
 
 class AppFlowManager: ObservableObject {
     @Published var isOnboarding: Bool = true
@@ -8,19 +71,24 @@ class AppFlowManager: ObservableObject {
     @Published var errorMessage: String?
     
     let dataStore: AppDataStore
+    let subscriptionManager: SubscriptionManager
     private var cancellables = Set<AnyCancellable>()
     
-    init(dataStore: AppDataStore) {
+    init(dataStore: AppDataStore, subscriptionManager: SubscriptionManager = .shared) {
         self.dataStore = dataStore
-        #if DEBUG
-        // Auto-bypass paywall em builds de desenvolvimento
-        self.isSubscribed = true
-        UserDefaults.standard.set(true, forKey: "isSubscribed")
-        #else
-        self.isSubscribed = UserDefaults.standard.bool(forKey: "isSubscribed")
-        #endif
+        self.subscriptionManager = subscriptionManager
         self.isOnboarding = dataStore.currentUser == nil
         self.isLoading = false
+        self.isSubscribed = UserDefaults.standard.bool(forKey: "isSubscribed")
+        
+        subscriptionManager.$isSubscribed
+            .receive(on: RunLoop.main)
+            .sink { [weak self] active in
+                self?.setSubscription(active: active)
+            }
+            .store(in: &cancellables)
+        
+        subscriptionManager.start()
         
         dataStore.objectWillChange
             .sink { [weak self] _ in

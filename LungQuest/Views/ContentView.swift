@@ -1,4 +1,5 @@
 import SwiftUI
+import SuperwallKit
 
 struct ContentView: View {
     @EnvironmentObject var flowManager: AppFlowManager
@@ -14,8 +15,12 @@ struct ContentView: View {
                 })
                 .environmentObject(flowManager)
                 .environmentObject(dataStore)
-            } else {
+            } else if flowManager.isSubscribed {
                 MainTabView()
+                    .environmentObject(flowManager)
+                    .environmentObject(dataStore)
+            } else {
+                PaywallGateView()
                     .environmentObject(flowManager)
                     .environmentObject(dataStore)
             }
@@ -118,3 +123,50 @@ struct MainTabView: View {
         .environmentObject(store)
 }
 
+struct PaywallGateView: View {
+    @EnvironmentObject var flowManager: AppFlowManager
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Spacer()
+            Image(systemName: "lock.fill")
+                .font(.system(size: 40, weight: .bold))
+                .foregroundColor(.blue)
+            Text("Unlock Exhale Premium")
+                .font(.title2.weight(.semibold))
+            Text("Subscribe to continue past onboarding.")
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+            
+            VStack(spacing: 12) {
+                Button(action: {
+                    Superwall.shared.register(placement: "onboarding_end")
+                }) {
+                    Text("Show Paywall")
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                }
+                
+                Button(action: {
+                    SubscriptionManager.shared.refresh()
+                }) {
+                    Text("Restore Purchases")
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.gray.opacity(0.15))
+                        .foregroundColor(.blue)
+                        .cornerRadius(12)
+                }
+            }
+            .padding(.horizontal, 24)
+            
+            Spacer()
+        }
+        .padding()
+    }
+}
