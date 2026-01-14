@@ -8,6 +8,7 @@ class AppDataStore: ObservableObject {
     @Published var activeQuests: [Quest] = []
     @Published var statistics: UserStatistics = UserStatistics()
     @Published var questionnaire: OnboardingQuestionnaire = OnboardingQuestionnaire()
+    @Published var readLessons: [String] = [] // Lesson titles that have been read
     
     private let dataService = DataService()
     private let questService = QuestService()
@@ -204,6 +205,10 @@ class AppDataStore: ObservableObject {
             questionnaire = q
         }
         
+        if let readLessonsData = UserDefaults.standard.array(forKey: "readLessons") as? [String] {
+            readLessons = readLessonsData
+        }
+        
         updateLungHealth()
     }
     
@@ -228,10 +233,45 @@ class AppDataStore: ObservableObject {
         if let qData = try? JSONEncoder().encode(questionnaire) {
             UserDefaults.standard.set(qData, forKey: "questionnaire")
         }
+        
+        UserDefaults.standard.set(readLessons, forKey: "readLessons")
     }
     
     func persist() {
         saveUserData()
+    }
+    
+    // MARK: - Reading Tracking
+    func markLessonAsRead(_ lessonTitle: String) {
+        if !readLessons.contains(lessonTitle) {
+            readLessons.append(lessonTitle)
+            saveUserData()
+        }
+    }
+    
+    func isLessonRead(_ lessonTitle: String) -> Bool {
+        return readLessons.contains(lessonTitle)
+    }
+    
+    func isReadingOfTheDayCompleted() -> Bool {
+        let readingOfTheDay = getReadingOfTheDayTitle()
+        return isLessonRead(readingOfTheDay)
+    }
+    
+    private func getReadingOfTheDayTitle() -> String {
+        let allReadings = [
+            "Benefits of quitting",
+            "What vaping does",
+            "Tips to quit"
+        ]
+        
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let dayOfYear = calendar.ordinality(of: .day, in: .year, for: today) ?? 0
+        
+        // Use day of year as index to get consistent selection per day
+        let index = dayOfYear % allReadings.count
+        return allReadings[index]
     }
     
     // MARK: - Utility

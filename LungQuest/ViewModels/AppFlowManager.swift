@@ -12,7 +12,13 @@ class AppFlowManager: ObservableObject {
     
     init(dataStore: AppDataStore) {
         self.dataStore = dataStore
+        #if DEBUG
+        // Auto-bypass paywall em builds de desenvolvimento
+        self.isSubscribed = true
+        UserDefaults.standard.set(true, forKey: "isSubscribed")
+        #else
         self.isSubscribed = UserDefaults.standard.bool(forKey: "isSubscribed")
+        #endif
         self.isOnboarding = dataStore.currentUser == nil
         self.isLoading = false
         
