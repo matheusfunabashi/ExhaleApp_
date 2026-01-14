@@ -4,13 +4,16 @@ struct LearningView: View {
     @EnvironmentObject var dataStore: AppDataStore
     @State private var selectedLesson: Lesson? = nil
     
+    // Primary brand color - used consistently throughout
+    private let primaryAccentColor = Color(red: 0.16, green: 0.36, blue: 0.87)
+    
     private var topics: [LearningTopic] {
         [
             LearningTopic(
                 kind: .physical,
                 title: "Physical health",
                 blurb: "Understand how your body heals from the inside out.",
-                accent: .green,
+                accent: primaryAccentColor,
                 lessons: [
                     Lesson.withContent(
                         title: "Oxygen rebound",
@@ -42,7 +45,7 @@ struct LearningView: View {
                 kind: .mental,
                 title: "Mental resilience",
                 blurb: "Build calm habits and mindset shifts for the long term.",
-                accent: Color(red: 0.67, green: 0.52, blue: 0.93),
+                accent: primaryAccentColor,
                 lessons: [
                     Lesson.withContent(
                         title: "Urge surfing",
@@ -74,7 +77,7 @@ struct LearningView: View {
                 kind: .lifestyle,
                 title: "Lifestyle & triggers",
                 blurb: "Swap routines and prepare for the moments that matter.",
-                accent: Color(red: 0.85, green: 0.32, blue: 0.57),
+                accent: primaryAccentColor,
                 lessons: [
                     Lesson.withContent(
                         title: "Morning rituals",
@@ -106,7 +109,7 @@ struct LearningView: View {
                 kind: .physical,
                 title: "Learn & Reflect",
                 blurb: "Short reads to reinforce your progress and calm cravings.",
-                accent: Color(red: 0.95, green: 0.65, blue: 0.75),
+                accent: primaryAccentColor,
                 lessons: [
                     Lesson.withContent(
                         title: "Benefits of quitting",
@@ -164,31 +167,16 @@ struct LearningView: View {
     }
     
     private func accentForLesson(_ lesson: Lesson) -> Color {
-        for topic in topics {
-            if topic.lessons.contains(where: { $0.id == lesson.id }) {
-                return topic.accent
-            }
-        }
-        return Color(red: 0.16, green: 0.36, blue: 0.87)
+        // Always return primary accent color for consistency
+        return primaryAccentColor
     }
     
     private func progressValue(for topic: LearningTopic) -> Double {
-        switch topic.kind {
-        case .physical:
-            return Double(dataStore.lungState.healthLevel) / 100.0
-        case .mental:
-            let cappedXP = min(Double(dataStore.statistics.totalXP), 400)
-            return max(0, cappedXP / 400.0)
-        case .lifestyle:
-            let completed = Double(dataStore.statistics.completedQuests)
-            return min(1.0, completed / 10.0)
-        case .learnAndReflect:
-            // Progress based on read lessons in this topic
-            let learnAndReflectLessons = topics.first(where: { $0.kind == .learnAndReflect })?.lessons ?? []
-            guard !learnAndReflectLessons.isEmpty else { return 0.0 }
-            let readCount = learnAndReflectLessons.filter { dataStore.isLessonRead($0.title) }.count
-            return Double(readCount) / Double(learnAndReflectLessons.count)
-        }
+        // Progress based on read lessons in this topic for all sections
+        let topicLessons = topic.lessons
+        guard !topicLessons.isEmpty else { return 0.0 }
+        let readCount = topicLessons.filter { dataStore.isLessonRead($0.title) }.count
+        return Double(readCount) / Double(topicLessons.count)
     }
     
     private func encouragement(for topic: LearningTopic) -> String {
@@ -214,32 +202,28 @@ private struct LearningTopicCard: View {
     let encouragement: String
     let onLessonTap: (Lesson) -> Void
     
+    // Primary brand color - consistent across all sections
+    private let primaryAccentColor = Color(red: 0.16, green: 0.36, blue: 0.87)
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             HStack(alignment: .center, spacing: 12) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(topic.accent.opacity(0.18))
+                        .fill(Color.gray.opacity(0.1))
                         .frame(width: 54, height: 54)
                         .overlay(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .stroke(topic.accent.opacity(0.28), lineWidth: 1)
+                                .stroke(Color.gray.opacity(0.15), lineWidth: 1)
                         )
                     Group {
                         if topic.icon.unicodeScalars.first?.properties.isEmoji == true {
                             Text(topic.icon)
                                 .font(.title2)
                         } else {
-                    Group {
-                        if topic.icon.unicodeScalars.first?.properties.isEmoji == true {
-                            Text(topic.icon)
-                                .font(.title2)
-                        } else {
                             Image(systemName: topic.icon)
-                                .foregroundColor(topic.accent)
+                                .foregroundColor(primaryAccentColor)
                                 .font(.title2)
-                        }
-                    }
                         }
                     }
                 }
@@ -251,7 +235,7 @@ private struct LearningTopicCard: View {
                         .foregroundColor(.secondary)
                     HStack(spacing: 6) {
                         SwiftUI.ProgressView(value: progress)
-                            .tint(topic.accent)
+                            .tint(primaryAccentColor)
                             .frame(height: 4)
                         Text("\(Int(progress * 100))%")
                             .font(.caption2)
@@ -262,7 +246,7 @@ private struct LearningTopicCard: View {
             
             VStack(alignment: .leading, spacing: 12) {
                 ForEach(topic.lessons) { lesson in
-                    LessonTile(lesson: lesson, accent: topic.accent, onTap: {
+                    LessonTile(lesson: lesson, accent: primaryAccentColor, onTap: {
                         onLessonTap(lesson)
                     })
                     .environmentObject(dataStore)
@@ -275,7 +259,7 @@ private struct LearningTopicCard: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .softCard(accent: topic.accent, cornerRadius: 30)
+        .softCard(accent: primaryAccentColor, cornerRadius: 30)
         .accessibilityElement(children: .combine)
     }
 }
@@ -364,7 +348,7 @@ private struct LessonTile: View {
                 .fill(Color.white.opacity(0.6))
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .stroke(isRead ? Color.green.opacity(0.3) : Color.clear, lineWidth: 1)
+                        .stroke(isRead ? Color.green.opacity(0.3) : Color.gray.opacity(0.1), lineWidth: 1)
                 )
         )
         .onTapGesture {

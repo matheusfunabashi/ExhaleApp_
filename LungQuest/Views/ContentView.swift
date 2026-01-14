@@ -91,6 +91,9 @@ struct MainTabView: View {
             .onReceive(NotificationCenter.default.publisher(for: Notification.Name("SwitchToLearnTab"))) { _ in
                 selectedTab = 1
             }
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("SwitchToProgressTab"))) { _ in
+                selectedTab = 2
+            }
             .overlay(
                 HStack {
                     Spacer()

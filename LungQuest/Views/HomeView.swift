@@ -10,6 +10,7 @@ struct HomeView: View {
     @State private var showMoney = false
     @State private var showHealth = false
     @State private var showSlipConfirmation = false
+    @State private var showSlipSecondConfirmation = false
     @State private var showHeroGlow = false
     @State private var selectedLesson: HomeLearningLesson? = nil
     @State private var selectedReadingOfTheDay: Lesson? = nil
@@ -87,12 +88,51 @@ struct HomeView: View {
                             )
                         }
                         
-                        VStack(spacing: 6) {
-                            CheckInButton(showCheckIn: $showCheckIn)
-                            Text(hasCheckedInToday ? "Thanks for checking in today" : "Tap to share how you're feeling")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
+                        // Four action buttons
+                        HStack(spacing: 0) {
+                            ActionButton(
+                                icon: hasCheckedInToday ? "checkmark" : "pencil",
+                                label: "Check-ins",
+                                isCompleted: hasCheckedInToday,
+                                action: {
+                                    if !hasCheckedInToday {
+                                        showCheckIn = true
+                                    }
+                                }
+                            )
+                            .frame(maxWidth: .infinity)
+                            
+                            ActionButton(
+                                icon: "arrow.counterclockwise",
+                                label: "I relapsed",
+                                isCompleted: false,
+                                action: {
+                                    showSlipSecondConfirmation = true
+                                }
+                            )
+                            .frame(maxWidth: .infinity)
+                            
+                            ActionButton(
+                                icon: "chart.line.uptrend.xyaxis",
+                                label: "Progress",
+                                isCompleted: false,
+                                action: {
+                                    NotificationCenter.default.post(name: Notification.Name("SwitchToProgressTab"), object: nil)
+                                }
+                            )
+                            .frame(maxWidth: .infinity)
+                            
+                            ActionButton(
+                                icon: "book.fill",
+                                label: "Learn",
+                                isCompleted: false,
+                                action: {
+                                    NotificationCenter.default.post(name: Notification.Name("SwitchToLearnTab"), object: nil)
+                                }
+                            )
+                            .frame(maxWidth: .infinity)
                         }
+                        .padding(.top, 8)
                     }
                     .frame(maxWidth: .infinity)
                     .softCard(accent: heroAccentColor, cornerRadius: 32)
@@ -186,13 +226,21 @@ struct HomeView: View {
         .overlay(
             CelebrationView(isShowing: $showCelebration)
         )
+        .alert("Are you sure?", isPresented: $showSlipSecondConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Yes, I relapsed", role: .destructive) {
+                showSlipConfirmation = true
+            }
+        } message: {
+            Text("This will reset your streak counter. Do you want to continue?")
+        }
         .alert("Reset Your Progress?", isPresented: $showSlipConfirmation) {
             Button("Cancel", role: .cancel) { }
-            Button("Begin Again", role: .destructive) {
+            Button("Reset", role: .destructive) {
                 resetTimerForSlip()
             }
         } message: {
-            Text("Slips happen. Logging it now helps you keep moving forward with compassion.")
+            Text("This will reset your streak counter to zero. This action cannot be undone.")
         }
         .sheet(item: $selectedLesson) { lesson in
             if let fullLesson = getFullLesson(from: lesson) {
@@ -1537,7 +1585,7 @@ struct WeekdayStreakRow: View {
     }
     
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 0) {
             ForEach(weekDays, id: \.self) { date in
                 VStack(spacing: 8) {
                     Text(shortWeekday(date))
@@ -1564,8 +1612,10 @@ struct WeekdayStreakRow: View {
                         }
                     }
                 }
+                .frame(maxWidth: .infinity)
             }
         }
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -1660,6 +1710,42 @@ struct HeroTimerView: View {
     private func nextMilestoneDay(after day: Int) -> Int? {
         let milestones = [1, 3, 7, 14, 30, 60, 90, 120, 180, 365]
         return milestones.first { $0 > day }
+    }
+}
+
+// MARK: - Action Buttons
+private struct ActionButton: View {
+    let icon: String
+    let label: String
+    let isCompleted: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 6) {
+                ZStack {
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 56, height: 56)
+                        .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 2)
+                    
+                    if isCompleted {
+                        Circle()
+                            .fill(Color.green.opacity(0.1))
+                            .frame(width: 56, height: 56)
+                    }
+                    
+                    Image(systemName: icon)
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundColor(isCompleted ? .green : .black)
+                }
+                
+                Text(label)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.primary)
+            }
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
