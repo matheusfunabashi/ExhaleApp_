@@ -246,6 +246,7 @@ class AppDataStore: ObservableObject {
         if !readLessons.contains(lessonTitle) {
             readLessons.append(lessonTitle)
             saveUserData()
+            objectWillChange.send() // Explicitly notify views of the change
         }
     }
     
