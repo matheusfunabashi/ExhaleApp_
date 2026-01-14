@@ -306,7 +306,7 @@ private struct ScoreComparisonView: View {
 #Preview {
     let store = AppDataStore()
     let flow = AppFlowManager(dataStore: store)
-    return OnboardingStep13View(
+    OnboardingStep13View(
         onContinue: {},
         onBack: {}
     )
