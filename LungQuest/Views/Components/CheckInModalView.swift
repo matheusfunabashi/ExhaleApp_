@@ -11,7 +11,7 @@ struct CheckInModalView: View {
     @State private var selectedPuffInterval = PuffInterval.none
     @State private var showSuccessAnimation = false
     
-    private let accentColor = Color(red: 0.16, green: 0.36, blue: 0.87)
+    private let accentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
     
     var body: some View {
         NavigationView {
@@ -108,7 +108,7 @@ struct CheckInModalView: View {
 struct VapeFreeSection: View {
     @Binding var wasVapeFree: Bool
     
-    private let accentColor = Color(red: 0.16, green: 0.36, blue: 0.87)
+    private let accentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -146,7 +146,7 @@ struct VapeFreeSection: View {
 struct CravingsSection: View {
     @Binding var cravingsLevel: Int
     
-    private let accentColor = Color(red: 0.16, green: 0.36, blue: 0.87)
+    private let accentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -249,7 +249,7 @@ struct CravingsSection: View {
 struct MoodSection: View {
     @Binding var selectedMood: Mood
     
-    private let accentColor = Color(red: 0.16, green: 0.36, blue: 0.87)
+    private let accentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -317,7 +317,7 @@ struct MoodSection: View {
 struct NotesSection: View {
     @Binding var notes: String
     
-    private let accentColor = Color(red: 0.16, green: 0.36, blue: 0.87)
+    private let accentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -418,7 +418,7 @@ struct OptionButton: View {
 struct PuffCountSection: View {
     @Binding var selectedPuffInterval: PuffInterval
     
-    private let accentColor = Color(red: 0.16, green: 0.36, blue: 0.87)
+    private let accentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -470,7 +470,7 @@ struct SuccessAnimationView: View {
     @State private var opacity: Double = 0
     @State private var rotation: Double = 0
     
-    private let accentColor = Color(red: 0.16, green: 0.36, blue: 0.87)
+    private let accentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
     
     var body: some View {
         if isShowing {

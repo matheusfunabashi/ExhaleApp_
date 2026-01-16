@@ -1,12 +1,13 @@
 import SwiftUI
 
-struct OnboardingStep11View: View {
+struct OnboardingStep11bView: View {
+    let userName: String
     let onNext: () -> Void
     let onBack: () -> Void
-    let onNameCollected: (String, String) -> Void
+    let onReasonCollected: (String) -> Void
     
-    @State private var name: String = ""
-    @State private var age: String = ""
+    @State private var reason: String = ""
+    @FocusState private var isTextFieldFocused: Bool
     
     private let buttonColor = Color.white
     private let textColor = Color.black
@@ -18,22 +19,39 @@ struct OnboardingStep11View: View {
             VStack(spacing: 24) {
                 header
                 
-                FinalHeadingView(progress: 11.0 / 13.0)
+                FinalHeadingView(progress: 11.5 / 13.0)
                     .padding(.top, 4)
                 
-                VStack(spacing: 24) {
-                    LabeledTextField(
-                        label: "How should we call you?",
-                        placeholder: "Your preferred name",
-                        text: $name,
-                        keyboard: .default
-                    )
+                VStack(alignment: .leading, spacing: 16) {
+                    Text(userName.isEmpty ? "Why do you want to quit vaping?" : "\(userName), why do you want to quit vaping?")
+                        .font(.system(size: 18, weight: .semibold, design: .rounded))
+                        .foregroundColor(Color.black.opacity(0.75))
                     
-                    LabeledTextField(
-                        label: "How old are you?",
-                        placeholder: "Your age",
-                        text: $age,
-                        keyboard: .numberPad
+                    ZStack(alignment: .topLeading) {
+                        if reason.isEmpty {
+                            Text("Share your motivation...")
+                                .foregroundColor(Color.black.opacity(0.35))
+                                .font(.system(size: 18, weight: .medium, design: .rounded))
+                                .padding(.top, 18)
+                                .padding(.leading, 20)
+                        }
+                        
+                        TextEditor(text: $reason)
+                            .font(.system(size: 18, weight: .medium, design: .rounded))
+                            .foregroundColor(.black)
+                            .scrollContentBackground(.hidden)
+                            .frame(minHeight: 200)
+                            .padding(.vertical, 14)
+                            .padding(.horizontal, 16)
+                            .focused($isTextFieldFocused)
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.sentences)
+                    }
+                    .background(Color.white.opacity(0.9))
+                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .stroke(Color.black.opacity(0.15), lineWidth: 1)
                     )
                 }
                 .padding(.top, 12)
@@ -43,8 +61,8 @@ struct OnboardingStep11View: View {
                 VStack(spacing: 20) {
                     Button(action: {
                         if canProceed {
-                            onNameCollected(name, age)
-                            // onNext is handled by onNameCollected in OnboardingView
+                            onReasonCollected(reason)
+                            onNext()
                         }
                     }) {
                         Text("Continue")
@@ -65,6 +83,12 @@ struct OnboardingStep11View: View {
             .padding(.bottom, 32)
         }
         .navigationBarBackButtonHidden(true)
+        .onAppear {
+            // Focus the text field when view appears
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                isTextFieldFocused = true
+            }
+        }
     }
     
     private var header: some View {
@@ -99,10 +123,8 @@ struct OnboardingStep11View: View {
     }
     
     private var canProceed: Bool {
-        // Must have both name and age filled
-        return !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-               !age.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-               Int(age) != nil
+        // Must have reason text filled
+        return !reason.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }
 
@@ -134,7 +156,7 @@ private struct FinalHeadingView: View {
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity, alignment: .center)
                 
-                Text("Let’s gather some last information to tailor this app for you")
+                Text("Let's gather some last information to tailor this app for you")
                     .font(.system(size: 18, weight: .medium, design: .rounded))
                     .foregroundColor(Color.black.opacity(0.8))
                     .multilineTextAlignment(.center)
@@ -162,64 +184,12 @@ private struct ProgressBar: View {
     }
 }
 
-private struct LabeledTextField: View {
-    let label: String
-    let placeholder: String
-    @Binding var text: String
-    var keyboard: UIKeyboardType
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(label)
-                .font(.system(size: 16, weight: .semibold, design: .rounded))
-                .foregroundColor(Color.black.opacity(0.75))
-            
-            ZStack(alignment: .leading) {
-                if text.isEmpty {
-                    Text(placeholder)
-                        .foregroundColor(Color.black.opacity(0.35))
-                        .font(.system(size: 18, weight: .medium, design: .rounded))
-                }
-                
-                TextField("", text: $text)
-                    .keyboardType(keyboard)
-                    .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundColor(.black)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-            }
-                .padding(.vertical, 18)
-                .padding(.horizontal, 20)
-                .background(Color.white.opacity(0.9))
-                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .stroke(Color.black.opacity(0.15), lineWidth: 1)
-                )
-        }
-    }
-}
-
-private struct SkipButton: View {
-    let title: String
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundColor(.white.opacity(0.75))
-                .padding(.vertical, 12)
-        }
-        .buttonStyle(.plain)
-    }
-}
-
 #Preview {
-    OnboardingStep11View(
+    OnboardingStep11bView(
+        userName: "John",
         onNext: {},
         onBack: {},
-        onNameCollected: { _, _ in }
+        onReasonCollected: { _ in }
     )
 }
 

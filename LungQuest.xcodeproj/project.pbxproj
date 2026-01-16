@@ -41,6 +41,8 @@
 		97FE9EC62FCFE36A006FDDE7 /* OnboardingStep11View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FE9EC52FCFE36A006FDDE7 /* OnboardingStep11View.swift */; };
 		97FE9EC82FCFE4F3006FDDE7 /* OnboardingStep12View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FE9EC72FCFE4F3006FDDE7 /* OnboardingStep12View.swift */; };
 		97FE9ECA2FCFE5C7006FDDE7 /* OnboardingStep13View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FE9EC92FCFE5C7006FDDE7 /* OnboardingStep13View.swift */; };
+		97FE9ECB2FCFE6D4006FDDE7 /* OnboardingStep11bView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FE9ECA2FCFE6D4006FDDE7 /* OnboardingStep11bView.swift */; };
+		97FE9ECC2FCFE7E5006FDDE7 /* TabNavigationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FE9ECB2FCFE7E5006FDDE7 /* TabNavigationManager.swift */; };
 		9E1E15DD2EE33C1C00BF4D96 /* SuperwallKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9E1E15DC2EE33C1C00BF4D96 /* SuperwallKit */; };
 		9E9B7F2F2FE4B32E00A77077 /* AppDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9B7F2E2FE4B32E00A77077 /* AppDataStore.swift */; };
 /* End PBXBuildFile section */
@@ -78,6 +80,7 @@
 		97FE9EC52FCFE36A006FDDE7 /* OnboardingStep11View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStep11View.swift; sourceTree = "<group>"; };
 		97FE9EC72FCFE4F3006FDDE7 /* OnboardingStep12View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStep12View.swift; sourceTree = "<group>"; };
 		97FE9EC92FCFE5C7006FDDE7 /* OnboardingStep13View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStep13View.swift; sourceTree = "<group>"; };
+		97FE9ECA2FCFE6D4006FDDE7 /* OnboardingStep11bView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStep11bView.swift; sourceTree = "<group>"; };
 		9E9B7F2E2FE4B32E00A77077 /* AppDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDataStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -89,7 +92,6 @@
 				971C04602E7DFED500540355 /* FirebaseAnalytics in Frameworks */,
 				971C04662E7DFED500540355 /* FirebaseStorage in Frameworks */,
 				971C04622E7DFED500540355 /* FirebaseAuth in Frameworks */,
-				9E26AC252EFAED03001C961B /* StoreKit.framework in Frameworks */,
 				9E1E15DD2EE33C1C00BF4D96 /* SuperwallKit in Frameworks */,
 				971C04642E7DFED500540355 /* FirebaseFirestore in Frameworks */,
 			);
@@ -143,6 +145,7 @@
 			children = (
 				8D1107410486CEB800E47090 /* AppFlowManager.swift */,
 				9E9B7F2E2FE4B32E00A77077 /* AppDataStore.swift */,
+				97FE9ECB2FCFE7E5006FDDE7 /* TabNavigationManager.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -173,6 +176,7 @@
 				97FE9EC12FCFE006006FDDE7 /* OnboardingStep9View.swift */,
 				97FE9EC32FCFE2E0006FDDE7 /* OnboardingStep10View.swift */,
 				97FE9EC52FCFE36A006FDDE7 /* OnboardingStep11View.swift */,
+				97FE9ECA2FCFE6D4006FDDE7 /* OnboardingStep11bView.swift */,
 				97FE9EC72FCFE4F3006FDDE7 /* OnboardingStep12View.swift */,
 				97FE9EC92FCFE5C7006FDDE7 /* OnboardingStep13View.swift */,
 				8D11074B0486CEB800E47090 /* ProgressView.swift */,
@@ -197,7 +201,6 @@
 		9E26AC232EFAED03001C961B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				9E26AC242EFAED03001C961B /* StoreKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -288,6 +291,7 @@
 				8D1107400486CEB800E47090 /* DataModels.swift in Sources */,
 				8D1107420486CEB800E47090 /* AppFlowManager.swift in Sources */,
 				9E9B7F2F2FE4B32E00A77077 /* AppDataStore.swift in Sources */,
+				97FE9ECC2FCFE7E5006FDDE7 /* TabNavigationManager.swift in Sources */,
 				8D1107440486CEB800E47090 /* DataService.swift in Sources */,
 				8D1107480486CEB800E47090 /* HomeView.swift in Sources */,
 				8D1107600486CEB800E47090 /* LearningView.swift in Sources */,
@@ -309,6 +313,7 @@
 				97FE9EC22FCFE006006FDDE7 /* OnboardingStep9View.swift in Sources */,
 				97FE9EC42FCFE2E0006FDDE7 /* OnboardingStep10View.swift in Sources */,
 				97FE9EC62FCFE36A006FDDE7 /* OnboardingStep11View.swift in Sources */,
+				97FE9ECB2FCFE6D4006FDDE7 /* OnboardingStep11bView.swift in Sources */,
 				97FE9EC82FCFE4F3006FDDE7 /* OnboardingStep12View.swift in Sources */,
 				97FE9ECA2FCFE5C7006FDDE7 /* OnboardingStep13View.swift in Sources */,
 				97FE9EB02FCFB1B8006FDDE7 /* WaveGradientBackground.swift in Sources */,
@@ -450,6 +455,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LungQuest/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Exhale;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Enables a reflection moment during cravings via the panic button.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -484,6 +491,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LungQuest/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Exhale;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Enables a reflection moment during cravings via the panic button.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

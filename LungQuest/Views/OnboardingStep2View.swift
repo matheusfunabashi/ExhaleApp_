@@ -113,7 +113,8 @@ struct OnboardingStep2View: View {
                 Image(systemName: "chevron.left")
                     .font(.title3.weight(.semibold))
                     .padding(12)
-                    .background(Color.white.opacity(0.2), in: Circle())
+                    .background(Color.white.opacity(0.35), in: Circle())
+                    .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
                     .foregroundStyle(Color.white.opacity(0.95))
             }
             .buttonStyle(.plain)

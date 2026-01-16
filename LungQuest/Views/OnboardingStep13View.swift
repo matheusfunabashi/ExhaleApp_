@@ -39,7 +39,8 @@ struct OnboardingStep13View: View {
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.white)
                     .padding(12)
-                    .background(Color.white.opacity(0.18), in: Circle())
+                    .background(Color.white.opacity(0.35), in: Circle())
+                    .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
             }
             .buttonStyle(.plain)
             
@@ -52,10 +53,11 @@ struct OnboardingStep13View: View {
                     Text("EN")
                         .font(.system(size: 14, weight: .semibold))
                 }
-                .foregroundColor(.white.opacity(0.9))
+                .foregroundColor(.white)
                 .padding(.vertical, 8)
                 .padding(.horizontal, 14)
-                .background(Color.white.opacity(0.2), in: Capsule())
+                .background(Color.white.opacity(0.35), in: Capsule())
+                .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
             }
             .buttonStyle(.plain)
         }
@@ -81,7 +83,7 @@ struct OnboardingStep13View: View {
                         Text("Your responses indicate a noticeable dependency on vaping.")
                     }
                     .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .foregroundColor(.white.opacity(0.9))
+                    .foregroundColor(.white)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 16)
                 }
@@ -115,7 +117,7 @@ struct OnboardingStep13View: View {
                 Button(action: { withAnimation(pagingAnimation) { currentPage = 1 } }) {
                     Image(systemName: "chevron.down.double")
                         .font(.system(size: 34, weight: .black))
-                        .foregroundColor(.white.opacity(0.9))
+                        .foregroundColor(.white)
                         .padding(18)
                         .background(Color.white.opacity(0.22), in: Circle())
                         .shadow(color: Color.black.opacity(0.25), radius: 12, x: 0, y: 10)

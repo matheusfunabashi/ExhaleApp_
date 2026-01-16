@@ -81,23 +81,42 @@ class AppDataStore: ObservableObject {
         var currentStreak = 0
         var longestStreak = 0
         var tempStreak = 0
+        let today = Calendar.current.startOfDay(for: Date())
+        var foundToday = false
         
+        // Calculate streak from most recent progress
         for progress in sortedProgress {
             if progress.wasVapeFree {
                 tempStreak += 1
                 if Calendar.current.isDateInToday(progress.date) {
                     currentStreak = tempStreak
+                    foundToday = true
                 }
             } else {
+                if !foundToday && currentStreak == 0 {
+                    // If we haven't found today yet, this could be the current streak
+                    currentStreak = tempStreak
+                }
                 longestStreak = max(longestStreak, tempStreak)
                 tempStreak = 0
             }
         }
         
-        longestStreak = max(longestStreak, tempStreak)
+        // If we didn't find today but have consecutive days, use the temp streak
+        if !foundToday && currentStreak == 0 && tempStreak > 0 {
+            // Check if the most recent progress is recent (within last few days)
+            if let mostRecent = sortedProgress.first,
+               Calendar.current.dateComponents([.day], from: mostRecent.date, to: today).day ?? 999 <= 1 {
+                currentStreak = tempStreak
+            }
+        }
+        
+        longestStreak = max(longestStreak, tempStreak, longestStreak)
         user.quitGoal.currentStreak = currentStreak
         user.quitGoal.longestStreak = longestStreak
-        user.quitGoal.lastCheckIn = Date()
+        if let lastProgress = sortedProgress.first {
+            user.quitGoal.lastCheckIn = lastProgress.date
+        }
         currentUser = user
     }
     
@@ -126,23 +145,29 @@ class AppDataStore: ObservableObject {
     }
     
     private func checkForNewBadges() {
-        let currentStreak = currentUser?.quitGoal.currentStreak ?? 0
+        // Use days since start date for time-based badges (more reliable than streak)
+        let daysSinceStart = daysSinceQuitStartDate()
         var newBadges: [Badge] = []
         
-        if currentStreak >= 1 && !statistics.badges.contains(where: { $0.name == "First Day" }) {
+        // Check all eligible badges and add any that are missing
+        if daysSinceStart >= 1 && !statistics.badges.contains(where: { $0.name == "First Day" }) {
             newBadges.append(Badge(name: "First Day", description: "Your first day vape-free!", icon: "star.fill"))
         }
-        if currentStreak >= 7 && !statistics.badges.contains(where: { $0.name == "One Week Strong" }) {
+        if daysSinceStart >= 7 && !statistics.badges.contains(where: { $0.name == "One Week Strong" }) {
             newBadges.append(Badge(name: "One Week Strong", description: "One week without vaping!", icon: "calendar"))
         }
-        if currentStreak >= 30 && !statistics.badges.contains(where: { $0.name == "Month Champion" }) {
+        if daysSinceStart >= 30 && !statistics.badges.contains(where: { $0.name == "Month Champion" }) {
             newBadges.append(Badge(name: "Month Champion", description: "30 days vape-free!", icon: "crown.fill"))
         }
         if statistics.completedQuests >= 10 && !statistics.badges.contains(where: { $0.name == "Quest Master" }) {
             newBadges.append(Badge(name: "Quest Master", description: "Completed 10 quests!", icon: "target"))
         }
         
-        statistics.badges.append(contentsOf: newBadges)
+        // Add all new badges at once
+        if !newBadges.isEmpty {
+            statistics.badges.append(contentsOf: newBadges)
+            objectWillChange.send()
+        }
     }
     
     // MARK: - Quest System
@@ -209,7 +234,14 @@ class AppDataStore: ObservableObject {
             readLessons = readLessonsData
         }
         
+        // Update streak based on loaded progress
+        updateStreak()
         updateLungHealth()
+        
+        // Calculate statistics and check for badges when app loads
+        if currentUser != nil {
+            calculateStatistics()
+        }
     }
     
     func saveUserData() {

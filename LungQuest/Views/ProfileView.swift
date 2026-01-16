@@ -21,13 +21,6 @@ struct ProfileView: View {
                         QuickStatsSection(onCurrentStreakTap: { showShareStreak = true })
                     }
                     
-                    ProfileSection(
-                        title: "Milestones & rewards",
-                        subtitle: "See how your XP and streak open new surprises."
-                    ) {
-                        ProgressionRewardsSection()
-                    }
-                    
                     if dataStore.statistics.badges.count > 0 {
                         ProfileSection(
                             title: "Achievements",
@@ -69,6 +62,7 @@ struct ProfileView: View {
         }
         .sheet(isPresented: $showEditProfile) {
             EditProfileView()
+                .environmentObject(dataStore)
         }
         .sheet(isPresented: $showExportData) {
             ExportDataView()
@@ -120,7 +114,7 @@ struct ProfileHeaderSection: View {
             VStack(alignment: .leading, spacing: 10) {
                 Text(lungMoodCopy)
                     .font(.footnote.weight(.semibold))
-                    .foregroundColor(Color(red: 0.16, green: 0.36, blue: 0.87))
+                    .foregroundColor(Color(red: 0.45, green: 0.72, blue: 0.99))
                     .fixedSize(horizontal: false, vertical: true)
                 
                 VStack(alignment: .leading, spacing: 6) {
@@ -144,25 +138,41 @@ struct ProfileHeaderSection: View {
     }
     
     private var avatarView: some View {
-        ZStack {
-            Circle()
-                .fill(
-                    LinearGradient(
-                        gradient: Gradient(colors: [Color.pink.opacity(0.35), Color.blue.opacity(0.25)]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+        Group {
+            if let imageData = dataStore.currentUser?.profile.preferences.profilePictureData,
+               let uiImage = UIImage(data: imageData) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 84, height: 84)
+                    .clipShape(Circle())
+                    .overlay(
+                        Circle()
+                            .stroke(Color.white.opacity(0.55), lineWidth: 3)
                     )
+                    .shadow(color: Color.black.opacity(0.12), radius: 12, x: 0, y: 6)
+            } else {
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.pink.opacity(0.35), Color.blue.opacity(0.25)]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 84, height: 84)
+                        .shadow(color: Color.black.opacity(0.12), radius: 12, x: 0, y: 6)
+                    Text(userInitials)
+                        .font(.title.weight(.bold))
+                        .foregroundColor(.white)
+                }
+                .overlay(
+                    Circle()
+                        .stroke(Color.white.opacity(0.55), lineWidth: 3)
                 )
-                .frame(width: 84, height: 84)
-                .shadow(color: Color.black.opacity(0.12), radius: 12, x: 0, y: 6)
-            Text(userInitials)
-                .font(.title.weight(.bold))
-                .foregroundColor(.white)
+            }
         }
-        .overlay(
-            Circle()
-                .stroke(Color.white.opacity(0.55), lineWidth: 3)
-        )
     }
     
     private var moodBadge: some View {
@@ -441,11 +451,11 @@ struct SettingsSection: View {
             SettingsRow(
                 icon: "bell.fill",
                 title: "Push Notifications",
-                color: Color(red: 0.31, green: 0.57, blue: 0.99)
+                color: Color(red: 0.45, green: 0.72, blue: 0.99)
             ) {
                 Toggle("", isOn: $notificationsEnabled)
                     .labelsHidden()
-                    .tint(Color(red: 0.31, green: 0.57, blue: 0.99))
+                    .tint(Color(red: 0.45, green: 0.72, blue: 0.99))
             }
             
             SettingsRow(
@@ -475,16 +485,6 @@ struct SettingsSection: View {
                             .fill(Color.white.opacity(0.6))
                     )
                 }
-            }
-            
-            SettingsRow(
-                icon: "moon.fill",
-                title: "Dark Mode",
-                color: .indigo
-            ) {
-                Text("System")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
             }
         }
         .onAppear {
@@ -604,7 +604,7 @@ private struct ProfileSection<Content: View>: View {
             }
             content
         }
-        .softCard(accent: Color(red: 0.31, green: 0.57, blue: 0.99), cornerRadius: 28)
+        .softCard(accent: Color(red: 0.45, green: 0.72, blue: 0.99), cornerRadius: 28)
     }
 }
 
@@ -701,7 +701,8 @@ private struct BadgeShowcaseSection: View {
     @EnvironmentObject var dataStore: AppDataStore
     
     private var badges: [Badge] {
-        Array(dataStore.statistics.badges.suffix(6)).reversed()
+        // Show all badges, most recent first
+        dataStore.statistics.badges.sorted(by: { $0.unlockedDate > $1.unlockedDate })
     }
     
     var body: some View {
@@ -895,48 +896,297 @@ struct EditProfileView: View {
     @EnvironmentObject var dataStore: AppDataStore
     @Environment(\.presentationMode) var presentationMode
     @State private var name = ""
-    @State private var email = ""
-    @State private var dailyCost = ""
+    @State private var weeklyCost = ""
+    @State private var selectedCurrency: String = "USD"
+    @State private var profileImage: UIImage? = nil
+    @State private var showImagePicker = false
+    @State private var showImageSourceSelection = false
+    @State private var imageSourceType: UIImagePickerController.SourceType = .photoLibrary
+    
+    private let currencies: [(code: String, symbol: String)] = [
+        ("USD", "$"),
+        ("EUR", "€"),
+        ("GBP", "£"),
+        ("BRL", "R$")
+    ]
     
     var body: some View {
         NavigationView {
-            Form {
-                Section("Personal Information") {
-                    TextField("Name", text: $name)
-                    TextField("Email", text: $email)
-                        .keyboardType(.emailAddress)
-                }
+            ZStack {
+                Color(white: 0.96)
+                    .ignoresSafeArea()
                 
-                Section("Vaping Information") {
-                    TextField("Daily Cost ($)", text: $dailyCost)
-                        .keyboardType(.decimalPad)
+                ScrollView {
+                    VStack(spacing: 0) {
+                        // Main Card
+                        VStack(spacing: 0) {
+                            // Profile Picture Section
+                            VStack(spacing: 16) {
+                                ZStack {
+                                    if let image = profileImage {
+                                        Image(uiImage: image)
+                                            .resizable()
+                                            .scaledToFill()
+                                    } else {
+                                        Circle()
+                                            .fill(
+                                                LinearGradient(
+                                                    gradient: Gradient(colors: [Color.pink.opacity(0.35), Color.blue.opacity(0.25)]),
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                            )
+                                        
+                                        Text(userInitials)
+                                            .font(.system(size: 40, weight: .bold))
+                                            .foregroundColor(.white)
+                                    }
+                                }
+                                .frame(width: 100, height: 100)
+                                .clipShape(Circle())
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.white, lineWidth: 3)
+                                )
+                                .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+                                .onTapGesture {
+                                    showImageSourceSelection = true
+                                }
+                                
+                                Button(action: {
+                                    showImageSourceSelection = true
+                                }) {
+                                    Text("Change Photo")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(Color(red: 0.45, green: 0.72, blue: 0.99))
+                                }
+                                
+                                // Name Field
+                                TextField("Name", text: $name)
+                                    .font(.system(size: 24, weight: .bold, design: .serif))
+                                    .multilineTextAlignment(.center)
+                                    .padding(.top, 8)
+                                
+                                // Journey Start Date
+                                if let startDate = dataStore.currentUser?.startDate {
+                                    Text("Journey Started: \(formatDate(startDate))")
+                                        .font(.system(size: 13))
+                                        .foregroundColor(.secondary)
+                                        .padding(.top, 4)
+                                }
+                            }
+                            .padding(.top, 32)
+                            .padding(.bottom, 24)
+                            
+                            Divider()
+                                .padding(.horizontal, 24)
+                            
+                            // Information Section
+                            VStack(alignment: .leading, spacing: 20) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "person.fill")
+                                        .font(.system(size: 16))
+                                        .foregroundColor(.secondary)
+                                    Text("Information")
+                                        .font(.system(size: 17, weight: .semibold))
+                                }
+                                .padding(.horizontal, 24)
+                                .padding(.top, 20)
+                                
+                                // Weekly Cost Row
+                                VStack(alignment: .leading, spacing: 12) {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "dollarsign.circle.fill")
+                                            .font(.system(size: 16))
+                                            .foregroundColor(.secondary)
+                                        Text("Amount spent on vaping per week")
+                                            .font(.system(size: 15))
+                                            .foregroundColor(.secondary)
+                                    }
+                                    
+                                    HStack(spacing: 12) {
+                                        // Currency Selector
+                                        Menu {
+                                            ForEach(currencies, id: \.code) { currency in
+                                                Button(action: {
+                                                    selectedCurrency = currency.code
+                                                }) {
+                                                    HStack {
+                                                        Text(currency.symbol)
+                                                        Text(currency.code)
+                                                        if selectedCurrency == currency.code {
+                                                            Image(systemName: "checkmark")
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        } label: {
+                                            HStack(spacing: 6) {
+                                                Text(getCurrencySymbol(for: selectedCurrency))
+                                                    .font(.system(size: 17, weight: .medium))
+                                                Image(systemName: "chevron.down")
+                                                    .font(.system(size: 12))
+                                                    .foregroundColor(.secondary)
+                                            }
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 12)
+                                            .background(Color.gray.opacity(0.1))
+                                            .cornerRadius(10)
+                                        }
+                                        
+                                        // Amount Input
+                                        TextField("0.00", text: $weeklyCost)
+                                            .font(.system(size: 17))
+                                            .keyboardType(.decimalPad)
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 12)
+                                            .background(Color.gray.opacity(0.1))
+                                            .cornerRadius(10)
+                                    }
+                                }
+                                .padding(.horizontal, 24)
+                                .padding(.top, 8)
+                                .padding(.bottom, 20)
+                            }
+                        }
+                        .background(Color.white)
+                        .cornerRadius(20)
+                        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 20)
+                    }
                 }
             }
-            .navigationTitle("Edit Profile")
+            .navigationTitle("Your Profile")
+            .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(
-                leading: Button("Cancel") {
+                leading: Button(action: {
                     presentationMode.wrappedValue.dismiss()
+                }) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.primary)
                 },
                 trailing: Button("Save") {
                     saveChanges()
                 }
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundColor(Color(red: 0.45, green: 0.72, blue: 0.99))
             )
         }
         .onAppear {
             loadCurrentData()
         }
+        .confirmationDialog("Select Photo", isPresented: $showImageSourceSelection, titleVisibility: .visible) {
+            Button("Take Photo") {
+                imageSourceType = .camera
+                showImagePicker = true
+            }
+            Button("Choose from Library") {
+                imageSourceType = .photoLibrary
+                showImagePicker = true
+            }
+            Button("Cancel", role: .cancel) { }
+        }
+        .sheet(isPresented: $showImagePicker) {
+            ImagePicker(sourceType: imageSourceType, selectedImage: $profileImage)
+        }
+    }
+    
+    private var userInitials: String {
+        let name = dataStore.currentUser?.name ?? "User"
+        let components = name.components(separatedBy: " ")
+        if components.count >= 2 {
+            return String(components[0].prefix(1)) + String(components[1].prefix(1))
+        }
+        return String(name.prefix(2))
+    }
+    
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM d, yyyy 'at' h:mm a"
+        return formatter.string(from: date)
+    }
+    
+    private func getCurrencySymbol(for code: String) -> String {
+        return currencies.first(where: { $0.code == code })?.symbol ?? "$"
     }
     
     private func loadCurrentData() {
         name = dataStore.currentUser?.name ?? ""
-        email = dataStore.currentUser?.email ?? ""
-        dailyCost = String(dataStore.currentUser?.profile.vapingHistory.dailyCost ?? 0)
+        let weeklyCostValue = dataStore.currentUser?.profile.vapingHistory.dailyCost ?? 0
+        weeklyCost = weeklyCostValue > 0 ? String(format: "%.2f", weeklyCostValue) : ""
+        selectedCurrency = dataStore.currentUser?.profile.vapingHistory.currency ?? "USD"
+        
+        // Load profile picture if available
+        if let imageData = dataStore.currentUser?.profile.preferences.profilePictureData,
+           let image = UIImage(data: imageData) {
+            profileImage = image
+        }
     }
     
     private func saveChanges() {
-        // Update user data
-        // In a real app, this would update Firebase
+        guard var user = dataStore.currentUser else { return }
+        
+        // Update name
+        user.name = name.isEmpty ? "User" : name
+        
+        // Update weekly cost
+        if let cost = Double(weeklyCost) {
+            user.profile.vapingHistory.dailyCost = cost
+        }
+        
+        // Update currency
+        user.profile.vapingHistory.currency = selectedCurrency
+        
+        // Update profile picture
+        if let image = profileImage,
+           let imageData = image.jpegData(compressionQuality: 0.8) {
+            user.profile.preferences.profilePictureData = imageData
+        }
+        
+        dataStore.currentUser = user
+        dataStore.saveUserData()
         presentationMode.wrappedValue.dismiss()
+    }
+}
+
+// MARK: - Image Picker
+struct ImagePicker: UIViewControllerRepresentable {
+    var sourceType: UIImagePickerController.SourceType
+    @Binding var selectedImage: UIImage?
+    @Environment(\.presentationMode) var presentationMode
+    
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = sourceType
+        picker.delegate = context.coordinator
+        return picker
+    }
+    
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let parent: ImagePicker
+        
+        init(_ parent: ImagePicker) {
+            self.parent = parent
+        }
+        
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+            if let image = info[.originalImage] as? UIImage {
+                parent.selectedImage = image
+            }
+            parent.presentationMode.wrappedValue.dismiss()
+        }
+        
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            parent.presentationMode.wrappedValue.dismiss()
+        }
     }
 }
 
@@ -1003,7 +1253,7 @@ struct ShareStreakView: View {
 
 private struct ShareStreakCard: View {
     @EnvironmentObject var dataStore: AppDataStore
-    private var name: String { dataStore.currentUser?.name ?? "LungQuest" }
+    private var name: String { dataStore.currentUser?.name ?? "Exhale" }
     
     private var days: Int {
         guard let startDate = dataStore.currentUser?.startDate else { return 0 }
@@ -1018,7 +1268,7 @@ private struct ShareStreakCard: View {
                     .font(.headline)
                     .fontWeight(.bold)
                 Spacer()
-                Text("@LungQuest")
+                Text("@Exhale")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -1043,7 +1293,7 @@ private struct ShareStreakCard: View {
                     Text("Scan to start your journey")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    Text("lungquest.app")
+                    Text("exhale.app")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
@@ -1095,7 +1345,7 @@ struct SupportView: View {
                     .font(.headline)
                     .fontWeight(.semibold)
                 
-                Text("Email: support@lungquest.app")
+                Text("Email: f.mirandaassis@gmail.com")
                     .foregroundColor(.black)
                 
                 Spacer()

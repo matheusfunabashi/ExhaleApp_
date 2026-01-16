@@ -79,16 +79,27 @@ class AppFlowManager: ObservableObject {
         self.subscriptionManager = subscriptionManager
         self.isOnboarding = dataStore.currentUser == nil
         self.isLoading = false
+        
+        #if DEBUG
+        // Auto-bypass paywall em builds de desenvolvimento
+        self.isSubscribed = true
+        UserDefaults.standard.set(true, forKey: "isSubscribed")
+        #else
         self.isSubscribed = UserDefaults.standard.bool(forKey: "isSubscribed")
+        #endif
         
         subscriptionManager.$isSubscribed
             .receive(on: RunLoop.main)
             .sink { [weak self] active in
+                #if !DEBUG
                 self?.setSubscription(active: active)
+                #endif
             }
             .store(in: &cancellables)
         
+        #if !DEBUG
         subscriptionManager.start()
+        #endif
         
         dataStore.objectWillChange
             .sink { [weak self] _ in
