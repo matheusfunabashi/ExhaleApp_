@@ -2,7 +2,7 @@ import SwiftUI
 
 struct PrimaryButtonStyle: ButtonStyle {
     private let gradient = LinearGradient(
-        gradient: Gradient(colors: [Color(red: 0.16, green: 0.36, blue: 0.87), Color(red: 0.06, green: 0.21, blue: 0.55)]),
+        gradient: Gradient(colors: [Color(red: 0.45, green: 0.72, blue: 0.99), Color(red: 0.30, green: 0.60, blue: 0.90)]),
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
@@ -32,12 +32,12 @@ struct SecondaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(.subheadline, design: .rounded).weight(.semibold))
-            .foregroundColor(Color(red: 0.16, green: 0.36, blue: 0.87))
+            .foregroundColor(Color(red: 0.45, green: 0.72, blue: 0.99))
             .padding(.horizontal, 28)
             .padding(.vertical, 15)
             .background(
                 RoundedRectangle(cornerRadius: 26, style: .continuous)
-                    .stroke(Color(red: 0.16, green: 0.36, blue: 0.87).opacity(configuration.isPressed ? 0.4 : 0.55), lineWidth: 2)
+                    .stroke(Color(red: 0.45, green: 0.72, blue: 0.99).opacity(configuration.isPressed ? 0.4 : 0.55), lineWidth: 2)
                     .background(
                         RoundedRectangle(cornerRadius: 26, style: .continuous)
                             .fill(Color.white.opacity(0.2))
@@ -52,7 +52,7 @@ struct SoftCardModifier: ViewModifier {
     let accent: Color
     let cornerRadius: CGFloat
     
-    init(accent: Color = Color(red: 0.16, green: 0.36, blue: 0.87), cornerRadius: CGFloat = 24) {
+    init(accent: Color = Color(red: 0.45, green: 0.72, blue: 0.99), cornerRadius: CGFloat = 24) {
         self.accent = accent
         self.cornerRadius = cornerRadius
     }
@@ -95,7 +95,7 @@ struct BreathableBackgroundModifier: ViewModifier {
 }
 
 extension View {
-    func softCard(accent: Color = Color(red: 0.16, green: 0.36, blue: 0.87), cornerRadius: CGFloat = 24) -> some View {
+    func softCard(accent: Color = Color(red: 0.45, green: 0.72, blue: 0.99), cornerRadius: CGFloat = 24) -> some View {
         modifier(SoftCardModifier(accent: accent, cornerRadius: cornerRadius))
     }
     

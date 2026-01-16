@@ -97,24 +97,6 @@ struct OnboardingStep3View: View {
                 .accessibilityHint(beginEnabled ? "Activates the next onboarding step." : "Becomes active once onboarding continues.")
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
-            
-            Button(action: {
-                // TODO: Connect to returning subscriber flow.
-            }) {
-            Text("Already subscribed on the site?")
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(Color.black.opacity(0.75))
-                    .padding(.vertical, 14)
-                    .frame(maxWidth: 320)
-                    .background(Color.white.opacity(0.18), in: Capsule(style: .continuous))
-                    .overlay(
-                        Capsule(style: .continuous)
-                            .stroke(Color.white.opacity(0.28), lineWidth: 1)
-                    )
-            }
-            .buttonStyle(.plain)
-            .frame(maxWidth: .infinity)
-            .accessibilityLabel("Already subscribed on the site?")
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
     }

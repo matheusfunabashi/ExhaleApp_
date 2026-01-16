@@ -2,7 +2,7 @@ import SwiftUI
 import SuperwallKit
 
 @main
-struct LungQuestApp: App {
+struct ExhaleApp: App {
     @StateObject private var dataStore: AppDataStore
     @StateObject private var flowManager: AppFlowManager
     
@@ -18,6 +18,7 @@ struct LungQuestApp: App {
             ContentView()
                 .environmentObject(flowManager)
                 .environmentObject(dataStore)
+                .preferredColorScheme(.light) // Force light mode
         }
     }
 }

@@ -44,42 +44,41 @@ struct StatsOverviewSection: View {
     @EnvironmentObject var dataStore: AppDataStore
     
     var body: some View {
-        VStack(spacing: 20) {
-            // Large Days vape-free card (centered)
-            VStack(spacing: 12) {
+        VStack(spacing: 24) {
+            // Large Days vape-free card (primary, centered, simpler)
+            VStack(spacing: 8) {
                 Text("Days vape-free")
                     .font(.caption)
                     .fontWeight(.medium)
                     .foregroundColor(.secondary)
                 
                 Text("\(daysFromStartDate)")
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                    .font(.system(size: 56, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .foregroundColor(.primary)
                 
                 Text("Your streak keeps lungs brighter and cravings quieter.")
-                    .font(.footnote)
+                    .font(.caption)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
+                    .padding(.top, 4)
             }
             .frame(maxWidth: .infinity)
-            .padding(24)
+            .padding(.vertical, 32)
+            .padding(.horizontal, 24)
             .background(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(Color(UIColor.systemBackground))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 24, style: .continuous)
-                            .stroke(Color.orange.opacity(0.2), lineWidth: 1)
-                    )
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(Color.white)
+                    .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 4)
             )
             
-            // Grid of 4 cards
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: 2), spacing: 16) {
+            // Grid of 4 stat cards (secondary, unified design)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 2), spacing: 12) {
                 StatCard(
                     title: "Money Saved",
                     value: String(format: "$%.0f", moneySavedFromStartDate),
                     emoji: "💰",
-                    color: .blue,
+                    accentColor: Color(red: 0.2, green: 0.6, blue: 0.9), // Soft blue
                     subtitle: "Keep it up!"
                 )
                 
@@ -87,7 +86,7 @@ struct StatsOverviewSection: View {
                     title: "Longest Streak",
                     value: "\(longestStreakFromStartDate)",
                     emoji: "🏆",
-                    color: .orange,
+                    accentColor: Color(red: 0.95, green: 0.7, blue: 0.3), // Soft orange
                     subtitle: "Personal best"
                 )
                 
@@ -95,7 +94,7 @@ struct StatsOverviewSection: View {
                     title: "Total XP",
                     value: "\(dataStore.statistics.totalXP)",
                     emoji: "⭐",
-                    color: .purple,
+                    accentColor: Color(red: 0.7, green: 0.5, blue: 0.9), // Soft purple
                     subtitle: "Level \(dataStore.statistics.currentLevel)"
                 )
                 
@@ -103,7 +102,7 @@ struct StatsOverviewSection: View {
                     title: "Quests Done",
                     value: "\(dataStore.statistics.completedQuests)",
                     emoji: "🎯",
-                    color: .pink,
+                    accentColor: Color(red: 0.9, green: 0.5, blue: 0.6), // Soft pink
                     subtitle: "Challenges conquered"
                 )
             }
@@ -267,7 +266,7 @@ struct ProgressVsPlanSection: View {
                     .padding(.top, 6)
             }
         }
-        .softCard(accent: Color(red: 0.31, green: 0.57, blue: 0.99), cornerRadius: 28)
+        .softCard(accent: Color(red: 0.45, green: 0.72, blue: 0.99), cornerRadius: 28)
     }
     
     private struct ProgressPoint { let date: Date; let cumulativeSuccessRatio: Double }
@@ -438,7 +437,8 @@ struct AchievementsSection: View {
                     .padding(.vertical, 24)
             } else {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 16) {
-                    ForEach(Array(dataStore.statistics.badges.suffix(6))) { badge in
+                    // Show all badges, most recent first
+                    ForEach(Array(dataStore.statistics.badges.sorted(by: { $0.unlockedDate > $1.unlockedDate }))) { badge in
                         BadgeView(badge: badge)
                     }
                 }
@@ -452,12 +452,12 @@ struct HealthMilestonesSection: View {
     @EnvironmentObject var dataStore: AppDataStore
     
     private let milestones = [
-        (days: 1, title: "20 minutes", description: "Heart rate and blood pressure drop"),
-        (days: 3, title: "72 hours", description: "Nicotine is completely out of your system"),
-        (days: 7, title: "1 week", description: "Taste and smell improve"),
-        (days: 30, title: "1 month", description: "Lung function increases up to 30%"),
-        (days: 90, title: "3 months", description: "Circulation improves significantly"),
-        (days: 365, title: "1 year", description: "Risk of heart disease cut in half")
+        (days: 1, title: "First Steps", description: "Heart rate and blood pressure drop"),
+        (days: 3, title: "Nicotine Free", description: "Nicotine is completely out of your system"),
+        (days: 7, title: "One Week Strong", description: "Taste and smell improve"),
+        (days: 30, title: "One Month", description: "Lung function increases up to 30%"),
+        (days: 90, title: "Three Months", description: "Circulation improves significantly"),
+        (days: 365, title: "One Year", description: "Risk of heart disease cut in half")
     ]
     
     private var daysFromStartDate: Int {
@@ -466,82 +466,195 @@ struct HealthMilestonesSection: View {
         return max(0, Int(elapsed) / 86_400)
     }
     
+    private var nextMilestone: (days: Int, title: String, description: String)? {
+        milestones.first { daysFromStartDate < $0.days }
+    }
+    
+    private var upcomingMilestones: [(days: Int, title: String, description: String)] {
+        guard let next = nextMilestone else { return [] }
+        let nextIndex = milestones.firstIndex { $0.days == next.days } ?? 0
+        return Array(milestones.suffix(from: nextIndex + 1))
+    }
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Health milestones")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                Text("Every day vape-free unlocks new healing moments for your body.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+        VStack(alignment: .leading, spacing: 20) {
+            // Header with title and "More" button
+            HStack {
+                Text("Your Milestones")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                Button(action: {}) {
+                    HStack(spacing: 4) {
+                        Text("More")
+                            .font(.system(size: 14, weight: .semibold))
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 12, weight: .semibold))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color(red: 0.45, green: 0.72, blue: 0.99), Color(red: 0.60, green: 0.80, blue: 1.0)]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .cornerRadius(12)
+                }
             }
             
-            LazyVStack(spacing: 14) {
-                ForEach(milestones, id: \.days) { milestone in
-                    MilestoneRow(
+            // Description text
+            Text("Celebrate achievements as you progress through milestones, which represent significant points of growth.")
+                .font(.system(size: 14))
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            
+            VStack(spacing: 16) {
+                // Next Milestone Card
+                if let next = nextMilestone {
+                    MilestoneCard(
+                        label: "NEXT MILESTONE",
+                        title: next.title,
+                        daysFree: next.days,
+                        isNext: true,
+                        isCompleted: false,
+                        currentDays: daysFromStartDate,
+                        daysRequired: next.days
+                    )
+                }
+                
+                // Upcoming Milestones
+                ForEach(upcomingMilestones, id: \.days) { milestone in
+                    MilestoneCard(
+                        label: "UPCOMING",
                         title: milestone.title,
-                        description: milestone.description,
-                        isCompleted: daysFromStartDate >= milestone.days,
-                        daysRequired: milestone.days,
-                        currentDays: daysFromStartDate
+                        daysFree: milestone.days,
+                        isNext: false,
+                        isCompleted: false,
+                        currentDays: daysFromStartDate,
+                        daysRequired: milestone.days
                     )
                 }
             }
         }
-        .softCard(accent: .green, cornerRadius: 28)
+        .padding(20)
+        .background(Color.white)
+        .cornerRadius(20)
+        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
     }
 }
 
-struct MilestoneRow: View {
+struct MilestoneCard: View {
+    let label: String
     let title: String
-    let description: String
+    let daysFree: Int
+    let isNext: Bool
     let isCompleted: Bool
-    let daysRequired: Int
     let currentDays: Int
+    let daysRequired: Int
+    
+    private var progress: Double {
+        guard daysRequired > 0 else { return 0 }
+        return min(1.0, Double(currentDays) / Double(daysRequired))
+    }
+    
+    private var progressPercentage: Int {
+        Int(progress * 100)
+    }
     
     var body: some View {
         HStack(spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill((isCompleted ? Color.green : Color.orange).opacity(0.18))
-                    .frame(width: 48, height: 48)
-                    .overlay(
-                        Circle()
-                            .stroke((isCompleted ? Color.green : Color.orange).opacity(0.3), lineWidth: 1)
-                    )
-                Image(systemName: isCompleted ? "checkmark" : "clock")
-                    .foregroundColor(isCompleted ? .green : .orange)
-                    .font(.headline)
-            }
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                    .foregroundColor(isCompleted ? .green : .primary)
-                Text(description)
-                    .font(.caption)
+            VStack(alignment: .leading, spacing: 8) {
+                Text(label)
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(.secondary)
-                    .lineLimit(2)
-                if !isCompleted {
-                    Text("\(max(0, daysRequired - currentDays)) days to go")
-                        .font(.caption2)
-                        .foregroundColor(.orange)
+                    .textCase(.uppercase)
+                
+                Text(title)
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundColor(.primary)
+                
+                Text("\(daysFree) Days Free")
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+                
+                // Progress bar for upcoming milestones
+                if !isNext {
+                    HStack(spacing: 8) {
+                        GeometryReader { geometry in
+                            ZStack(alignment: .leading) {
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(Color.gray.opacity(0.2))
+                                    .frame(height: 4)
+                                
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(Color(red: 0.45, green: 0.72, blue: 0.99))
+                                    .frame(width: geometry.size.width * progress, height: 4)
+                            }
+                        }
+                        .frame(height: 4)
+                        
+                        Text("\(progressPercentage)%")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.secondary)
+                            .frame(width: 35, alignment: .trailing)
+                    }
                 }
             }
             
             Spacer()
+            
+            // Icon square with lock
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color.black.opacity(0.3),
+                                Color.black.opacity(0.5)
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 60, height: 60)
+                    .blur(radius: 2)
+                
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.black.opacity(0.4))
+                    .frame(width: 60, height: 60)
+                
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.white)
+            }
         }
-        .padding(14)
+        .padding(20)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color.white.opacity(isCompleted ? 0.85 : 0.7))
+            Group {
+                if isNext {
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(red: 0.45, green: 0.72, blue: 0.99).opacity(0.15),
+                            Color(red: 0.60, green: 0.80, blue: 1.0).opacity(0.1)
+                        ]),
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                } else {
+                    Color.white
+                }
+            }
         )
+        .cornerRadius(16)
         .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Color.white.opacity(0.4), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
         )
-        .opacity(isCompleted ? 1.0 : 0.85)
     }
 }
 
@@ -549,52 +662,53 @@ struct StatCard: View {
     let title: String
     let value: String
     let emoji: String
-    let color: Color
+    let accentColor: Color
     let subtitle: String?
     
-    init(title: String, value: String, emoji: String, color: Color, subtitle: String? = nil) {
+    init(title: String, value: String, emoji: String, accentColor: Color, subtitle: String? = nil) {
         self.title = title
         self.value = value
         self.emoji = emoji
-        self.color = color
+        self.accentColor = accentColor
         self.subtitle = subtitle
     }
     
     var body: some View {
-        VStack(spacing: 12) {
-            // Emoji at top
+        VStack(spacing: 10) {
+            // Emoji icon - consistent size
             Text(emoji)
-                .font(.system(size: 36))
+                .font(.system(size: 32))
             
-            // Value
+            // Value - visual focus, larger and bold
             Text(value)
-                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundColor(.primary)
                 .monospacedDigit()
             
-            // Title
+            // Title - clearly secondary
             Text(title.uppercased())
-                .font(.caption2)
-                .kerning(0.8)
+                .font(.caption)
+                .kerning(0.5)
                 .foregroundColor(.secondary)
             
-            // Subtitle if available
+            // Subtitle - restrained micro-copy
             if let subtitle = subtitle {
                 Text(subtitle)
                     .font(.caption2)
-                    .foregroundColor(color.opacity(0.7))
+                    .foregroundColor(accentColor.opacity(0.6))
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 18)
-        .padding(.horizontal, 12)
+        .padding(.vertical, 20)
+        .padding(.horizontal, 16)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color(UIColor.systemBackground))
+                .fill(Color.white)
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(color.opacity(0.2), lineWidth: 1)
+                        .stroke(accentColor.opacity(0.12), lineWidth: 1)
                 )
+                .shadow(color: Color.black.opacity(0.03), radius: 4, x: 0, y: 2)
         )
     }
 }
@@ -627,32 +741,78 @@ struct PuffCountChartSection: View {
     @EnvironmentObject var dataStore: AppDataStore
     let timeFrame: ProgressView.TimeFrame
     
+    // Primary accent color - same as app
+    private let primaryAccentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Daily puff count")
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                    Text("Notice how your puffs shrink as your streak grows.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+        VStack(alignment: .leading, spacing: 20) {
+            // Strong headline
+            Text("Daily puff count")
+                .font(.title2)
+                .fontWeight(.bold)
+            
+            // Takeaway at the top - immediate insight
+            if let todayProgress = todayProgress {
+                HStack(spacing: 8) {
+                    if todayProgress.puffInterval == .none {
+                        Text("🎉")
+                            .font(.title3)
+                        Text("Vape-free day!")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(primaryAccentColor)
+                    } else {
+                        Text("📊")
+                            .font(.title3)
+                        Text("\(todayProgress.puffInterval.displayName) today")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.primary)
+                    }
                 }
-                Spacer()
-                Image(systemName: "lungs.fill")
-                    .foregroundColor(.orange)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 16)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(todayProgress.puffInterval == .none ? primaryAccentColor.opacity(0.1) : Color.gray.opacity(0.08))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(todayProgress.puffInterval == .none ? primaryAccentColor.opacity(0.3) : Color.clear, lineWidth: 1)
+                        )
+                )
             }
             
+            // Lighter explanatory text
+            Text("Track your progress as puffs decrease over time.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            // Chart - secondary to insight
             if filteredProgressData.isEmpty {
                 EmptyChartView(message: "No puff data available for this time period")
             } else {
                 Chart(filteredProgressData, id: \.date) { progress in
+                    // Highlight zero puffs with glow
+                    if progress.puffInterval == .none {
+                        AreaMark(
+                            x: .value("Date", progress.date),
+                            y: .value("Puffs", 0.5)
+                        )
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [primaryAccentColor.opacity(0.15), primaryAccentColor.opacity(0.05)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                    }
+                    
                     LineMark(
                         x: .value("Date", progress.date),
                         y: .value("Puffs", progress.puffInterval.numericValue)
                     )
-                    .foregroundStyle(progress.puffInterval.color)
-                    .lineStyle(StrokeStyle(lineWidth: 3))
+                    .foregroundStyle(progress.puffInterval == .none ? primaryAccentColor : primaryAccentColor.opacity(0.6))
+                    .lineStyle(StrokeStyle(lineWidth: progress.puffInterval == .none ? 3.5 : 2.5))
                     
                     AreaMark(
                         x: .value("Date", progress.date),
@@ -660,7 +820,10 @@ struct PuffCountChartSection: View {
                     )
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [progress.puffInterval.color.opacity(0.3), progress.puffInterval.color.opacity(0.1)],
+                            colors: [
+                                (progress.puffInterval == .none ? primaryAccentColor : primaryAccentColor.opacity(0.4)).opacity(0.2),
+                                (progress.puffInterval == .none ? primaryAccentColor : primaryAccentColor.opacity(0.4)).opacity(0.05)
+                            ],
                             startPoint: .top,
                             endPoint: .bottom
                         )
@@ -670,60 +833,80 @@ struct PuffCountChartSection: View {
                         x: .value("Date", progress.date),
                         y: .value("Puffs", progress.puffInterval.numericValue)
                     )
-                    .foregroundStyle(progress.puffInterval.color)
-                    .symbolSize(50)
+                    .foregroundStyle(progress.puffInterval == .none ? primaryAccentColor : primaryAccentColor.opacity(0.7))
+                    .symbolSize(progress.puffInterval == .none ? 60 : 40)
                 }
-                .frame(height: 210)
-                .chartYScale(domain: 0...4)
+                .frame(height: 180)
+                .chartYScale(domain: chartYDomain)
                 .chartXAxis {
                     AxisMarks(values: .stride(by: .day, count: timeFrame == .week ? 1 : 7)) { value in
-                        AxisGridLine()
+                        AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [2, 4]))
+                            .foregroundStyle(Color.gray.opacity(0.15))
                         AxisValueLabel(format: .dateTime.weekday(.abbreviated))
+                            .foregroundStyle(Color.secondary)
+                            .font(.caption2)
                     }
                 }
                 .chartYAxis {
                     AxisMarks(position: .leading) { value in
-                        AxisGridLine()
+                        AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [2, 4]))
+                            .foregroundStyle(Color.gray.opacity(0.15))
                         if let intValue = value.as(Int.self),
-                           let interval = PuffInterval.allCases.first(where: { $0.numericValue == intValue }) {
-                            AxisValueLabel(interval.shortName)
+                           intValue >= 0 && intValue <= 4 {
+                            AxisValueLabel {
+                                if let interval = PuffInterval.allCases.first(where: { $0.numericValue == intValue }) {
+                                    Text(interval == .none ? "0" : interval.shortName)
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
                         }
                     }
                 }
             }
             
-            HStack(spacing: 20) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Most common")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Text(mostCommonInterval.displayName)
-                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                        .foregroundColor(mostCommonInterval.color)
-                }
+            // Stats row - game rewards style
+            HStack(spacing: 24) {
+                StatRewardCard(
+                    label: "Most common",
+                    value: mostCommonInterval.displayName,
+                    isHighlight: false
+                )
                 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Best day")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Text(bestInterval.displayName)
-                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                        .foregroundColor(.green)
-                }
+                StatRewardCard(
+                    label: "Best day",
+                    value: bestInterval.displayName,
+                    isHighlight: bestInterval == .none
+                )
                 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Vape-free days")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Text("\(vapeFreeDays)")
-                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                        .foregroundColor(.blue)
-                }
+                StatRewardCard(
+                    label: "Vape-free",
+                    value: "\(vapeFreeDays)",
+                    isHighlight: vapeFreeDays > 0
+                )
                 
                 Spacer()
             }
         }
-        .softCard(accent: Color.orange, cornerRadius: 28)
+        .padding(24)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white)
+                .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
+        )
+    }
+    
+    private var todayProgress: DailyProgress? {
+        return filteredProgressData.first { Calendar.current.isDateInToday($0.date) }
+    }
+    
+    private var chartYDomain: ClosedRange<Int> {
+        let maxValue = filteredProgressData.map { $0.puffInterval.numericValue }.max() ?? 0
+        // If all values are zero, compress the domain to show zero prominently
+        if maxValue == 0 {
+            return 0...1
+        }
+        return 0...4
     }
     
     private var filteredProgressData: [DailyProgress] {
@@ -757,6 +940,29 @@ struct PuffCountChartSection: View {
     
     private var vapeFreeDays: Int {
         filteredProgressData.filter { $0.puffInterval == .none }.count
+    }
+}
+
+struct StatRewardCard: View {
+    let label: String
+    let value: String
+    let isHighlight: Bool
+    
+    private let primaryAccentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            // Number prominence - game reward style
+            Text(value)
+                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .foregroundColor(isHighlight ? primaryAccentColor : .primary)
+            
+            // Reduced label weight
+            Text(label)
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .kerning(0.3)
+        }
     }
 }
 
@@ -802,20 +1008,27 @@ struct MotivationTile: View {
     let message: String
     
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .center, spacing: 12) {
             Text(emoji)
-                .font(.system(size: 24))
-                .padding(10)
-                .background(
-                    Circle().fill(accent.opacity(0.15))
-                )
-            Text(message).font(.caption).foregroundColor(.secondary)
+                .font(.system(size: 20))
+            
+            Text(message)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            
             Spacer(minLength: 0)
         }
-        .padding(12)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(accent.opacity(0.12))
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(accent.opacity(0.15), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.02), radius: 4, x: 0, y: 2)
         )
     }
 }
@@ -826,143 +1039,135 @@ struct GoalProgressSection: View {
     @State private var selectedMonth = Date()
     @State private var timer: Timer?
     
+    // Primary accent color - same as app
+    private let primaryAccentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
+    
     var body: some View {
-        VStack(spacing: 20) {
-            // Goal Progress Card
-            VStack(alignment: .leading, spacing: 16) {
-                // Today's date
-                Text("Today is \(formattedDate)")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
+        VStack(spacing: 24) {
+            // Goal Progress Card - answers: what day, how I'm doing, what's next
+            VStack(alignment: .leading, spacing: 20) {
+                // Today's date - secondary label
+                Text(formattedDate)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
                 
-                // Progress to Goal
-                HStack(spacing: 12) {
-                    // Target icon
-                    ZStack {
-                        Circle()
-                            .fill(Color.green.opacity(0.15))
-                            .frame(width: 50, height: 50)
-                        Image(systemName: "target")
-                            .font(.system(size: 24))
-                            .foregroundColor(.green)
-                    }
+                // Progress to Goal - PRIMARY FOCUS
+                VStack(alignment: .leading, spacing: 12) {
+                    // Large percentage as visual focus
+                    Text("\(progressPercentage)%")
+                        .font(.system(size: 48, weight: .bold, design: .rounded))
+                        .foregroundColor(.primary)
+                        .monospacedDigit()
                     
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Progress to Goal: \(progressPercentage)% complete")
-                            .font(.subheadline)
-                            .foregroundColor(.primary)
-                        
-                        // Progress bar
-                        GeometryReader { geometry in
-                            ZStack(alignment: .leading) {
-                                RoundedRectangle(cornerRadius: 4)
-                                    .fill(Color.gray.opacity(0.2))
-                                    .frame(height: 8)
-                                
-                                RoundedRectangle(cornerRadius: 4)
-                                    .fill(Color.green)
-                                    .frame(width: geometry.size.width * CGFloat(progressPercentage) / 100, height: 8)
-                            }
+                    // Simplified label
+                    Text("Progress to Goal")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
+                    // Progress bar - using app accent color
+                    GeometryReader { geometry in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(Color.gray.opacity(0.15))
+                                .frame(height: 6)
+                            
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(primaryAccentColor)
+                                .frame(width: geometry.size.width * CGFloat(progressPercentage) / 100, height: 6)
                         }
-                        .frame(height: 8)
-                        
-                        Text("\(currentDays)/\(targetDays) Days")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
                     }
+                    .frame(height: 6)
+                    
+                    // Days count - secondary
+                    Text("\(currentDays) of \(targetDays) days")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
                 
+                // Divider
                 Divider()
+                    .padding(.vertical, 4)
                 
-                // Next Milestone
-                HStack(spacing: 12) {
-                    // Mountain icon
-                    ZStack {
-                        Circle()
-                            .fill(Color.yellow.opacity(0.15))
-                            .frame(width: 50, height: 50)
-                        Image(systemName: "mountain.2.fill")
-                            .font(.system(size: 24))
-                            .foregroundColor(.gray)
-                    }
+                // Next Milestone - SECONDARY, motivating and concrete
+                HStack(alignment: .center, spacing: 10) {
+                    Text("Next Milestone")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                     
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Next Milestone: Final Goal!")
-                            .font(.subheadline)
-                            .foregroundColor(.primary)
-                        
-                        Text(countdownTimer)
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .foregroundColor(.secondary)
-                    }
+                    Spacer()
+                    
+                    Text(daysRemainingText)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
                 }
             }
-            .padding(20)
+            .padding(24)
             .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(Color(UIColor.systemBackground))
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(Color.white)
+                    .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
             )
             
             // Calendar Card
             VStack(spacing: 16) {
-                // Calendar header
+                // Calendar header - lighter
                 HStack {
                     Button(action: { changeMonth(-1) }) {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.primary)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.secondary)
                     }
                     
                     Spacer()
                     
                     Text(monthYearString)
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.secondary)
                     
                     Spacer()
                     
                     Button(action: { changeMonth(1) }) {
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.primary)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.secondary)
                     }
                 }
                 .padding(.horizontal, 4)
                 
-                // Days of week
+                // Days of week - lighter
                 HStack(spacing: 0) {
                     ForEach(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], id: \.self) { day in
                         Text(day)
-                            .font(.caption)
+                            .font(.caption2)
                             .fontWeight(.medium)
-                            .foregroundColor(.primary)
+                            .foregroundColor(.secondary)
                             .frame(maxWidth: .infinity)
                     }
                 }
                 
-                // Calendar grid
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 8) {
+                // Calendar grid - perfect spacing
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 7), spacing: 4) {
                     ForEach(calendarDays, id: \.id) { day in
                         CalendarDayView(
                             day: day,
                             isToday: isToday(day.date),
                             isStartDate: isStartDate(day.date),
                             isGoalDate: isGoalDate(day.date),
-                            isInProgressRange: isInProgressRange(day.date)
+                            isInProgressRange: isInProgressRange(day.date),
+                            accentColor: primaryAccentColor
                         )
                     }
                 }
             }
             .padding(20)
             .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(Color(UIColor.systemBackground))
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(Color.white)
+                    .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
             )
         }
-        .softCard(accent: Color.gray, cornerRadius: 28)
         .onAppear {
             currentDate = Date()
             selectedMonth = Date()
@@ -1006,20 +1211,15 @@ struct GoalProgressSection: View {
         return min(100, Int((Double(currentDays) / Double(targetDays)) * 100))
     }
     
-    private var countdownTimer: String {
+    private var daysRemainingText: String {
         let daysRemaining = max(0, targetDays - currentDays)
-        guard let startDate = dataStore.currentUser?.startDate,
-              let goalDate = Calendar.current.date(byAdding: .day, value: targetDays, to: startDate) else {
-            return "\(daysRemaining)d 23h 59m 08s"
+        if daysRemaining == 0 {
+            return "Goal reached!"
+        } else if daysRemaining == 1 {
+            return "1 day remaining"
+        } else {
+            return "\(daysRemaining) days remaining"
         }
-        
-        let now = Date()
-        let components = Calendar.current.dateComponents([.hour, .minute, .second], from: now, to: goalDate)
-        let hours = max(0, components.hour ?? 0)
-        let minutes = max(0, components.minute ?? 0)
-        let seconds = max(0, components.second ?? 0)
-        
-        return "\(daysRemaining)d \(hours)h \(minutes)m \(seconds)s"
     }
     
     private var monthYearString: String {
@@ -1124,47 +1324,24 @@ struct CalendarDayView: View {
     let isStartDate: Bool
     let isGoalDate: Bool
     let isInProgressRange: Bool
+    let accentColor: Color
     
     var body: some View {
-        VStack(spacing: 2) {
-            Text("\(day.dayNumber)")
-                .font(.system(size: 14, weight: isToday ? .bold : .regular))
-                .foregroundColor(dayColor)
-                .frame(width: 32, height: 32)
-                .background(backgroundShape)
-            
-            if isStartDate {
-                Image(systemName: "circle.fill")
-                    .font(.system(size: 4))
-                    .foregroundColor(.red)
-                    .offset(y: -2)
-            } else if isGoalDate {
-                ZStack {
-                    Circle()
-                        .stroke(Color.green, lineWidth: 1.5)
-                        .frame(width: 16, height: 16)
-                    Image(systemName: "target")
-                        .font(.system(size: 7))
-                        .foregroundColor(.green)
-                }
-                .offset(y: -2)
-            } else {
-                Spacer()
-                    .frame(height: 4)
-            }
-        }
-        .frame(height: 44)
+        Text("\(day.dayNumber)")
+            .font(.system(size: 15, weight: isToday ? .semibold : .regular))
+            .foregroundColor(dayColor)
+            .frame(width: 36, height: 36)
+            .background(backgroundShape)
+            .frame(maxWidth: .infinity)
     }
     
     private var dayColor: Color {
         if !day.isCurrentMonth {
-            return .gray.opacity(0.3)
+            return .gray.opacity(0.25)
         } else if isToday {
             return .primary
-        } else if isStartDate {
-            return .green
         } else if isInProgressRange {
-            return .green
+            return .primary
         } else {
             return .primary
         }
@@ -1173,15 +1350,27 @@ struct CalendarDayView: View {
     @ViewBuilder
     private var backgroundShape: some View {
         if isToday {
+            // Today - clearly highlighted but neutral
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color.gray.opacity(0.2))
-        } else if isStartDate && day.isCurrentMonth {
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.green.opacity(0.15))
+                .fill(Color.gray.opacity(0.15))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                )
         } else if isInProgressRange && day.isCurrentMonth {
+            // Completed days - soft filled background
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color.green.opacity(0.1))
+                .fill(accentColor.opacity(0.12))
+        } else if isGoalDate && day.isCurrentMonth {
+            // Goal date - subtle accent
+            RoundedRectangle(cornerRadius: 8)
+                .fill(accentColor.opacity(0.08))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(accentColor.opacity(0.3), lineWidth: 1)
+                )
         } else {
+            // Future days - minimal
             Color.clear
         }
     }

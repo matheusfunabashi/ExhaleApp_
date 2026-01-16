@@ -4,8 +4,8 @@ struct LearningView: View {
     @EnvironmentObject var dataStore: AppDataStore
     @State private var selectedLesson: Lesson? = nil
     
-    // Primary brand color - used consistently throughout
-    private let primaryAccentColor = Color(red: 0.16, green: 0.36, blue: 0.87)
+    // Primary brand color - used consistently throughout (light blue)
+    private let primaryAccentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
     
     private var topics: [LearningTopic] {
         [
@@ -143,7 +143,7 @@ struct LearningView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 22) {
+                VStack(spacing: 32) {
                     ForEach(topics) { topic in
                         LearningTopicCard(
                             topic: topic,
@@ -155,7 +155,8 @@ struct LearningView: View {
                         )
                     }
                 }
-                .padding()
+                .padding(.horizontal)
+                .padding(.vertical, 20)
             }
             .navigationTitle("Learn")
             .breathableBackground()
@@ -202,49 +203,46 @@ private struct LearningTopicCard: View {
     let encouragement: String
     let onLessonTap: (Lesson) -> Void
     
-    // Primary brand color - consistent across all sections
-    private let primaryAccentColor = Color(red: 0.16, green: 0.36, blue: 0.87)
+    // Primary brand color - consistent across all sections (light blue)
+    private let primaryAccentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 24) {
+            // Section header - more prominent
+            VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .center, spacing: 12) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(Color.gray.opacity(0.1))
-                        .frame(width: 54, height: 54)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .stroke(Color.gray.opacity(0.15), lineWidth: 1)
-                        )
                     Group {
                         if topic.icon.unicodeScalars.first?.properties.isEmoji == true {
                             Text(topic.icon)
                                 .font(.title2)
                         } else {
-                            Image(systemName: topic.icon)
+                    Image(systemName: topic.icon)
                                 .foregroundColor(primaryAccentColor)
-                                .font(.title2)
-                        }
-                    }
+                        .font(.title2)
                 }
-                VStack(alignment: .leading, spacing: 6) {
+                    }
                     Text(topic.title)
-                        .font(.title3.weight(.semibold))
+                        .font(.title2.weight(.bold))
+                        .foregroundColor(.primary)
+                }
                     Text(topic.blurb)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                
+                // Thinner progress bar
+                HStack(spacing: 8) {
+                    SwiftUI.ProgressView(value: progress)
+                        .tint(primaryAccentColor)
+                        .frame(height: 2)
+                    Text("\(Int(progress * 100))%")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    HStack(spacing: 6) {
-                        SwiftUI.ProgressView(value: progress)
-                            .tint(primaryAccentColor)
-                            .frame(height: 4)
-                        Text("\(Int(progress * 100))%")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
+                        .frame(width: 35, alignment: .trailing)
                 }
             }
             
-            VStack(alignment: .leading, spacing: 12) {
+            // Lessons with increased vertical spacing
+            VStack(alignment: .leading, spacing: 16) {
                 ForEach(topic.lessons) { lesson in
                     LessonTile(lesson: lesson, accent: primaryAccentColor, onTap: {
                         onLessonTap(lesson)
@@ -259,7 +257,10 @@ private struct LearningTopicCard: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .softCard(accent: primaryAccentColor, cornerRadius: 30)
+        .padding(20)
+        .background(Color.white)
+        .cornerRadius(20)
+        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
         .accessibilityElement(children: .combine)
     }
 }
@@ -275,82 +276,77 @@ private struct LessonTile: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: 14) {
+            // Icon - subtle completion indicator
                 ZStack {
                     Circle()
-                        .fill(isRead ? Color.green.opacity(0.15) : accent.opacity(0.15))
-                        .frame(width: 42, height: 42)
-                        .overlay(
-                            Circle()
-                                .stroke(isRead ? Color.green.opacity(0.25) : accent.opacity(0.25), lineWidth: 1)
-                        )
-                    if isRead {
-                        Image(systemName: "checkmark")
-                            .foregroundColor(.green)
-                            .font(.headline.weight(.bold))
+                    .fill(accent.opacity(0.1))
+                    .frame(width: 40, height: 40)
+                
+                if isRead {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(accent.opacity(0.6))
+                        .font(.title3)
+                } else {
+                    if lesson.icon.unicodeScalars.first?.properties.isEmoji == true {
+                        Text(lesson.icon)
+                            .font(.title3)
                     } else {
-                        if lesson.icon.unicodeScalars.first?.properties.isEmoji == true {
-                            Text(lesson.icon)
-                                .font(.headline)
-                        } else {
-                            Image(systemName: lesson.icon)
-                                .foregroundColor(accent)
-                                .font(.headline)
-                        }
+                    Image(systemName: lesson.icon)
+                        .foregroundColor(accent)
+                            .font(.title3)
                     }
                 }
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text(lesson.title)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundColor(.primary)
-                        if isRead {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
-                                .font(.caption)
-                        }
-                    }
+            }
+            
+            VStack(alignment: .leading, spacing: 6) {
+                // Bolder title
+                    Text(lesson.title)
+                    .font(.headline.weight(.bold))
+                        .foregroundColor(.primary)
+                
+                // Lighter, smaller description
                     Text(lesson.summary)
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
-                    HStack(spacing: 6) {
-                        Label("\(lesson.durationMinutes) min read", systemImage: "clock")
+                
+                // Low-contrast pills
+                HStack(spacing: 8) {
+                    Text("\(lesson.durationMinutes) min read")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .padding(.vertical, 3)
+                        .padding(.horizontal, 8)
+                        .background(
+                            Capsule()
+                                .fill(Color.gray.opacity(0.08))
+                        )
+                    
+                    if isRead {
+                        Text("Read")
                             .font(.caption2)
-                            .foregroundColor(accent)
-                            .padding(.vertical, 4)
+                            .foregroundColor(.secondary)
+                            .padding(.vertical, 3)
                             .padding(.horizontal, 8)
                             .background(
                                 Capsule()
-                                    .fill(accent.opacity(0.12))
+                                    .fill(Color.gray.opacity(0.08))
                             )
-                        if isRead {
-                            Text("Read")
-                                .font(.caption2)
-                                .foregroundColor(.green)
-                                .padding(.vertical, 4)
-                                .padding(.horizontal, 8)
-                                .background(
-                                    Capsule()
-                                        .fill(Color.green.opacity(0.12))
-                                )
-                        }
                     }
                 }
-                Spacer(minLength: 0)
             }
+            
+            Spacer()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(10)
+        .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color.white.opacity(0.6))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .stroke(isRead ? Color.green.opacity(0.3) : Color.gray.opacity(0.1), lineWidth: 1)
-                )
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white)
+                .shadow(color: Color.black.opacity(0.03), radius: 4, x: 0, y: 2)
         )
+        .opacity(isRead ? 0.85 : 1.0) // Subtle opacity for completed items
         .onTapGesture {
             onTap()
         }
@@ -511,9 +507,9 @@ struct LessonDetailModal: View {
                             Text(lesson.icon)
                                 .font(.system(size: 24, weight: .medium))
                         } else {
-                            Image(systemName: lesson.icon)
-                                .foregroundColor(accent)
-                                .font(.system(size: 24, weight: .medium))
+                    Image(systemName: lesson.icon)
+                        .foregroundColor(accent)
+                        .font(.system(size: 24, weight: .medium))
                         }
                     }
                 }
@@ -620,16 +616,17 @@ struct LessonDetailModal: View {
                 .padding(.vertical, 16)
                 .background(
                     LinearGradient(
-                        gradient: Gradient(colors: isRead ? [Color.green, Color.green.opacity(0.8)] : [accent, accent.opacity(0.8)]),
+                        gradient: Gradient(colors: [accent, accent.opacity(0.85)]),
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
                 .cornerRadius(16)
-                .shadow(color: (isRead ? Color.green : accent).opacity(0.3), radius: 12, x: 0, y: 6)
+                .shadow(color: accent.opacity(0.3), radius: 12, x: 0, y: 6)
             }
             .buttonStyle(PlainButtonStyle())
             .disabled(isRead)
+            .opacity(1.0) // Maintain full opacity even when disabled
             .padding(.horizontal, 24)
             .padding(.vertical, 16)
             .background(

@@ -48,12 +48,14 @@ struct VapingHistory: Codable {
     var yearsVaping: Double = 0
     var dailyCost: Double = 0 // Interpreted as weekly cost in UI from now on
     var deviceType: String = ""
+    var currency: String = "USD" // Currency code (USD, EUR, GBP, BRL)
 }
 
 struct UserPreferences: Codable {
     var notificationsEnabled: Bool = true
     var darkMode: Bool = false
     var reminderFrequency: ReminderFrequency = .daily
+    var profilePictureData: Data? = nil // Store profile picture as Data
 }
 
 enum ReminderFrequency: String, CaseIterable, Codable {

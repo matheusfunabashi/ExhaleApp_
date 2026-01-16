@@ -13,6 +13,7 @@ private enum OnboardingRoute: Hashable {
     case step9
     case step10
     case step11
+    case step11b
     case step12
     case step13
 }
@@ -27,6 +28,7 @@ struct OnboardingView: View {
     @StateObject private var profileStore = ProfileStore()
     @State private var collectedName: String = ""
     @State private var collectedAge: String = ""
+    @State private var collectedReason: String = ""
     private let onSkipAll: (String?, Int?) -> Void
     
     var body: some View {
@@ -117,11 +119,22 @@ struct OnboardingView: View {
                     )
                 case .step11:
                     OnboardingStep11View(
-                        onNext: { navigationPath.append(.step12) },
+                        onNext: { },
                         onBack: { popRoute() },
                         onNameCollected: { name, age in
                             collectedName = name
                             collectedAge = age
+                            // Navigate after updating the state
+                            navigationPath.append(.step11b)
+                        }
+                    )
+                case .step11b:
+                    OnboardingStep11bView(
+                        userName: collectedName,
+                        onNext: { navigationPath.append(.step12) },
+                        onBack: { popRoute() },
+                        onReasonCollected: { reason in
+                            collectedReason = reason
                         }
                     )
                 case .step12:

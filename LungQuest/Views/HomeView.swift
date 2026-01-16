@@ -31,7 +31,7 @@ struct HomeView: View {
                                 .font(.system(size: 34, weight: .heavy, design: .rounded))
                                 .foregroundStyle(
                                     LinearGradient(
-                                        gradient: Gradient(colors: [Color(red: 0.16, green: 0.36, blue: 0.87), Color(red: 0.45, green: 0.72, blue: 0.99)]),
+                                        gradient: Gradient(colors: [Color(red: 0.45, green: 0.72, blue: 0.99), Color(red: 0.60, green: 0.80, blue: 1.0)]),
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     )
@@ -117,7 +117,7 @@ struct HomeView: View {
                                 label: "Progress",
                                 isCompleted: false,
                                 action: {
-                                    NotificationCenter.default.post(name: Notification.Name("SwitchToProgressTab"), object: nil)
+                                    TabNavigationManager.shared.switchToProgressTab()
                                 }
                             )
                             .frame(maxWidth: .infinity)
@@ -127,7 +127,7 @@ struct HomeView: View {
                                 label: "Learn",
                                 isCompleted: false,
                                 action: {
-                                    NotificationCenter.default.post(name: Notification.Name("SwitchToLearnTab"), object: nil)
+                                    TabNavigationManager.shared.switchToLearnTab()
                                 }
                             )
                             .frame(maxWidth: .infinity)
@@ -619,7 +619,7 @@ struct LearningPreviewSection: View {
                     onLessonTap(HomeLearningLesson(title: "Tips to quit", icon: "💡"))
                 }
             )
-            Button(action: { NotificationCenter.default.post(name: Notification.Name("SwitchToLearnTab"), object: nil) }) {
+            Button(action: { TabNavigationManager.shared.switchToLearnTab() }) {
                 HStack(spacing: 6) {
                     Text("Explore the full library")
                         .font(.caption)
@@ -936,7 +936,7 @@ private struct HomeSection<Content: View>: View {
             }
             content
         }
-        .softCard(accent: Color(red: 0.31, green: 0.57, blue: 0.99), cornerRadius: 28)
+        .softCard(accent: Color(red: 0.45, green: 0.72, blue: 0.99), cornerRadius: 28)
     }
 }
 
@@ -1390,7 +1390,7 @@ struct CheckInButton: View {
     
     private var accentGradient: LinearGradient {
         LinearGradient(
-            gradient: Gradient(colors: [Color(red: 0.45, green: 0.72, blue: 0.99), Color(red: 0.16, green: 0.36, blue: 0.87)]),
+            gradient: Gradient(colors: [Color(red: 0.45, green: 0.72, blue: 0.99), Color(red: 0.60, green: 0.80, blue: 1.0)]),
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
@@ -1414,7 +1414,7 @@ struct CheckInButton: View {
                 Circle()
                     .fill(hasCheckedInToday ? completedGradient : accentGradient)
                     .frame(width: 64, height: 64)
-                    .shadow(color: (hasCheckedInToday ? Color.green : Color(red: 0.16, green: 0.36, blue: 0.87)).opacity(0.34), radius: 18, x: 0, y: 10)
+                    .shadow(color: (hasCheckedInToday ? Color.green : Color(red: 0.45, green: 0.72, blue: 0.99)).opacity(0.34), radius: 18, x: 0, y: 10)
                     .overlay(
                         Circle()
                             .stroke(Color.white.opacity(hasCheckedInToday ? 0.28 : 0.45), lineWidth: 3)
@@ -1426,7 +1426,7 @@ struct CheckInButton: View {
                     )
                 
                 Circle()
-                    .stroke((hasCheckedInToday ? Color.green : Color(red: 0.16, green: 0.36, blue: 0.87)).opacity(0.18), lineWidth: 1.5)
+                    .stroke((hasCheckedInToday ? Color.green : Color(red: 0.45, green: 0.72, blue: 0.99)).opacity(0.18), lineWidth: 1.5)
                     .frame(width: 74, height: 74)
                     .opacity(hasCheckedInToday ? 0.4 : 0.7)
                 

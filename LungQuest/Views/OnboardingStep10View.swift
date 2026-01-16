@@ -5,9 +5,21 @@ struct OnboardingStep10View: View {
     let onBack: () -> Void
     
     @State private var amountText: String = ""
-    @State private var selectedCurrency: String = "USD"
+    @State private var selectedCurrency: String = ""
     
     private let currencies: [String] = ["$", "€", "£", "R$"]
+    
+    private var canProceed: Bool {
+        // Must have a valid number and a currency selected
+        let trimmedAmount = amountText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedAmount.isEmpty,
+              let amount = Double(trimmedAmount),
+              amount > 0,
+              !selectedCurrency.isEmpty else {
+            return false
+        }
+        return true
+    }
     
     private let buttonColor = Color.white
     private let textColor = Color.black
@@ -34,17 +46,22 @@ struct OnboardingStep10View: View {
                 
                 Spacer()
                 
-                    Button(action: onNext) {
-                        Text("Next")
-                            .font(.headline)
-                            .foregroundColor(textColor)
-                            .padding(.vertical, 18)
-                            .frame(maxWidth: .infinity)
-                            .background(buttonColor.opacity(0.95))
-                            .clipShape(Capsule())
-                            .shadow(color: Color.black.opacity(0.1), radius: 18, x: 0, y: 15)
+                Button(action: {
+                    if canProceed {
+                        onNext()
                     }
-                    .buttonStyle(.plain)
+                }) {
+                    Text("Next")
+                        .font(.headline)
+                        .foregroundColor(textColor)
+                        .padding(.vertical, 18)
+                        .frame(maxWidth: .infinity)
+                        .background(buttonColor.opacity(canProceed ? 0.95 : 0.5))
+                        .clipShape(Capsule())
+                        .shadow(color: Color.black.opacity(canProceed ? 0.1 : 0.05), radius: 18, x: 0, y: 15)
+                }
+                .buttonStyle(.plain)
+                .disabled(!canProceed)
             }
             .padding(.horizontal, 24)
             .padding(.top, 52)
@@ -60,7 +77,8 @@ struct OnboardingStep10View: View {
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.white)
                     .padding(12)
-                    .background(Color.white.opacity(0.18), in: Circle())
+                    .background(Color.white.opacity(0.35), in: Circle())
+                    .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
             }
             .buttonStyle(.plain)
             
@@ -73,10 +91,11 @@ struct OnboardingStep10View: View {
                     Text("EN")
                         .font(.system(size: 14, weight: .semibold))
                 }
-                .foregroundColor(.white.opacity(0.9))
+                .foregroundColor(.white)
                 .padding(.vertical, 8)
                 .padding(.horizontal, 14)
-                .background(Color.white.opacity(0.2), in: Capsule())
+                .background(Color.white.opacity(0.35), in: Capsule())
+                .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
             }
             .buttonStyle(.plain)
         }

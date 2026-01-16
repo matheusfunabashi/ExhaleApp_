@@ -1,5 +1,6 @@
 import SwiftUI
 import SuperwallKit
+import Combine
 
 struct ContentView: View {
     @EnvironmentObject var flowManager: AppFlowManager
@@ -34,21 +35,25 @@ struct LoadingView: View {
     @State private var isAnimating = false
     
     var body: some View {
-        VStack(spacing: 20) {
-            LungShape(healthLevel: 50)
-                .frame(width: 100, height: 80)
-                .foregroundColor(.pink.opacity(0.7))
-                .scaleEffect(isAnimating ? 1.1 : 0.9)
-                .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: isAnimating)
+        ZStack {
+            Color.white.ignoresSafeArea()
             
-            Text("LungQuest")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundColor(.primary)
-            
-            Text("Loading your progress...")
-                .font(.body)
-                .foregroundColor(.secondary)
+            VStack(spacing: 20) {
+                LungShape(healthLevel: 50)
+                    .frame(width: 100, height: 80)
+                    .foregroundColor(.pink.opacity(0.7))
+                    .scaleEffect(isAnimating ? 1.1 : 0.9)
+                    .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: isAnimating)
+                
+                Text("Exhale")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                
+                Text("Loading your progress...")
+                    .font(.body)
+                    .foregroundColor(.secondary)
+            }
         }
         .onAppear {
             isAnimating = true
@@ -58,8 +63,8 @@ struct LoadingView: View {
 
 struct MainTabView: View {
     @EnvironmentObject var dataStore: AppDataStore
-    @State private var showPanic: Bool = false
     @State private var selectedTab: Int = 0
+    @State private var showPanic: Bool = false
     
     var body: some View {
         ZStack {
@@ -92,22 +97,28 @@ struct MainTabView: View {
                     }
                     .tag(3)
             }
-            .accentColor(Color(red: 0.16, green: 0.36, blue: 0.87))
-            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("SwitchToLearnTab"))) { _ in
-                selectedTab = 1
+            .accentColor(Color(red: 0.45, green: 0.72, blue: 0.99))
+            .onAppear {
+                // Sync initial state
+                selectedTab = TabNavigationManager.shared.selectedTab
             }
-            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("SwitchToProgressTab"))) { _ in
-                selectedTab = 2
-            }
-            .overlay(
-                HStack {
-                    Spacer()
-                    PanicButton { showPanic = true }
-                    Spacer()
+            .onReceive(TabNavigationManager.shared.$selectedTab) { newTab in
+                if selectedTab != newTab {
+                    selectedTab = newTab
                 }
-                .padding(.bottom, 24),
-                alignment: .bottom
-            )
+            }
+            .onChange(of: selectedTab) { newValue in
+                if TabNavigationManager.shared.selectedTab != newValue {
+                    TabNavigationManager.shared.selectedTab = newValue
+                }
+            }
+            
+            // Panic button - centered at bottom, slightly above tab bar
+            VStack {
+                Spacer()
+                PanicButton { showPanic = true }
+                    .padding(.bottom, 40) // Position above tab bar
+            }
         }
         .fullScreenCover(isPresented: $showPanic) {
             PanicHelpView(isPresented: $showPanic)
