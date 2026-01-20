@@ -84,17 +84,9 @@ struct ProfileHeaderSection: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            HStack(alignment: .top) {
-                avatarView
-                Spacer(minLength: 12)
-                ProfileLungBuddyView(healthLevel: dataStore.lungState.healthLevel)
-                    .frame(width: 128)
-                    .padding(.trailing, 4)
-                    .overlay(alignment: .topTrailing) {
-                        moodBadge
-                    }
-            }
+        VStack(alignment: .leading, spacing: 12) {
+            avatarView
+                .frame(maxWidth: .infinity, alignment: .center)
             
             VStack(alignment: .leading, spacing: 8) {
                 Text(dataStore.currentUser?.name ?? "User")
@@ -135,6 +127,12 @@ struct ProfileHeaderSection: View {
             }
         }
         .softCard(accent: headerAccentColor, cornerRadius: 32)
+        .overlay(alignment: .topTrailing) {
+            ProfileLungBuddyView(healthLevel: dataStore.lungState.healthLevel)
+                .frame(width: 96)
+                .padding(.top, 6)
+                .padding(.trailing, 10)
+        }
     }
     
     private var avatarView: some View {
@@ -173,22 +171,6 @@ struct ProfileHeaderSection: View {
                 )
             }
         }
-    }
-    
-    private var moodBadge: some View {
-        Text(moodEmoji)
-            .font(.title3)
-            .padding(8)
-            .background(
-                Circle()
-                    .fill(headerAccentColor.opacity(0.18))
-                    .overlay(
-                        Circle()
-                            .stroke(headerAccentColor.opacity(0.4), lineWidth: 1.5)
-                    )
-                    .shadow(color: headerAccentColor.opacity(0.35), radius: 10, x: 0, y: 6)
-            )
-            .offset(x: 10, y: -10)
     }
     
     private var lungMoodCopy: String {

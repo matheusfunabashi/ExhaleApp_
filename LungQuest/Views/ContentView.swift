@@ -2,6 +2,25 @@ import SwiftUI
 import SuperwallKit
 import Combine
 
+// Simple shared tab coordinator to keep programmatic tab changes in sync.
+final class TabNavigationManager: ObservableObject {
+    static let shared = TabNavigationManager()
+    @Published var selectedTab: Int = 0
+    private init() {}
+    
+    func switchToTab(_ index: Int) {
+        selectedTab = max(0, min(index, 3))
+    }
+    
+    func switchToLearnTab() {
+        switchToTab(1)
+    }
+    
+    func switchToProgressTab() {
+        switchToTab(2)
+    }
+}
+
 struct ContentView: View {
     @EnvironmentObject var flowManager: AppFlowManager
     @EnvironmentObject var dataStore: AppDataStore
@@ -67,62 +86,87 @@ struct MainTabView: View {
     @State private var showPanic: Bool = false
     
     var body: some View {
-        ZStack {
-            TabView(selection: $selectedTab) {
-                HomeView()
-                    .tabItem {
-                        Image(systemName: "house.fill")
-                        Text("Home")
-                    }
-                    .tag(0)
-                
-                LearningView()
-                    .tabItem {
-                        Image(systemName: "book.fill")
-                        Text("Learn")
-                    }
-                    .tag(1)
-                
-                ProgressView()
-                    .tabItem {
-                        Image(systemName: "chart.line.uptrend.xyaxis")
-                        Text("Progress")
-                    }
-                    .tag(2)
-                
-                ProfileView()
-                    .tabItem {
-                        Image(systemName: "person.fill")
-                        Text("Profile")
-                    }
-                    .tag(3)
-            }
-            .accentColor(Color(red: 0.45, green: 0.72, blue: 0.99))
-            .onAppear {
-                // Sync initial state
-                selectedTab = TabNavigationManager.shared.selectedTab
-            }
-            .onReceive(TabNavigationManager.shared.$selectedTab) { newTab in
-                if selectedTab != newTab {
+        TabView(selection: $selectedTab) {
+            HomeView()
+                .tabItem {
+                    Image(systemName: "house.fill")
+                    Text("Home")
+                }
+                .tag(0)
+            
+            LearningView()
+                .tabItem {
+                    Image(systemName: "book.fill")
+                    Text("Learn")
+                }
+                .tag(1)
+            
+            ProgressView()
+                .tabItem {
+                    Image(systemName: "chart.line.uptrend.xyaxis")
+                    Text("Progress")
+                }
+                .tag(2)
+            
+            ProfileView()
+                .tabItem {
+                    Image(systemName: "person.fill")
+                    Text("Profile")
+                }
+                .tag(3)
+        }
+        .accentColor(Color(red: 0.45, green: 0.72, blue: 0.99))
+        .onAppear {
+            selectedTab = TabNavigationManager.shared.selectedTab
+        }
+        .onReceive(TabNavigationManager.shared.$selectedTab) { newTab in
+            if selectedTab != newTab {
+                withAnimation(.interactiveSpring()) {
                     selectedTab = newTab
                 }
             }
-            .onChange(of: selectedTab) { newValue in
-                if TabNavigationManager.shared.selectedTab != newValue {
-                    TabNavigationManager.shared.selectedTab = newValue
-                }
+        }
+        .onChange(of: selectedTab) { newValue in
+            if TabNavigationManager.shared.selectedTab != newValue {
+                TabNavigationManager.shared.selectedTab = newValue
             }
-            
-            // Panic button - centered at bottom, slightly above tab bar
-            VStack {
+        }
+        .safeAreaInset(edge: .bottom) {
+            HStack {
                 Spacer()
                 PanicButton { showPanic = true }
-                    .padding(.bottom, 40) // Position above tab bar
+                Spacer()
             }
+            .padding(.bottom, 8)
+            .background(Color.clear)
+            .allowsHitTesting(true)
         }
         .fullScreenCover(isPresented: $showPanic) {
             PanicHelpView(isPresented: $showPanic)
         }
+        // Swipe between tabs with animated transition.
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 15)
+                .onEnded { value in
+                    let threshold: CGFloat = 40
+                    if value.translation.width < -threshold {
+                        let next = min(selectedTab + 1, 3)
+                        if next != selectedTab {
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                selectedTab = next
+                            }
+                        }
+                    } else if value.translation.width > threshold {
+                        let prev = max(selectedTab - 1, 0)
+                        if prev != selectedTab {
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                selectedTab = prev
+                            }
+                        }
+                    }
+                }
+        )
+        .animation(.easeInOut(duration: 0.2), value: selectedTab)
     }
 }
 
