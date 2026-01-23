@@ -792,49 +792,12 @@ struct PuffCountChartSection: View {
                 EmptyChartView(message: "No puff data available for this time period")
             } else {
                 Chart(filteredProgressData, id: \.date) { progress in
-                    // Highlight zero puffs with glow
-                    if progress.puffInterval == .none {
-                        AreaMark(
-                            x: .value("Date", progress.date),
-                            y: .value("Puffs", 0.5)
-                        )
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [primaryAccentColor.opacity(0.15), primaryAccentColor.opacity(0.05)],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                    }
-                    
-                    LineMark(
+                    BarMark(
                         x: .value("Date", progress.date),
                         y: .value("Puffs", progress.puffInterval.numericValue)
                     )
                     .foregroundStyle(progress.puffInterval == .none ? primaryAccentColor : primaryAccentColor.opacity(0.6))
-                    .lineStyle(StrokeStyle(lineWidth: progress.puffInterval == .none ? 3.5 : 2.5))
-                    
-                    AreaMark(
-                        x: .value("Date", progress.date),
-                        y: .value("Puffs", progress.puffInterval.numericValue)
-                    )
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [
-                                (progress.puffInterval == .none ? primaryAccentColor : primaryAccentColor.opacity(0.4)).opacity(0.2),
-                                (progress.puffInterval == .none ? primaryAccentColor : primaryAccentColor.opacity(0.4)).opacity(0.05)
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    
-                    PointMark(
-                        x: .value("Date", progress.date),
-                        y: .value("Puffs", progress.puffInterval.numericValue)
-                    )
-                    .foregroundStyle(progress.puffInterval == .none ? primaryAccentColor : primaryAccentColor.opacity(0.7))
-                    .symbolSize(progress.puffInterval == .none ? 60 : 40)
+                    .cornerRadius(4)
                 }
                 .frame(height: 180)
                 .chartYScale(domain: chartYDomain)
