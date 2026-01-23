@@ -1487,7 +1487,7 @@ struct DaysCounterView: View {
         .onAppear {
             now = Date()
         }
-        .onChange(of: dataStore.currentUser?.startDate) { _ in
+        .onChange(of: dataStore.currentUser?.startDate) { _, _ in
             now = Date()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("UserStartDateChanged"))) { _ in
@@ -1534,7 +1534,7 @@ struct NewHeroTimerView: View {
             now = Date()
             dataStore.updateLungHealth()
         }
-        .onChange(of: dataStore.currentUser?.startDate) { _ in
+        .onChange(of: dataStore.currentUser?.startDate) { _, _ in
             now = Date()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("UserStartDateChanged"))) { _ in

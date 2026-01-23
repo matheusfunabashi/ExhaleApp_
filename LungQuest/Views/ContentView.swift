@@ -126,11 +126,11 @@ struct MainTabView: View {
                 }
             }
         }
-        .onChange(of: selectedTab) { newValue in
+        .onChange(of: selectedTab) { _, newValue in
             if TabNavigationManager.shared.selectedTab != newValue {
                 TabNavigationManager.shared.selectedTab = newValue
             }
-            }
+        }
         .safeAreaInset(edge: .bottom) {
                 HStack {
                     Spacer()
