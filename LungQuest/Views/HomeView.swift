@@ -435,7 +435,8 @@ struct StatsSection: View {
                 value: formattedMoneySaved,
                 emoji: "💰",
                 color: .blue,
-                onTap: { onMoneyTapped?() }
+                onTap: { onMoneyTapped?() },
+                valueFont: moneyValueFont
             )
             
             StatsCard(
@@ -476,6 +477,16 @@ struct StatsSection: View {
         
         return Double(days) * dailyCost
     }
+    
+    private var moneyValueFont: Font {
+        // Use a slightly smaller font when the numeric portion hits 3+ digits.
+        let digits = formattedMoneySaved.filter { $0.isNumber }
+        if digits.count >= 3 {
+            return .system(size: 24, weight: .bold, design: .rounded)
+        } else {
+            return .system(size: 28, weight: .bold, design: .rounded)
+        }
+    }
 }
 
 struct StatsCard: View {
@@ -484,7 +495,7 @@ struct StatsCard: View {
     let emoji: String
     let color: Color
     var onTap: (() -> Void)? = nil
-    var valueFont: Font = .headline
+    var valueFont: Font = .system(size: 28, weight: .bold, design: .rounded)
     
     var body: some View {
         VStack(spacing: 12) {
@@ -494,7 +505,7 @@ struct StatsCard: View {
             
             // Value
             Text(value)
-                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .font(valueFont)
                 .foregroundColor(.primary)
                 .monospacedDigit()
             

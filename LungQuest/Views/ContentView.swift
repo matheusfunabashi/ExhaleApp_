@@ -57,21 +57,21 @@ struct LoadingView: View {
         ZStack {
             Color.white.ignoresSafeArea()
             
-            VStack(spacing: 20) {
-                LungShape(healthLevel: 50)
-                    .frame(width: 100, height: 80)
-                    .foregroundColor(.pink.opacity(0.7))
-                    .scaleEffect(isAnimating ? 1.1 : 0.9)
-                    .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: isAnimating)
-                
+        VStack(spacing: 20) {
+            LungShape(healthLevel: 50)
+                .frame(width: 100, height: 80)
+                .foregroundColor(.pink.opacity(0.7))
+                .scaleEffect(isAnimating ? 1.1 : 0.9)
+                .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: isAnimating)
+            
                 Text("Exhale")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-                
-                Text("Loading your progress...")
-                    .font(.body)
-                    .foregroundColor(.secondary)
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundColor(.primary)
+            
+            Text("Loading your progress...")
+                .font(.body)
+                .foregroundColor(.secondary)
             }
         }
         .onAppear {
@@ -86,35 +86,35 @@ struct MainTabView: View {
     @State private var showPanic: Bool = false
     
     var body: some View {
-        TabView(selection: $selectedTab) {
-            HomeView()
-                .tabItem {
-                    Image(systemName: "house.fill")
-                    Text("Home")
-                }
-                .tag(0)
-            
-            LearningView()
-                .tabItem {
-                    Image(systemName: "book.fill")
-                    Text("Learn")
-                }
-                .tag(1)
-            
-            ProgressView()
-                .tabItem {
-                    Image(systemName: "chart.line.uptrend.xyaxis")
-                    Text("Progress")
-                }
-                .tag(2)
-            
-            ProfileView()
-                .tabItem {
-                    Image(systemName: "person.fill")
-                    Text("Profile")
-                }
-                .tag(3)
-        }
+            TabView(selection: $selectedTab) {
+                HomeView()
+                    .tabItem {
+                        Image(systemName: "house.fill")
+                        Text("Home")
+                    }
+                    .tag(0)
+                
+                LearningView()
+                    .tabItem {
+                        Image(systemName: "book.fill")
+                        Text("Learn")
+                    }
+                    .tag(1)
+                
+                ProgressView()
+                    .tabItem {
+                        Image(systemName: "chart.line.uptrend.xyaxis")
+                        Text("Progress")
+                    }
+                    .tag(2)
+                
+                ProfileView()
+                    .tabItem {
+                        Image(systemName: "person.fill")
+                        Text("Profile")
+                    }
+                    .tag(3)
+            }
         .accentColor(Color(red: 0.45, green: 0.72, blue: 0.99))
         .onAppear {
             selectedTab = TabNavigationManager.shared.selectedTab
@@ -130,13 +130,13 @@ struct MainTabView: View {
             if TabNavigationManager.shared.selectedTab != newValue {
                 TabNavigationManager.shared.selectedTab = newValue
             }
-        }
-        .safeAreaInset(edge: .bottom) {
-            HStack {
-                Spacer()
-                PanicButton { showPanic = true }
-                Spacer()
             }
+        .safeAreaInset(edge: .bottom) {
+                HStack {
+                    Spacer()
+                    PanicButton { showPanic = true }
+                    Spacer()
+                }
             .padding(.bottom, 8)
             .background(Color.clear)
             .allowsHitTesting(true)

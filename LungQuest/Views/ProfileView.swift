@@ -85,7 +85,7 @@ struct ProfileHeaderSection: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            avatarView
+                avatarView
                 .frame(maxWidth: .infinity, alignment: .center)
             
             VStack(alignment: .leading, spacing: 8) {
@@ -127,12 +127,6 @@ struct ProfileHeaderSection: View {
             }
         }
         .softCard(accent: headerAccentColor, cornerRadius: 32)
-        .overlay(alignment: .topTrailing) {
-            ProfileLungBuddyView(healthLevel: dataStore.lungState.healthLevel)
-                .frame(width: 96)
-                .padding(.top, 6)
-                .padding(.trailing, 10)
-        }
     }
     
     private var avatarView: some View {
