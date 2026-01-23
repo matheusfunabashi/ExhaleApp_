@@ -615,14 +615,10 @@ struct LessonDetailModal: View {
                 }
                 .padding(.vertical, 16)
                 .background(
-                    LinearGradient(
-                        gradient: Gradient(colors: [accent, accent.opacity(0.85)]),
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
+                    Color(red: 0.45, green: 0.72, blue: 0.99)
                 )
                 .cornerRadius(16)
-                .shadow(color: accent.opacity(0.3), radius: 12, x: 0, y: 6)
+                .shadow(color: Color(red: 0.45, green: 0.72, blue: 0.99).opacity(0.3), radius: 12, x: 0, y: 6)
             }
             .buttonStyle(PlainButtonStyle())
             .disabled(isRead)
@@ -637,19 +633,7 @@ struct LessonDetailModal: View {
     }
     
     private func getCTAButtonText() -> String {
-        // Generate contextual CTA based on lesson title
-        let title = lesson.title.lowercased()
-        if title.contains("movement") || title.contains("walk") {
-            return "Start 5-min movement"
-        } else if title.contains("breathing") || title.contains("urge") {
-            return "Try the breathing drill"
-        } else if title.contains("ritual") || title.contains("morning") || title.contains("evening") {
-            return "Try this ritual"
-        } else if title.contains("celebration") {
-            return "Celebrate a win"
-        } else {
-            return "Mark as read"
-        }
+        return "Mark as read"
     }
 }
 

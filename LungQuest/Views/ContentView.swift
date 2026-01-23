@@ -57,22 +57,12 @@ struct LoadingView: View {
         ZStack {
             Color.white.ignoresSafeArea()
             
-        VStack(spacing: 20) {
-            LungShape(healthLevel: 50)
-                .frame(width: 100, height: 80)
-                .foregroundColor(.pink.opacity(0.7))
-                .scaleEffect(isAnimating ? 1.1 : 0.9)
-                .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: isAnimating)
-            
-                Text("Exhale")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundColor(.primary)
-            
-            Text("Loading your progress...")
-                .font(.body)
-                .foregroundColor(.secondary)
-            }
+            Image("LungBuddy_100")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 120, height: 96)
+                .scaleEffect(isAnimating ? 1.05 : 0.95)
+                .animation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true), value: isAnimating)
         }
         .onAppear {
             isAnimating = true
