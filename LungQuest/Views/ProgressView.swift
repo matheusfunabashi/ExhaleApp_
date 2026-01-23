@@ -99,11 +99,11 @@ struct StatsOverviewSection: View {
                 )
                 
                 StatCard(
-                    title: "Quests Done",
+                    title: "Milestones",
                     value: "\(dataStore.statistics.completedQuests)",
                     emoji: "🎯",
                     accentColor: Color(red: 0.9, green: 0.5, blue: 0.6), // Soft pink
-                    subtitle: "Challenges conquered"
+                    subtitle: "Achievements unlocked"
                 )
             }
             
@@ -135,30 +135,31 @@ struct StatsOverviewSection: View {
     }
     
     private var longestStreakFromStartDate: Int {
-        guard let startDate = dataStore.currentUser?.startDate else { return 0 }
-        
         let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        var longestStreak = 0
-        var currentStreak = 0
-        var currentDate = startDate
         
-        // Calculate longest streak from startDate
-        while currentDate <= today {
-            let dayStart = calendar.startOfDay(for: currentDate)
-            let hasCheckIn = dataStore.dailyProgress.contains { progress in
-                calendar.isDate(progress.date, inSameDayAs: dayStart) && progress.wasVapeFree
-            }
+        // Get all check-in dates (wasVapeFree = true) and sort by date
+        let checkInDates = dataStore.dailyProgress
+            .filter { $0.wasVapeFree }
+            .map { calendar.startOfDay(for: $0.date) }
+            .sorted { $0 < $1 }
+        
+        guard !checkInDates.isEmpty else { return 0 }
+        
+        var longestStreak = 1
+        var currentStreak = 1
+        
+        // Calculate longest consecutive streak of check-ins
+        for i in 1..<checkInDates.count {
+            let daysBetween = calendar.dateComponents([.day], from: checkInDates[i - 1], to: checkInDates[i]).day ?? 0
             
-            if hasCheckIn {
+            if daysBetween == 1 {
+                // Consecutive day
                 currentStreak += 1
                 longestStreak = max(longestStreak, currentStreak)
             } else {
-                currentStreak = 0
+                // Streak broken
+                currentStreak = 1
             }
-            
-            guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else { break }
-            currentDate = nextDate
         }
         
         return longestStreak
@@ -478,34 +479,10 @@ struct HealthMilestonesSection: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            // Header with title and "More" button
-            HStack {
-                Text("Your Milestones")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.primary)
-                
-                Spacer()
-                
-                Button(action: {}) {
-                    HStack(spacing: 4) {
-                        Text("More")
-                            .font(.system(size: 14, weight: .semibold))
-                        Image(systemName: "arrow.right")
-                            .font(.system(size: 12, weight: .semibold))
-                    }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(
-                        LinearGradient(
-                            gradient: Gradient(colors: [Color(red: 0.45, green: 0.72, blue: 0.99), Color(red: 0.60, green: 0.80, blue: 1.0)]),
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .cornerRadius(12)
-                }
-            }
+            // Header with title
+            Text("Your Milestones")
+                .font(.system(size: 20, weight: .bold))
+                .foregroundColor(.primary)
             
             // Description text
             Text("Celebrate achievements as you progress through milestones, which represent significant points of growth.")
@@ -999,7 +976,6 @@ struct MotivationTile: View {
 struct GoalProgressSection: View {
     @EnvironmentObject var dataStore: AppDataStore
     @State private var currentDate = Date()
-    @State private var selectedMonth = Date()
     @State private var timer: Timer?
     
     // Primary accent color - same as app
@@ -1073,67 +1049,10 @@ struct GoalProgressSection: View {
             )
             
             // Calendar Card
-            VStack(spacing: 16) {
-                // Calendar header - lighter
-                HStack {
-                    Button(action: { changeMonth(-1) }) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    Spacer()
-                    
-                    Text(monthYearString)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(.secondary)
-                    
-                    Spacer()
-                    
-                    Button(action: { changeMonth(1) }) {
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .padding(.horizontal, 4)
-                
-                // Days of week - lighter
-                HStack(spacing: 0) {
-                    ForEach(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], id: \.self) { day in
-                        Text(day)
-                            .font(.caption2)
-                            .fontWeight(.medium)
-                            .foregroundColor(.secondary)
-                            .frame(maxWidth: .infinity)
-                    }
-                }
-                
-                // Calendar grid - perfect spacing
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 7), spacing: 4) {
-                    ForEach(calendarDays, id: \.id) { day in
-                        CalendarDayView(
-                            day: day,
-                            isToday: isToday(day.date),
-                            isStartDate: isStartDate(day.date),
-                            isGoalDate: isGoalDate(day.date),
-                            isInProgressRange: isInProgressRange(day.date),
-                            accentColor: primaryAccentColor
-                        )
-                    }
-                }
-            }
-            .padding(20)
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color.white)
-                    .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
-            )
+            ProgressCalendarView()
         }
         .onAppear {
             currentDate = Date()
-            selectedMonth = Date()
             // Start timer to update countdown every second
             timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
                 currentDate = Date()
@@ -1182,6 +1101,89 @@ struct GoalProgressSection: View {
             return "1 day remaining"
         } else {
             return "\(daysRemaining) days remaining"
+        }
+    }
+    
+}
+
+struct ProgressCalendarView: View {
+    @EnvironmentObject var dataStore: AppDataStore
+    @State private var selectedMonth = Date()
+    @State private var selectedCheckIn: DailyProgress? = nil
+    
+    // Primary accent color - same as app
+    private let primaryAccentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            // Calendar header - lighter
+            HStack {
+                Button(action: { changeMonth(-1) }) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                Text(monthYearString)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
+                
+                Spacer()
+                
+                Button(action: { changeMonth(1) }) {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding(.horizontal, 4)
+            
+            // Days of week - lighter
+            HStack(spacing: 0) {
+                ForEach(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], id: \.self) { day in
+                    Text(day)
+                        .font(.caption2)
+                        .fontWeight(.medium)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            
+            // Calendar grid - perfect spacing
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 7), spacing: 4) {
+                ForEach(calendarDays, id: \.id) { day in
+                    CalendarDayView(
+                        day: day,
+                        isToday: isToday(day.date),
+                        isStartDate: isStartDate(day.date),
+                        isGoalDate: isGoalDate(day.date),
+                        isInProgressRange: isInProgressRange(day.date),
+                        accentColor: primaryAccentColor,
+                        hasCheckIn: hasCheckIn(on: day.date),
+                        onTap: {
+                            if let checkIn = getCheckIn(for: day.date) {
+                                selectedCheckIn = checkIn
+                            }
+                        }
+                    )
+                }
+            }
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white)
+                .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
+        )
+        .sheet(item: Binding(
+            get: { selectedCheckIn },
+            set: { selectedCheckIn = $0 }
+        )) { checkIn in
+            CheckInDetailView(checkIn: checkIn)
+                .environmentObject(dataStore)
         }
     }
     
@@ -1257,6 +1259,7 @@ struct GoalProgressSection: View {
     
     private func isGoalDate(_ date: Date) -> Bool {
         guard let startDate = dataStore.currentUser?.startDate,
+              let targetDays = dataStore.currentUser?.quitGoal.targetDays,
               let goalDate = Calendar.current.date(byAdding: .day, value: targetDays, to: startDate) else {
             return false
         }
@@ -1271,6 +1274,22 @@ struct GoalProgressSection: View {
         let start = calendar.startOfDay(for: startDate)
         
         return checkDate >= start && checkDate < today && !isStartDate(date)
+    }
+    
+    private func hasCheckIn(on date: Date) -> Bool {
+        let calendar = Calendar.current
+        let dayStart = calendar.startOfDay(for: date)
+        return dataStore.dailyProgress.contains { progress in
+            calendar.isDate(progress.date, inSameDayAs: dayStart)
+        }
+    }
+    
+    private func getCheckIn(for date: Date) -> DailyProgress? {
+        let calendar = Calendar.current
+        let dayStart = calendar.startOfDay(for: date)
+        return dataStore.dailyProgress.first { progress in
+            calendar.isDate(progress.date, inSameDayAs: dayStart)
+        }
     }
 }
 
@@ -1288,14 +1307,37 @@ struct CalendarDayView: View {
     let isGoalDate: Bool
     let isInProgressRange: Bool
     let accentColor: Color
+    let hasCheckIn: Bool
+    let onTap: () -> Void
     
     var body: some View {
-        Text("\(day.dayNumber)")
-            .font(.system(size: 15, weight: isToday ? .semibold : .regular))
-            .foregroundColor(dayColor)
-            .frame(width: 36, height: 36)
-            .background(backgroundShape)
+        Button(action: onTap) {
+            ZStack {
+                Text("\(day.dayNumber)")
+                    .font(.system(size: 15, weight: isToday ? .semibold : .regular))
+                    .foregroundColor(dayColor)
+                    .frame(width: 36, height: 36)
+                    .background(backgroundShape)
+                
+                // Green checkmark overlay
+                if hasCheckIn {
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.green)
+                                .padding(.trailing, 2)
+                                .padding(.bottom, 2)
+                        }
+                    }
+                    .frame(width: 36, height: 36)
+                }
+            }
             .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(PlainButtonStyle())
     }
     
     private var dayColor: Color {
@@ -1335,6 +1377,289 @@ struct CalendarDayView: View {
         } else {
             // Future days - minimal
             Color.clear
+        }
+    }
+}
+
+struct CheckInDetailView: View {
+    @EnvironmentObject var dataStore: AppDataStore
+    @Environment(\.presentationMode) var presentationMode
+    let checkIn: DailyProgress
+    
+    private let accentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
+    
+    private var formattedDate: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        formatter.timeStyle = .none
+        return formatter.string(from: checkIn.date)
+    }
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 18) {
+                    // Header - clearer hierarchy
+                    VStack(spacing: 6) {
+                        Text("Check-in Details")
+                            .font(.system(size: 26, weight: .bold, design: .rounded))
+                            .foregroundColor(.primary)
+                        
+                        Text(formattedDate)
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.top, 4)
+                    .padding(.bottom, 4)
+                    
+                    // Vape-free status
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Status")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.primary)
+                        
+                        HStack(spacing: 10) {
+                            Image(systemName: checkIn.wasVapeFree ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                .foregroundColor(checkIn.wasVapeFree ? .green : .red)
+                                .font(.system(size: 20, weight: .medium))
+                            
+                            Text(checkIn.wasVapeFree ? "Vape-free day! 🎉" : "Not vape-free")
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundColor(.primary)
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(checkIn.wasVapeFree ? Color.green.opacity(0.08) : Color.red.opacity(0.08))
+                        )
+                    }
+                    .padding(16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color.white.opacity(0.95), Color.white.opacity(0.75)]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    .stroke(accentColor.opacity(0.12), lineWidth: 1)
+                                    .blendMode(.overlay)
+                            )
+                            .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+                            .shadow(color: accentColor.opacity(0.08), radius: 16, x: 0, y: 10)
+                    )
+                    
+                    // Cravings level
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Cravings Level")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.primary)
+                        
+                        VStack(spacing: 10) {
+                            HStack(spacing: 8) {
+                                ForEach(1...5, id: \.self) { level in
+                                    Circle()
+                                        .fill(
+                                            level <= checkIn.cravingsLevel
+                                                ? cravingsColor(level).opacity(0.85)
+                                                : Color.gray.opacity(0.12)
+                                        )
+                                        .frame(width: 38, height: 38)
+                                        .overlay(
+                                            Text("\(level)")
+                                                .font(.system(size: 13, weight: .semibold))
+                                                .foregroundColor(level <= checkIn.cravingsLevel ? .white : .secondary)
+                                        )
+                                }
+                            }
+                            
+                            Text(cravingsDescription)
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                                .lineSpacing(2)
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(Color.gray.opacity(0.06))
+                        )
+                    }
+                    .padding(16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color.white.opacity(0.95), Color.white.opacity(0.75)]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    .stroke(accentColor.opacity(0.12), lineWidth: 1)
+                                    .blendMode(.overlay)
+                            )
+                            .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+                            .shadow(color: accentColor.opacity(0.08), radius: 16, x: 0, y: 10)
+                    )
+                    
+                    // Mood
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Mood")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.primary)
+                        
+                        HStack(spacing: 12) {
+                            Text(checkIn.mood.emoji)
+                                .font(.system(size: 28))
+                            Text(checkIn.mood.rawValue.capitalized)
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundColor(.primary)
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(checkIn.mood.color.opacity(0.08))
+                        )
+                    }
+                    .padding(16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color.white.opacity(0.95), Color.white.opacity(0.75)]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    .stroke(accentColor.opacity(0.12), lineWidth: 1)
+                                    .blendMode(.overlay)
+                            )
+                            .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+                            .shadow(color: accentColor.opacity(0.08), radius: 16, x: 0, y: 10)
+                    )
+                    
+                    // Puff count
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Puff Count")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.primary)
+                        
+                        Text(checkIn.puffInterval.displayName)
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(.primary)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 12)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .fill(checkIn.puffInterval.color.opacity(0.08))
+                            )
+                    }
+                    .padding(16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color.white.opacity(0.95), Color.white.opacity(0.75)]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    .stroke(accentColor.opacity(0.12), lineWidth: 1)
+                                    .blendMode(.overlay)
+                            )
+                            .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+                            .shadow(color: accentColor.opacity(0.08), radius: 16, x: 0, y: 10)
+                    )
+                    
+                    // Notes
+                    if !checkIn.notes.isEmpty {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Notes")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(.primary)
+                            
+                            Text(checkIn.notes)
+                                .font(.system(size: 15))
+                                .foregroundColor(.primary)
+                                .lineSpacing(4)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 12)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .fill(Color.gray.opacity(0.06))
+                                )
+                        }
+                        .padding(16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color.white.opacity(0.95), Color.white.opacity(0.75)]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                        .stroke(accentColor.opacity(0.12), lineWidth: 1)
+                                        .blendMode(.overlay)
+                                )
+                                .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+                                .shadow(color: accentColor.opacity(0.08), radius: 16, x: 0, y: 10)
+                        )
+                    }
+                    
+                    Spacer(minLength: 12)
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarItems(
+                trailing: Button("Close") {
+                    presentationMode.wrappedValue.dismiss()
+                }
+                .foregroundColor(accentColor)
+            )
+            .breathableBackground()
+        }
+    }
+    
+    private func cravingsColor(_ level: Int) -> Color {
+        switch level {
+        case 1: return Color(red: 0.20, green: 0.70, blue: 0.35)
+        case 2: return Color(red: 0.75, green: 0.75, blue: 0.25)
+        case 3: return Color(red: 0.95, green: 0.60, blue: 0.20)
+        case 4: return Color(red: 0.90, green: 0.40, blue: 0.30)
+        case 5: return Color(red: 0.80, green: 0.25, blue: 0.35)
+        default: return Color.gray
+        }
+    }
+    
+    private var cravingsDescription: String {
+        switch checkIn.cravingsLevel {
+        case 1: return "No cravings at all! ✨"
+        case 2: return "Mild thoughts, easily ignored"
+        case 3: return "Noticeable but manageable"
+        case 4: return "Strong urges, required effort"
+        case 5: return "Very intense, difficult to resist"
+        default: return ""
         }
     }
 }

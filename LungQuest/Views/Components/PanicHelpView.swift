@@ -40,22 +40,24 @@ struct PanicHelpView: View {
     @Binding var isPresented: Bool
     @State private var breathe: Bool = false
     @State private var cameraAuthorized: Bool = false
-    private let camera = CameraController()
+    @State private var cameraReady: Bool = false
+    @State private var showRelapseOptions: Bool = false
+    @StateObject private var camera = CameraController()
     
     var body: some View {
         ZStack(alignment: .topTrailing) {
             LinearGradient(
-                gradient: Gradient(colors: [Color.red.opacity(0.1), Color.pink.opacity(0.1)]),
+                gradient: Gradient(colors: [Color(red: 0.98, green: 0.98, blue: 1.0), Color.white]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
             
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: 28) {
                     // Camera reflection area
                     ZStack {
-                        if cameraAuthorized {
+                        if cameraAuthorized && cameraReady {
                             CameraPreview(session: camera.session)
                                 .clipShape(RoundedRectangle(cornerRadius: 16))
                                 .frame(maxWidth: .infinity)
@@ -76,55 +78,161 @@ struct PanicHelpView: View {
                         }
                     }
                     
-                    Text("Take a breath — you got this")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
+                    // Main message - stronger typography
+                    Text("You made a commitment to yourself")
+                        .font(.system(size: 24, weight: .bold, design: .default))
                         .multilineTextAlignment(.center)
-                        .foregroundColor(.pink)
-                        .padding(.top, 10)
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 20)
                     
-                    BreathingCoach()
-                        .frame(maxWidth: .infinity)
-                    
-                    MotivationList()
-                    
-                    Button(action: { isPresented = false }) {
-                        Text("I’m okay now")
-                            .fontWeight(.semibold)
+                    // Breathing section
+                    VStack(spacing: 16) {
+                        BreathingCoach()
                             .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(RoundedRectangle(cornerRadius: 14).fill(Color.pink))
-                            .foregroundColor(.white)
+                    }
+                    .padding(.vertical, 8)
+                    
+                    // Cognitive reminder section
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Remember why you're staying strong")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.primary)
+                            .padding(.horizontal, 4)
+                        
+                        VStack(spacing: 12) {
+                            ReminderCard(
+                                icon: "brain.head.profile",
+                                title: "Mental Clarity",
+                                description: "Your focus and cognitive function improve each day"
+                            )
+                            ReminderCard(
+                                icon: "battery.100",
+                                title: "Energy Levels",
+                                description: "Natural energy returns without nicotine dependency"
+                            )
+                            ReminderCard(
+                                icon: "heart.fill",
+                                title: "Emotional Balance",
+                                description: "Mood stabilizes and anxiety decreases over time"
+                            )
+                            ReminderCard(
+                                icon: "person.fill.checkmark",
+                                title: "Self-Respect",
+                                description: "Every moment you choose yourself builds confidence"
+                            )
+                        }
                     }
                     .padding(.top, 8)
+                    
+                    // Primary action button
+                    Button(action: { isPresented = false }) {
+                        Text("I'm okay now")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(
+                                Color(red: 0.45, green: 0.72, blue: 0.99)
+                            )
+                            .cornerRadius(14)
+                    }
+                    .padding(.top, 8)
+                    
+                    // Secondary relapse actions (if needed)
+                    if showRelapseOptions {
+                        VStack(spacing: 10) {
+                            Button(action: {
+                                // Handle relapse action
+                                isPresented = false
+                            }) {
+                                HStack {
+                                    Image(systemName: "exclamationmark.circle.fill")
+                                    Text("I relapsed")
+                                        .font(.system(size: 15, weight: .medium))
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(Color.red.opacity(0.8))
+                                .cornerRadius(12)
+                            }
+                            
+                            Button(action: {
+                                // Handle thinking of relapsing
+                                isPresented = false
+                            }) {
+                                HStack {
+                                    Image(systemName: "brain.head.profile")
+                                    Text("I'm thinking of relapsing")
+                                        .font(.system(size: 15, weight: .medium))
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(Color.gray.opacity(0.7))
+                                .cornerRadius(12)
+                            }
+                        }
+                        .padding(.top, 8)
+                    }
                 }
-                .padding()
+                .padding(.horizontal, 20)
+                .padding(.vertical, 24)
+                .padding(.top, 50)
             }
             
             Button(action: { isPresented = false }) {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.title)
-                    .foregroundColor(.secondary)
-                    .padding()
+                    .font(.system(size: 24))
+                    .foregroundColor(.secondary.opacity(0.7))
+                    .background(Color.white.opacity(0.9))
+                    .clipShape(Circle())
+                    .padding(8)
             }
             .accessibilityLabel("Close")
+            .padding(.top, 8)
+            .padding(.trailing, 8)
         }
         .onAppear {
             let generator = UINotificationFeedbackGenerator()
             generator.notificationOccurred(.warning)
-            requestCameraIfNeeded()
-            camera.start()
+            // Check camera authorization immediately (non-blocking)
+            checkCameraAuthorization()
+            // Start camera asynchronously to not block UI
+            DispatchQueue.global(qos: .userInitiated).async {
+                self.camera.start { [weak camera] success in
+                    DispatchQueue.main.async {
+                        if success && self.cameraAuthorized {
+                            self.cameraReady = true
+                        }
+                    }
+                }
+            }
         }
-        .onDisappear { camera.stop() }
+        .onDisappear { 
+            camera.stop()
+        }
     }
     
-    private func requestCameraIfNeeded() {
+    private func checkCameraAuthorization() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
             cameraAuthorized = true
         case .notDetermined:
             AVCaptureDevice.requestAccess(for: .video) { granted in
-                DispatchQueue.main.async { self.cameraAuthorized = granted }
+                DispatchQueue.main.async { 
+                    self.cameraAuthorized = granted
+                    if granted {
+                        // Start camera after authorization
+                        DispatchQueue.global(qos: .userInitiated).async {
+                            self.camera.start { [weak camera] success in
+                                DispatchQueue.main.async {
+                                    self.cameraReady = success
+                                }
+                            }
+                        }
+                    }
+                }
             }
         default:
             cameraAuthorized = false
@@ -136,23 +244,23 @@ private struct BreathingCoach: View {
     @State private var phase: Bool = false
     private var timer: Timer.TimerPublisher { Timer.publish(every: 4, on: .main, in: .common) }
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 14) {
             Text(phase ? "Breathe out" : "Breathe in")
-                .font(.headline)
+                .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.primary)
             
             ZStack {
                 Circle()
-                    .stroke(Color.pink.opacity(0.2), lineWidth: 6)
+                    .stroke(Color(red: 0.45, green: 0.72, blue: 0.99).opacity(0.2), lineWidth: 5)
                     .frame(width: 160, height: 160)
                 Circle()
-                    .fill(Color.pink.opacity(0.6))
+                    .fill(Color(red: 0.45, green: 0.72, blue: 0.99).opacity(0.4))
                     .frame(width: phase ? 160 : 80, height: phase ? 160 : 80)
                     .animation(.easeInOut(duration: 4.0), value: phase)
             }
             .frame(maxWidth: .infinity)
             Text("4-7-8 breathing: In 4 • Hold 7 • Out 8")
-                .font(.caption)
+                .font(.system(size: 13))
                 .foregroundColor(.secondary)
         }
         .onAppear { phase = true }
@@ -166,55 +274,109 @@ private struct BreathingCoach: View {
     }
 }
 
-private struct MotivationList: View {
+private struct ReminderCard: View {
+    let icon: String
+    let title: String
+    let description: String
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            MotivationRow(text: "Cravings pass in a few minutes — ride the wave")
-            MotivationRow(text: "Drink water or chew gum while you breathe")
-            MotivationRow(text: "Move for 60 seconds: stretch, walk, or 10 push-ups")
-            MotivationRow(text: "Text a friend or look at your reasons to quit")
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: icon)
+                .font(.system(size: 20, weight: .medium))
+                .foregroundColor(Color(red: 0.45, green: 0.72, blue: 0.99))
+                .frame(width: 32, height: 32)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.primary)
+                    .textCase(.uppercase)
+                    .kerning(0.5)
+                
+                Text(description)
+                    .font(.system(size: 14, weight: .regular))
+                    .foregroundColor(.primary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            
+            Spacer()
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(RoundedRectangle(cornerRadius: 14).fill(Color.white.opacity(0.9)))
-        .shadow(radius: 6)
-    }
-}
-
-private struct MotivationRow: View {
-    let text: String
-    var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Image(systemName: "sparkle")
-                .foregroundColor(.pink)
-            Text(text)
-                .foregroundColor(.secondary)
-        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.white)
+                .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
+        )
     }
 }
 
 // MARK: - Camera helpers
-private final class CameraController {
+private final class CameraController: ObservableObject {
     let session = AVCaptureSession()
     private var isConfigured = false
+    private let configurationQueue = DispatchQueue(label: "camera.configuration", qos: .userInitiated)
     
-    func start() {
-        if !isConfigured { configure() }
-        DispatchQueue.global(qos: .userInitiated).async { self.session.startRunning() }
-    }
-    func stop() { session.stopRunning() }
-    
-    private func configure() {
-        session.beginConfiguration()
-        session.sessionPreset = .high
-        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front),
-              let input = try? AVCaptureDeviceInput(device: device),
-              session.canAddInput(input) else {
-            session.commitConfiguration(); return
+    func start(completion: @escaping (Bool) -> Void = { _ in }) {
+        configurationQueue.async { [weak self] in
+            guard let self = self else {
+                DispatchQueue.main.async { completion(false) }
+                return
+            }
+            
+            if !self.isConfigured {
+                let success = self.configure()
+                if !success {
+                    DispatchQueue.main.async { completion(false) }
+                    return
+                }
+            }
+            
+            // Use lower quality preset for faster startup
+            if !self.session.isRunning {
+                self.session.startRunning()
+            }
+            
+            DispatchQueue.main.async {
+                completion(true)
+            }
         }
-        session.addInput(input)
+    }
+    
+    func stop() {
+        configurationQueue.async { [weak self] in
+            guard let self = self else { return }
+            if self.session.isRunning {
+                self.session.stopRunning()
+            }
+        }
+    }
+    
+    private func configure() -> Bool {
+        session.beginConfiguration()
+        // Use medium quality for faster initialization
+        session.sessionPreset = .medium
+        
+        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front) else {
+            session.commitConfiguration()
+            return false
+        }
+        
+        do {
+            let input = try AVCaptureDeviceInput(device: device)
+            if session.canAddInput(input) {
+                session.addInput(input)
+            } else {
+                session.commitConfiguration()
+                return false
+            }
+        } catch {
+            session.commitConfiguration()
+            return false
+        }
+        
         session.commitConfiguration()
         isConfigured = true
+        return true
     }
 }
 

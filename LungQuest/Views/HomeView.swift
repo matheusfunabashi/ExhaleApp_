@@ -14,6 +14,7 @@ struct HomeView: View {
     @State private var showHeroGlow = false
     @State private var selectedLesson: HomeLearningLesson? = nil
     @State private var selectedReadingOfTheDay: Lesson? = nil
+    @State private var selectedCheckInFromButton: DailyProgress? = nil
     #if DEBUG
     @State private var showDevMenu = false
     @State private var showDevOptions = false
@@ -97,6 +98,8 @@ struct HomeView: View {
                                 action: {
                                     if !hasCheckedInToday {
                                         showCheckIn = true
+                                    } else if let todayCheckIn = todayCheckIn {
+                                        selectedCheckInFromButton = todayCheckIn
                                     }
                                 }
                             )
@@ -180,14 +183,17 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showCalendar) {
             NavigationView {
-                MonthlyCalendarView()
-                    .navigationTitle("This Month")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Close") { showCalendar = false }
-                        }
+                ScrollView {
+                    ProgressCalendarView()
+                        .padding()
+                }
+                .navigationTitle("Calendar")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Close") { showCalendar = false }
                     }
+                }
             }
             .environmentObject(dataStore)
         }
@@ -252,6 +258,10 @@ struct HomeView: View {
             LessonDetailModal(lesson: lesson, accent: Color(red: 0.95, green: 0.65, blue: 0.75))
                 .environmentObject(dataStore)
         }
+        .sheet(item: $selectedCheckInFromButton) { checkIn in
+            CheckInDetailView(checkIn: checkIn)
+                .environmentObject(dataStore)
+        }
         #if DEBUG
         .confirmationDialog(
             "Debug options",
@@ -297,6 +307,13 @@ struct HomeView: View {
     private var hasCheckedInToday: Bool {
         let today = Calendar.current.startOfDay(for: Date())
         return dataStore.dailyProgress.contains { progress in
+            Calendar.current.isDate(progress.date, inSameDayAs: today)
+        }
+    }
+    
+    private var todayCheckIn: DailyProgress? {
+        let today = Calendar.current.startOfDay(for: Date())
+        return dataStore.dailyProgress.first { progress in
             Calendar.current.isDate(progress.date, inSameDayAs: today)
         }
     }
@@ -810,7 +827,7 @@ struct MoneySavedView: View {
 struct HealthImprovementsView: View {
     @EnvironmentObject var dataStore: AppDataStore
     private var days: Int {
-        dataStore.getDaysVapeFree()
+        dataStore.daysSinceQuitStartDate()
     }
     private var timeline: [(when: String, description: String, minDays: Int)] {
         [
@@ -954,6 +971,7 @@ private struct HomeSection<Content: View>: View {
 private struct CheckInStatusButton: View {
     @EnvironmentObject var dataStore: AppDataStore
     @Binding var showCheckIn: Bool
+    @State private var selectedCheckIn: DailyProgress? = nil
     
     private var hasCheckedInToday: Bool {
         let today = Calendar.current.startOfDay(for: Date())
@@ -962,10 +980,19 @@ private struct CheckInStatusButton: View {
         }
     }
     
+    private var todayCheckIn: DailyProgress? {
+        let today = Calendar.current.startOfDay(for: Date())
+        return dataStore.dailyProgress.first { progress in
+            Calendar.current.isDate(progress.date, inSameDayAs: today)
+        }
+    }
+    
     var body: some View {
         Button(action: {
             if !hasCheckedInToday {
                 showCheckIn = true
+            } else if let checkIn = todayCheckIn {
+                selectedCheckIn = checkIn
             }
         }) {
             HStack(spacing: 16) {
@@ -1020,6 +1047,10 @@ private struct CheckInStatusButton: View {
             )
         }
         .buttonStyle(PlainButtonStyle())
+        .sheet(item: $selectedCheckIn) { checkIn in
+            CheckInDetailView(checkIn: checkIn)
+                .environmentObject(dataStore)
+        }
     }
 }
 

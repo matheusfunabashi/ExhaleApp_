@@ -141,7 +141,35 @@ class AppDataStore: ObservableObject {
             statistics.cravingsReduced = max(0, 5.0 - avgCravings) * 20
         }
         
+        // Calculate daily XP based on days vape-free
+        let daysSinceStart = daysSinceQuitStartDate()
+        let dailyXP = calculateDailyXP(days: daysSinceStart)
+        
+        // Update total XP: ensure it's at least the daily XP (preserve any additional XP from quests)
+        let oldLevel = statistics.currentLevel
+        if dailyXP > statistics.totalXP {
+            statistics.totalXP = dailyXP
+        }
+        statistics.currentLevel = (statistics.totalXP / 100) + 1
+        // If level increased, trigger notification
+        if statistics.currentLevel > oldLevel {
+            objectWillChange.send()
+        }
+        
+        // Update completed quests to show milestones achieved
+        statistics.completedQuests = countCompletedMilestones(days: daysSinceStart)
+        
         checkForNewBadges()
+    }
+    
+    private func calculateDailyXP(days: Int) -> Int {
+        // Award 10 XP per day vape-free
+        return days * 10
+    }
+    
+    private func countCompletedMilestones(days: Int) -> Int {
+        let milestones = [1, 3, 7, 30, 90, 365]
+        return milestones.filter { days >= $0 }.count
     }
     
     private func checkForNewBadges() {
@@ -159,8 +187,8 @@ class AppDataStore: ObservableObject {
         if daysSinceStart >= 30 && !statistics.badges.contains(where: { $0.name == "Month Champion" }) {
             newBadges.append(Badge(name: "Month Champion", description: "30 days vape-free!", icon: "crown.fill"))
         }
-        if statistics.completedQuests >= 10 && !statistics.badges.contains(where: { $0.name == "Quest Master" }) {
-            newBadges.append(Badge(name: "Quest Master", description: "Completed 10 quests!", icon: "target"))
+        if statistics.completedQuests >= 3 && !statistics.badges.contains(where: { $0.name == "Milestone Master" }) {
+            newBadges.append(Badge(name: "Milestone Master", description: "Achieved 3 milestones!", icon: "target"))
         }
         
         // Add all new badges at once
@@ -175,8 +203,9 @@ class AppDataStore: ObservableObject {
         guard let questIndex = activeQuests.firstIndex(where: { $0.id == questId }) else { return }
         activeQuests[questIndex].isCompleted = true
         let quest = activeQuests[questIndex]
+        // Add XP from quest (this will be preserved when calculateStatistics runs)
         statistics.addXP(quest.xpReward)
-        statistics.completedQuests += 1
+        // Note: completedQuests is now calculated from milestones, so we don't increment it here
         
         let today = Calendar.current.startOfDay(for: Date())
         if let progressIndex = dailyProgress.firstIndex(where: { Calendar.current.isDate($0.date, inSameDayAs: today) }) {
