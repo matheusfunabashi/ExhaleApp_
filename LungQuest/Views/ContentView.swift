@@ -30,8 +30,8 @@ struct ContentView: View {
             if flowManager.isLoading || flowManager.isCheckingSubscription {
                 LoadingView()
             } else if flowManager.isOnboarding {
-                OnboardingView(onSkipAll: { name, age in
-                    flowManager.completeOnboarding(name: name, age: age)
+                OnboardingView(onSkipAll: { name, age, weeklyCost, currency in
+                    flowManager.completeOnboarding(name: name, age: age, weeklyCost: weeklyCost, currency: currency)
                 })
                 .environmentObject(flowManager)
                 .environmentObject(dataStore)

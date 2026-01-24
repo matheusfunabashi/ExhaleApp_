@@ -30,11 +30,26 @@ class AppDataStore: ObservableObject {
         generateDailyQuests()
     }
     
-    func completeOnboarding(name: String?, age: Int?) {
+    func completeOnboarding(name: String?, age: Int?, weeklyCost: Double? = nil, currency: String? = nil) {
         let userName = name?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Guest"
         var user = User(name: userName.isEmpty ? "Guest" : userName)
         if let age = age {
             user.age = age
+        }
+        if let weeklyCost = weeklyCost {
+            user.profile.vapingHistory.dailyCost = weeklyCost
+        }
+        if let currency = currency {
+            // Map currency symbols to currency codes
+            let currencyCode: String
+            switch currency {
+            case "$": currencyCode = "USD"
+            case "€": currencyCode = "EUR"
+            case "£": currencyCode = "GBP"
+            case "R$": currencyCode = "BRL"
+            default: currencyCode = "USD"
+            }
+            user.profile.vapingHistory.currency = currencyCode
         }
         currentUser = user
         saveUserData()
