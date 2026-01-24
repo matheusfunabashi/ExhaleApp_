@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct OnboardingStep10View: View {
-    let onNext: () -> Void
+    let onNext: (Double, String) -> Void
     let onBack: () -> Void
     
     @State private var amountText: String = ""
@@ -48,7 +48,10 @@ struct OnboardingStep10View: View {
                 
                 Button(action: {
                     if canProceed {
-                        onNext()
+                        let trimmedAmount = amountText.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if let amount = Double(trimmedAmount) {
+                            onNext(amount, selectedCurrency)
+                        }
                     }
                 }) {
                     Text("Next")
@@ -241,7 +244,7 @@ private struct SkipButton: View {
 
 #Preview {
     OnboardingStep10View(
-        onNext: {},
+        onNext: { _, _ in },
         onBack: {}
     )
 }

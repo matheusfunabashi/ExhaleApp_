@@ -14,6 +14,7 @@ struct HomeView: View {
     @State private var showHeroGlow = false
     @State private var selectedLesson: HomeLearningLesson? = nil
     @State private var selectedReadingOfTheDay: Lesson? = nil
+    @State private var selectedTodayCheckIn: DailyProgress? = nil
     #if DEBUG
     @State private var showDevMenu = false
     @State private var showDevOptions = false
@@ -95,7 +96,15 @@ struct HomeView: View {
                                 label: "Check-ins",
                                 isCompleted: hasCheckedInToday,
                                 action: {
-                                    if !hasCheckedInToday {
+                                    if hasCheckedInToday {
+                                        // Show today's check-in details
+                                        let today = Calendar.current.startOfDay(for: Date())
+                                        if let todayCheckIn = dataStore.dailyProgress.first(where: { progress in
+                                            Calendar.current.isDate(progress.date, inSameDayAs: today)
+                                        }) {
+                                            selectedTodayCheckIn = todayCheckIn
+                                        }
+                                    } else {
                                         showCheckIn = true
                                     }
                                 }
@@ -162,7 +171,17 @@ struct HomeView: View {
                     }
                     .padding(.horizontal)
                     
-                    CheckInStatusButton(showCheckIn: $showCheckIn)
+                    CheckInStatusButton(
+                        showCheckIn: $showCheckIn,
+                        onTodayCheckInTapped: {
+                            let today = Calendar.current.startOfDay(for: Date())
+                            if let todayCheckIn = dataStore.dailyProgress.first(where: { progress in
+                                Calendar.current.isDate(progress.date, inSameDayAs: today)
+                            }) {
+                                selectedTodayCheckIn = todayCheckIn
+                            }
+                        }
+                    )
                     .padding(.horizontal)
                     
                     ReadingOfTheDayButton(selectedLesson: $selectedReadingOfTheDay)
@@ -178,16 +197,26 @@ struct HomeView: View {
         .sheet(isPresented: $showCheckIn) {
             CheckInModalView()
         }
+        .sheet(item: Binding(
+            get: { selectedTodayCheckIn },
+            set: { selectedTodayCheckIn = $0 }
+        )) { checkIn in
+            CheckInDetailView(checkIn: checkIn)
+                .environmentObject(dataStore)
+        }
         .sheet(isPresented: $showCalendar) {
             NavigationView {
-                MonthlyCalendarView()
-                    .navigationTitle("This Month")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Close") { showCalendar = false }
-                        }
+                ScrollView {
+                    ProgressCalendarView()
+                        .padding()
+                }
+                .navigationTitle("Calendar")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Close") { showCalendar = false }
                     }
+                }
             }
             .environmentObject(dataStore)
         }
@@ -954,6 +983,7 @@ private struct HomeSection<Content: View>: View {
 private struct CheckInStatusButton: View {
     @EnvironmentObject var dataStore: AppDataStore
     @Binding var showCheckIn: Bool
+    var onTodayCheckInTapped: (() -> Void)? = nil
     
     private var hasCheckedInToday: Bool {
         let today = Calendar.current.startOfDay(for: Date())
@@ -964,7 +994,9 @@ private struct CheckInStatusButton: View {
     
     var body: some View {
         Button(action: {
-            if !hasCheckedInToday {
+            if hasCheckedInToday {
+                onTodayCheckInTapped?()
+            } else {
                 showCheckIn = true
             }
         }) {
@@ -1487,7 +1519,7 @@ struct DaysCounterView: View {
         .onAppear {
             now = Date()
         }
-        .onChange(of: dataStore.currentUser?.startDate) { _ in
+        .onChange(of: dataStore.currentUser?.startDate) {
             now = Date()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("UserStartDateChanged"))) { _ in
@@ -1534,7 +1566,7 @@ struct NewHeroTimerView: View {
             now = Date()
             dataStore.updateLungHealth()
         }
-        .onChange(of: dataStore.currentUser?.startDate) { _ in
+        .onChange(of: dataStore.currentUser?.startDate) {
             now = Date()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("UserStartDateChanged"))) { _ in

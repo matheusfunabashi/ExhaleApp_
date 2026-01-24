@@ -185,8 +185,8 @@ class AppFlowManager: ObservableObject {
     #endif
     
     // MARK: - Flow Transitions
-    func completeOnboarding(name: String?, age: Int?) {
-        dataStore.completeOnboarding(name: name, age: age)
+    func completeOnboarding(name: String?, age: Int?, weeklyCost: Double? = nil, currency: String? = nil) {
+        dataStore.completeOnboarding(name: name, age: age, weeklyCost: weeklyCost, currency: currency)
         isOnboarding = false
     }
     

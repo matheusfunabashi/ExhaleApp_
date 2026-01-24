@@ -12,14 +12,16 @@ private enum OnboardingRoute: Hashable {
     case step8
     case step9
     case step10
+    case step10b(weeklyCost: Double, currency: String)
     case step11
     case step11b
     case step12
+    case step12b(userName: String)
     case step13
 }
 
 struct OnboardingView: View {
-    init(onSkipAll: @escaping (String?, Int?) -> Void = { _, _ in }) {
+    init(onSkipAll: @escaping (String?, Int?, Double?, String?) -> Void = { _, _, _, _ in }) {
         self.onSkipAll = onSkipAll
     }
     
@@ -29,7 +31,9 @@ struct OnboardingView: View {
     @State private var collectedName: String = ""
     @State private var collectedAge: String = ""
     @State private var collectedReason: String = ""
-    private let onSkipAll: (String?, Int?) -> Void
+    @State private var collectedWeeklyCost: Double = 0
+    @State private var collectedCurrency: String = "$"
+    private let onSkipAll: (String?, Int?, Double?, String?) -> Void
     
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -114,16 +118,31 @@ struct OnboardingView: View {
                     )
                 case .step10:
                     OnboardingStep10View(
+                        onNext: { weeklyCost, currency in
+                            // Pass values directly through the route
+                            navigationPath.append(.step10b(weeklyCost: weeklyCost, currency: currency))
+                            // Also update state for later use
+                            collectedWeeklyCost = weeklyCost
+                            collectedCurrency = currency
+                        },
+                        onBack: { popRoute() }
+                    )
+                case .step10b(let weeklyCost, let currency):
+                    OnboardingStep10bView(
+                        weeklyCost: weeklyCost,
+                        currency: currency.isEmpty ? "$" : currency,
                         onNext: { navigationPath.append(.step11) },
                         onBack: { popRoute() }
                     )
+                    .id("\(collectedWeeklyCost)-\(collectedCurrency)")
                 case .step11:
                     OnboardingStep11View(
                         onNext: { },
                         onBack: { popRoute() },
                         onNameCollected: { name, age in
-                            collectedName = name
-                            collectedAge = age
+                            // Update state first
+                            collectedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+                            collectedAge = age.trimmingCharacters(in: .whitespacesAndNewlines)
                             // Navigate after updating the state
                             navigationPath.append(.step11b)
                         }
@@ -139,14 +158,28 @@ struct OnboardingView: View {
                     )
                 case .step12:
                     OnboardingStep12View(
-                        onComplete: { navigationPath.append(.step13) },
+                        onComplete: { 
+                            let name = collectedName.trimmingCharacters(in: .whitespacesAndNewlines)
+                            navigationPath.append(.step12b(userName: name.isEmpty ? "" : name))
+                        },
+                        onBack: { popRoute() }
+                    )
+                case .step12b(let userName):
+                    OnboardingStep12bView(
+                        userName: userName,
+                        onNext: { navigationPath.append(.step13) },
                         onBack: { popRoute() }
                     )
                 case .step13:
                     OnboardingStep13View(
                         onContinue: { 
                             let ageInt = collectedAge.isEmpty ? nil : Int(collectedAge)
-                            skipAll(withName: collectedName.isEmpty ? nil : collectedName, age: ageInt)
+                            skipAll(
+                                withName: collectedName.isEmpty ? nil : collectedName,
+                                age: ageInt,
+                                weeklyCost: collectedWeeklyCost > 0 ? collectedWeeklyCost : nil,
+                                currency: collectedCurrency.isEmpty ? nil : collectedCurrency
+                            )
                         },
                         onBack: { popRoute() }
                     )
@@ -257,9 +290,9 @@ private struct ContinueButtonView: View {
 }
 
 private extension OnboardingView {
-    func skipAll(withName name: String? = nil, age: Int? = nil) {
+    func skipAll(withName name: String? = nil, age: Int? = nil, weeklyCost: Double? = nil, currency: String? = nil) {
         navigationPath.removeAll()
-        onSkipAll(name, age)
+        onSkipAll(name, age, weeklyCost, currency)
     }
     
     func popRoute() {
