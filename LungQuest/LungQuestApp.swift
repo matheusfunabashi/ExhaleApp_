@@ -11,6 +11,9 @@ struct ExhaleApp: App {
         let store = AppDataStore()
         _dataStore = StateObject(wrappedValue: store)
         _flowManager = StateObject(wrappedValue: AppFlowManager(dataStore: store))
+        
+        // Track app launch for review prompt
+        ReviewManager.shared.trackAppLaunch()
     }
     
     var body: some Scene {

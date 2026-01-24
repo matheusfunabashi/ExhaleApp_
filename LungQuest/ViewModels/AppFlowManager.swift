@@ -32,14 +32,20 @@ final class SubscriptionManager: ObservableObject {
     
     /// Manually re-check current entitlements (e.g., after a restore action).
     func refresh() {
-        Task { [weak self] in
+        Task { @MainActor [weak self] in
             await self?.refreshEntitlements()
         }
     }
     
+    /// Public method to refresh entitlements (for AppFlowManager access)
+    @MainActor
+    func refreshEntitlements() async {
+        await checkEntitlements()
+    }
+    
     /// Checks current entitlements to see if the user is active.
     @MainActor
-    private func refreshEntitlements() async {
+    private func checkEntitlements() async {
         var found = false
         for await result in Transaction.currentEntitlements {
             if case .verified(let transaction) = result,
@@ -68,6 +74,7 @@ class AppFlowManager: ObservableObject {
     @Published var isOnboarding: Bool = true
     @Published var isSubscribed: Bool = false
     @Published var isLoading: Bool = true
+    @Published var isCheckingSubscription: Bool = false
     @Published var errorMessage: String?
     
     let dataStore: AppDataStore
@@ -78,21 +85,46 @@ class AppFlowManager: ObservableObject {
         self.dataStore = dataStore
         self.subscriptionManager = subscriptionManager
         self.isOnboarding = dataStore.currentUser == nil
-        self.isLoading = false
         
         #if DEBUG
         // Auto-bypass paywall em builds de desenvolvimento
         self.isSubscribed = true
+        self.isLoading = false
+        self.isCheckingSubscription = false
         UserDefaults.standard.set(true, forKey: "isSubscribed")
         #else
-        self.isSubscribed = UserDefaults.standard.bool(forKey: "isSubscribed")
+        // Load subscription state from UserDefaults first (trust it initially)
+        let savedSubscriptionState = UserDefaults.standard.bool(forKey: "isSubscribed")
+        self.isSubscribed = savedSubscriptionState
+        
+        // If we have a saved subscription state, show app immediately and verify in background
+        // Otherwise, check subscription before showing app
+        if savedSubscriptionState {
+            self.isLoading = false
+            self.isCheckingSubscription = true
+            // Verify subscription in background without blocking
+            Task { @MainActor in
+                await self.verifySubscriptionInBackground()
+            }
+        } else {
+            self.isLoading = true
+            self.isCheckingSubscription = true
+            // Check subscription before showing app
+            Task { @MainActor in
+                await self.verifySubscriptionOnStartup()
+            }
+        }
         #endif
         
         subscriptionManager.$isSubscribed
             .receive(on: RunLoop.main)
             .sink { [weak self] active in
                 #if !DEBUG
-                self?.setSubscription(active: active)
+                guard let self = self else { return }
+                // Only update if we're not in the middle of initial check
+                if !self.isCheckingSubscription {
+                    self.setSubscription(active: active)
+                }
                 #endif
             }
             .store(in: &cancellables)
@@ -111,6 +143,46 @@ class AppFlowManager: ObservableObject {
             }
             .store(in: &cancellables)
     }
+    
+    #if !DEBUG
+    @MainActor
+    private func verifySubscriptionOnStartup() async {
+        // First, try to load from SubscriptionManager
+        await subscriptionManager.refreshEntitlements()
+        
+        // Check if subscription manager found a subscription
+        if subscriptionManager.isSubscribed {
+            setSubscription(active: true)
+        } else {
+            // If no subscription found, check UserDefaults as fallback
+            let savedState = UserDefaults.standard.bool(forKey: "isSubscribed")
+            if savedState {
+                // UserDefaults says subscribed but SubscriptionManager doesn't
+                // This could be a referral code or manual unlock
+                // Trust UserDefaults for now
+                setSubscription(active: true)
+            } else {
+                setSubscription(active: false)
+            }
+        }
+        
+        isCheckingSubscription = false
+        isLoading = false
+    }
+    
+    @MainActor
+    private func verifySubscriptionInBackground() async {
+        // Verify subscription without blocking UI
+        await subscriptionManager.refreshEntitlements()
+        
+        // Update if SubscriptionManager found a different state
+        if subscriptionManager.isSubscribed != isSubscribed {
+            setSubscription(active: subscriptionManager.isSubscribed)
+        }
+        
+        isCheckingSubscription = false
+    }
+    #endif
     
     // MARK: - Flow Transitions
     func completeOnboarding(name: String?, age: Int?) {

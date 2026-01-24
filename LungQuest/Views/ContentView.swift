@@ -27,7 +27,7 @@ struct ContentView: View {
     
     var body: some View {
         Group {
-            if flowManager.isLoading {
+            if flowManager.isLoading || flowManager.isCheckingSubscription {
                 LoadingView()
             } else if flowManager.isOnboarding {
                 OnboardingView(onSkipAll: { name, age in
@@ -47,6 +47,7 @@ struct ContentView: View {
         }
         .animation(.easeInOut(duration: 0.3), value: flowManager.isOnboarding)
         .animation(.easeInOut(duration: 0.3), value: flowManager.isLoading)
+        .animation(.easeInOut(duration: 0.3), value: flowManager.isCheckingSubscription)
     }
 }
 
@@ -134,28 +135,6 @@ struct MainTabView: View {
         .fullScreenCover(isPresented: $showPanic) {
             PanicHelpView(isPresented: $showPanic)
         }
-        // Swipe between tabs with animated transition.
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 15)
-                .onEnded { value in
-                    let threshold: CGFloat = 40
-                    if value.translation.width < -threshold {
-                        let next = min(selectedTab + 1, 3)
-                        if next != selectedTab {
-                            withAnimation(.easeInOut(duration: 0.25)) {
-                                selectedTab = next
-                            }
-                        }
-                    } else if value.translation.width > threshold {
-                        let prev = max(selectedTab - 1, 0)
-                        if prev != selectedTab {
-                            withAnimation(.easeInOut(duration: 0.25)) {
-                                selectedTab = prev
-                            }
-                        }
-                    }
-                }
-        )
         .animation(.easeInOut(duration: 0.2), value: selectedTab)
     }
 }
@@ -198,15 +177,30 @@ struct PaywallGateView: View {
                 }
                 
                 Button(action: {
-                    SubscriptionManager.shared.refresh()
+                    Task { @MainActor in
+                        flowManager.isCheckingSubscription = true
+                        await SubscriptionManager.shared.refreshEntitlements()
+                        if SubscriptionManager.shared.isSubscribed {
+                            flowManager.setSubscription(active: true)
+                        }
+                        flowManager.isCheckingSubscription = false
+                    }
                 }) {
-                    Text("Restore Purchases")
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(Color.gray.opacity(0.15))
-                        .foregroundColor(.blue)
-                        .cornerRadius(12)
+                    HStack {
+                        if flowManager.isCheckingSubscription {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                                .scaleEffect(0.8)
+                        }
+                        Text(flowManager.isCheckingSubscription ? "Checking..." : "Restore Purchases")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Color.gray.opacity(0.15))
+                    .foregroundColor(.blue)
+                    .cornerRadius(12)
                 }
+                .disabled(flowManager.isCheckingSubscription)
             }
             .padding(.horizontal, 24)
             
