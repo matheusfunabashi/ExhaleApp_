@@ -200,7 +200,7 @@ struct PanicHelpView: View {
             checkCameraAuthorization()
             // Start camera asynchronously to not block UI
             DispatchQueue.global(qos: .userInitiated).async {
-                self.camera.start { [weak camera] success in
+                self.camera.start { success in
                     DispatchQueue.main.async {
                         if success && self.cameraAuthorized {
                             self.cameraReady = true
@@ -225,7 +225,7 @@ struct PanicHelpView: View {
                     if granted {
                         // Start camera after authorization
                         DispatchQueue.global(qos: .userInitiated).async {
-                            self.camera.start { [weak camera] success in
+                            self.camera.start { success in
                                 DispatchQueue.main.async {
                                     self.cameraReady = success
                                 }

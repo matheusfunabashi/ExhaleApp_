@@ -4,8 +4,6 @@ import UIKit
 struct ProfileView: View {
     @EnvironmentObject var dataStore: AppDataStore
     @State private var showEditProfile = false
-    @State private var showExportData = false
-    @State private var showShareStreak = false
     
     var body: some View {
         NavigationView {
@@ -18,7 +16,7 @@ struct ProfileView: View {
                         title: "Your journey",
                         subtitle: "Celebrate streaks, savings, and badges at a glance."
                     ) {
-                        QuickStatsSection(onCurrentStreakTap: { showShareStreak = true })
+                        QuickStatsSection()
                     }
                     
                     if dataStore.statistics.badges.count > 0 {
@@ -39,13 +37,9 @@ struct ProfileView: View {
                     
                     ProfileSection(
                         title: "Data & support",
-                        subtitle: "Export your progress or find the help you need."
+                        subtitle: "Find the help you need."
                     ) {
-                        VStack(spacing: 18) {
-                            DataManagementSectionWrapper(showExportData: $showExportData)
-                            Divider().padding(.vertical, 4)
-                            AppInfoSection()
-                        }
+                        AppInfoSection()
                     }
                     
                     Spacer(minLength: 20)
@@ -62,13 +56,6 @@ struct ProfileView: View {
         }
         .sheet(isPresented: $showEditProfile) {
             EditProfileView()
-                .environmentObject(dataStore)
-        }
-        .sheet(isPresented: $showExportData) {
-            ExportDataView()
-        }
-        .sheet(isPresented: $showShareStreak) {
-            ShareStreakView(isPresented: $showShareStreak)
                 .environmentObject(dataStore)
         }
     }
@@ -214,7 +201,6 @@ struct ProfileHeaderSection: View {
 
 struct QuickStatsSection: View {
     @EnvironmentObject var dataStore: AppDataStore
-    var onCurrentStreakTap: (() -> Void)? = nil
     
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: 2), spacing: 16) {
@@ -222,8 +208,7 @@ struct QuickStatsSection: View {
                 title: "Current Streak",
                 value: "\(daysFromStartDate) days",
                 emoji: "🔥",
-                color: .orange,
-                onTap: onCurrentStreakTap
+                color: .orange
             )
             
             QuickStatCard(
@@ -432,6 +417,18 @@ struct SettingsSection: View {
                 Toggle("", isOn: $notificationsEnabled)
                     .labelsHidden()
                     .tint(Color(red: 0.45, green: 0.72, blue: 0.99))
+                    .onChange(of: notificationsEnabled) { _, newValue in
+                        if var user = dataStore.currentUser {
+                            user.profile.preferences.notificationsEnabled = newValue
+                            dataStore.currentUser = user
+                            dataStore.saveUserData()
+                            if newValue {
+                                NotificationService.shared.setupNotifications()
+                            } else {
+                                NotificationService.shared.cancelAllNotifications()
+                            }
+                        }
+                    }
             }
             
             SettingsRow(
@@ -1301,9 +1298,11 @@ private struct QRPlaceholder: View {
 }
 
 struct SupportView: View {
+    @State private var expandedFAQ: String? = nil
+    
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 24) {
                 Text("Help & Support")
                     .font(.largeTitle)
                     .fontWeight(.bold)
@@ -1312,23 +1311,189 @@ struct SupportView: View {
                     .foregroundColor(.secondary)
                 
                 // FAQ section
-                Text("Frequently Asked Questions")
-                    .font(.headline)
-                    .fontWeight(.semibold)
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Frequently Asked Questions")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .padding(.bottom, 4)
+                    
+                    FAQItem(
+                        question: "How do I track my progress?",
+                        answer: "Use the daily check-in feature to log your progress each day. The app tracks your streak, XP gained, and milestones automatically. You can view your progress in the Progress tab.",
+                        isExpanded: expandedFAQ == "progress",
+                        onTap: {
+                            withAnimation {
+                                expandedFAQ = expandedFAQ == "progress" ? nil : "progress"
+                            }
+                        }
+                    )
+                    
+                    FAQItem(
+                        question: "What happens if I miss a check-in?",
+                        answer: "Missing a check-in doesn't reset your streak. Your streak is based on consecutive days without vaping, not on check-ins. However, regular check-ins help you track your progress and gain XP.",
+                        isExpanded: expandedFAQ == "missed",
+                        onTap: {
+                            withAnimation {
+                                expandedFAQ = expandedFAQ == "missed" ? nil : "missed"
+                            }
+                        }
+                    )
+                    
+                    FAQItem(
+                        question: "How is my streak calculated?",
+                        answer: "Your current streak shows days since your start date. Your longest streak shows the longest consecutive sequence of check-ins where you stayed vape-free. Both are important metrics for your journey.",
+                        isExpanded: expandedFAQ == "streak",
+                        onTap: {
+                            withAnimation {
+                                expandedFAQ = expandedFAQ == "streak" ? nil : "streak"
+                            }
+                        }
+                    )
+                    
+                    FAQItem(
+                        question: "How do I earn XP?",
+                        answer: "You earn 10 XP for each day you stay vape-free. You can also earn XP by completing quests. XP helps you level up and track your overall progress.",
+                        isExpanded: expandedFAQ == "xp",
+                        onTap: {
+                            withAnimation {
+                                expandedFAQ = expandedFAQ == "xp" ? nil : "xp"
+                            }
+                        }
+                    )
+                    
+                    FAQItem(
+                        question: "What are milestones?",
+                        answer: "Milestones are significant health achievements based on days vape-free: 1 day, 3 days, 1 week, 1 month, 3 months, and 1 year. Each milestone represents important health improvements your body experiences.",
+                        isExpanded: expandedFAQ == "milestones",
+                        onTap: {
+                            withAnimation {
+                                expandedFAQ = expandedFAQ == "milestones" ? nil : "milestones"
+                            }
+                        }
+                    )
+                    
+                    FAQItem(
+                        question: "Can I edit a past check-in?",
+                        answer: "Currently, you can only complete one check-in per day. If you need to update today's check-in, you can complete it again and it will update your existing entry for today.",
+                        isExpanded: expandedFAQ == "edit",
+                        onTap: {
+                            withAnimation {
+                                expandedFAQ = expandedFAQ == "edit" ? nil : "edit"
+                            }
+                        }
+                    )
+                    
+                    FAQItem(
+                        question: "What should I do if I have a craving?",
+                        answer: "Use the Panic Button at the bottom of the screen for immediate support. It provides breathing exercises, reminders of why you're staying strong, and helps you get through difficult moments.",
+                        isExpanded: expandedFAQ == "cravings",
+                        onTap: {
+                            withAnimation {
+                                expandedFAQ = expandedFAQ == "cravings" ? nil : "cravings"
+                            }
+                        }
+                    )
+                    
+                    FAQItem(
+                        question: "How is money saved calculated?",
+                        answer: "Money saved is based on the weekly cost you entered during onboarding, divided by 7 to get a daily cost, then multiplied by your days vape-free. This gives you an estimate of how much you've saved.",
+                        isExpanded: expandedFAQ == "money",
+                        onTap: {
+                            withAnimation {
+                                expandedFAQ = expandedFAQ == "money" ? nil : "money"
+                            }
+                        }
+                    )
+                    
+                    FAQItem(
+                        question: "What if I relapse?",
+                        answer: "If you relapse, you can use the 'I relapsed' button in the Home view. This will reset your streak counter, but remember: every moment vape-free counts. Don't give up—each day is a new opportunity.",
+                        isExpanded: expandedFAQ == "relapse",
+                        onTap: {
+                            withAnimation {
+                                expandedFAQ = expandedFAQ == "relapse" ? nil : "relapse"
+                            }
+                        }
+                    )
+                    
+                    FAQItem(
+                        question: "Is my data private?",
+                        answer: "Yes, all your data is stored locally on your device. We don't collect or share your personal information with third parties. Your progress and check-ins remain private to you.",
+                        isExpanded: expandedFAQ == "privacy",
+                        onTap: {
+                            withAnimation {
+                                expandedFAQ = expandedFAQ == "privacy" ? nil : "privacy"
+                            }
+                        }
+                    )
+                }
+                .padding(.top, 8)
+                
+                Divider()
+                    .padding(.vertical, 8)
                 
                 // Support contact
-                Text("Contact Support")
-                    .font(.headline)
-                    .fontWeight(.semibold)
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Contact Support")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                    
+                    Text("Email: f.mirandaassis@gmail.com")
+                        .foregroundColor(.primary)
+                        .font(.body)
+                }
+                .padding(.top, 4)
                 
-                Text("Email: f.mirandaassis@gmail.com")
-                    .foregroundColor(.black)
-                
-                Spacer()
+                Spacer(minLength: 20)
             }
             .padding()
         }
         .navigationBarTitleDisplayMode(.inline)
+        .breathableBackground()
+    }
+}
+
+struct FAQItem: View {
+    let question: String
+    let answer: String
+    let isExpanded: Bool
+    let onTap: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button(action: onTap) {
+                HStack {
+                    Text(question)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.primary)
+                        .multilineTextAlignment(.leading)
+                    
+                    Spacer()
+                    
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.secondary)
+                }
+                .padding(.vertical, 14)
+                .padding(.horizontal, 16)
+            }
+            .buttonStyle(PlainButtonStyle())
+            
+            if isExpanded {
+                Text(answer)
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 14)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.white)
+                .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+        )
     }
 }
 

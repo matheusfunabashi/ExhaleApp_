@@ -39,12 +39,14 @@ class AppDataStore: ObservableObject {
         currentUser = user
         saveUserData()
         generateDailyQuests()
+        setupNotificationsIfEnabled()
     }
     
     func skipOnboarding() {
         currentUser = User(name: "Guest")
         saveUserData()
         generateDailyQuests()
+        setupNotificationsIfEnabled()
     }
     
     // MARK: - Progress Tracking
@@ -73,6 +75,19 @@ class AppDataStore: ObservableObject {
         updateLungHealth()
         calculateStatistics()
         saveUserData()
+        
+        // Cancel check-in reminder if notifications are enabled (user completed it)
+        if currentUser?.profile.preferences.notificationsEnabled == true {
+            // The notification will still fire today, but user completed it
+            // We could cancel it, but since it's daily repeating, it's fine to let it fire
+        }
+        
+        // Request review if conditions are met (onboarding completed is checked by currentUser != nil)
+        ReviewManager.shared.requestReviewIfNeeded(
+            onboardingCompleted: currentUser != nil,
+            hasOpenedProgressView: false,
+            hasCompletedCheckIn: true
+        )
     }
     
     private func updateStreak() {
@@ -270,6 +285,7 @@ class AppDataStore: ObservableObject {
         // Calculate statistics and check for badges when app loads
         if currentUser != nil {
             calculateStatistics()
+            setupNotificationsIfEnabled()
         }
     }
     
@@ -308,6 +324,9 @@ class AppDataStore: ObservableObject {
             readLessons.append(lessonTitle)
             saveUserData()
             objectWillChange.send() // Explicitly notify views of the change
+            
+            // If this is today's reading, we could cancel the notification
+            // But since it's daily repeating, it will check again tomorrow
         }
     }
     
@@ -318,6 +337,21 @@ class AppDataStore: ObservableObject {
     func isReadingOfTheDayCompleted() -> Bool {
         let readingOfTheDay = getReadingOfTheDayTitle()
         return isLessonRead(readingOfTheDay)
+    }
+    
+    // MARK: - Notification Management
+    func setupNotificationsIfEnabled() {
+        guard let user = currentUser else { return }
+        if user.profile.preferences.notificationsEnabled {
+            NotificationService.shared.setupNotifications()
+        } else {
+            NotificationService.shared.cancelAllNotifications()
+        }
+    }
+    
+    func hasCheckedInToday() -> Bool {
+        let today = Calendar.current.startOfDay(for: Date())
+        return dailyProgress.contains { Calendar.current.isDate($0.date, inSameDayAs: today) }
     }
     
     private func getReadingOfTheDayTitle() -> String {

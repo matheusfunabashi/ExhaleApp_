@@ -3,6 +3,7 @@ import Charts
 
 struct ProgressView: View {
     @EnvironmentObject var dataStore: AppDataStore
+    @EnvironmentObject var flowManager: AppFlowManager
     @State private var selectedTimeFrame: TimeFrame = .week
     
     enum TimeFrame: String, CaseIterable {
@@ -36,6 +37,14 @@ struct ProgressView: View {
             }
             .navigationTitle("Progress")
             .breathableBackground()
+            .onAppear {
+                // Request review if conditions are met
+                ReviewManager.shared.requestReviewIfNeeded(
+                    onboardingCompleted: !flowManager.isOnboarding,
+                    hasOpenedProgressView: true,
+                    hasCompletedCheckIn: false
+                )
+            }
         }
     }
 }

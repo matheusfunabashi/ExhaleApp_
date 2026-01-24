@@ -45,6 +45,8 @@
 		97FE9ECC2FCFE7E5006FDDE7 /* TabNavigationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FE9ECB2FCFE7E5006FDDE7 /* TabNavigationManager.swift */; };
 		9E1E15DD2EE33C1C00BF4D96 /* SuperwallKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9E1E15DC2EE33C1C00BF4D96 /* SuperwallKit */; };
 		9E9B7F2F2FE4B32E00A77077 /* AppDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9B7F2E2FE4B32E00A77077 /* AppDataStore.swift */; };
+		9E9B7F302FE4B32E00A77078 /* ReviewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9B7F2F2FE4B32E00A77078 /* ReviewManager.swift */; };
+		9E9B7F312FE4B32E00A77079 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9B7F302FE4B32E00A77079 /* NotificationService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -82,6 +84,8 @@
 		97FE9EC92FCFE5C7006FDDE7 /* OnboardingStep13View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStep13View.swift; sourceTree = "<group>"; };
 		97FE9ECA2FCFE6D4006FDDE7 /* OnboardingStep11bView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStep11bView.swift; sourceTree = "<group>"; };
 		9E9B7F2E2FE4B32E00A77077 /* AppDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDataStore.swift; sourceTree = "<group>"; };
+		9E9B7F2F2FE4B32E00A77078 /* ReviewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewManager.swift; sourceTree = "<group>"; };
+		9E9B7F302FE4B32E00A77079 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -154,6 +158,8 @@
 			isa = PBXGroup;
 			children = (
 				8D1107430486CEB800E47090 /* DataService.swift */,
+				9E9B7F2F2FE4B32E00A77078 /* ReviewManager.swift */,
+				9E9B7F302FE4B32E00A77079 /* NotificationService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -293,6 +299,8 @@
 				9E9B7F2F2FE4B32E00A77077 /* AppDataStore.swift in Sources */,
 				97FE9ECC2FCFE7E5006FDDE7 /* TabNavigationManager.swift in Sources */,
 				8D1107440486CEB800E47090 /* DataService.swift in Sources */,
+				9E9B7F302FE4B32E00A77078 /* ReviewManager.swift in Sources */,
+				9E9B7F312FE4B32E00A77079 /* NotificationService.swift in Sources */,
 				8D1107480486CEB800E47090 /* HomeView.swift in Sources */,
 				8D1107600486CEB800E47090 /* LearningView.swift in Sources */,
 				8D1107660486CEB800E47090 /* PaywallView.swift in Sources */,
