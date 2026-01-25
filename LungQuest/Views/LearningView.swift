@@ -139,6 +139,10 @@ struct LearningView: View {
             )
         ]
     }
+
+    static func allLessonsForDailyReading() -> [Lesson] {
+        LearningView().topics.flatMap { $0.lessons }
+    }
     
     var body: some View {
         NavigationView {

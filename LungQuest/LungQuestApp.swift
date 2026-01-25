@@ -1,8 +1,10 @@
 import SwiftUI
 import SuperwallKit
+import UserNotifications
 
 @main
 struct ExhaleApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var dataStore: AppDataStore
     @StateObject private var flowManager: AppFlowManager
     
@@ -23,5 +25,30 @@ struct ExhaleApp: App {
                 .environmentObject(dataStore)
                 .preferredColorScheme(.light) // Force light mode
         }
+    }
+}
+
+final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
+        UNUserNotificationCenter.current().delegate = self
+        return true
+    }
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        UIApplication.shared.applicationIconBadgeNumber = 0
+        center.removeAllDeliveredNotifications()
+        completionHandler()
+    }
+
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        application.applicationIconBadgeNumber = 0
+        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
     }
 }

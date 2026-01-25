@@ -52,7 +52,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		8D1107270486CEB800E47090 /* LungQuest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LungQuest.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107270486CEB800E47090 /* Exhale.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Exhale.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D1107300486CEB800E47090 /* LungQuestApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LungQuestApp.swift; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		8D1107390486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -121,7 +121,7 @@
 		8D1107280486CEB800E47090 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107270486CEB800E47090 /* LungQuest.app */,
+				8D1107270486CEB800E47090 /* Exhale.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -219,9 +219,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8D1107260486CEB800E47090 /* LungQuest */ = {
+		8D1107260486CEB800E47090 /* Exhale */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8D11072C0486CEB800E47090 /* Build configuration list for PBXNativeTarget "LungQuest" */;
+			buildConfigurationList = 8D11072C0486CEB800E47090 /* Build configuration list for PBXNativeTarget "Exhale" */;
 			buildPhases = (
 				8D1107230486CEB800E47090 /* Sources */,
 				8D1107240486CEB800E47090 /* Frameworks */,
@@ -231,7 +231,7 @@
 			);
 			dependencies = (
 			);
-			name = LungQuest;
+			name = Exhale;
 			packageProductDependencies = (
 				971C045F2E7DFED500540355 /* FirebaseAnalytics */,
 				971C04612E7DFED500540355 /* FirebaseAuth */,
@@ -240,7 +240,7 @@
 				9E1E15DC2EE33C1C00BF4D96 /* SuperwallKit */,
 			);
 			productName = LungQuest;
-			productReference = 8D1107270486CEB800E47090 /* LungQuest.app */;
+			productReference = 8D1107270486CEB800E47090 /* Exhale.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -259,7 +259,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 8D1107220486CEB800E47090 /* Build configuration list for PBXProject "LungQuest" */;
+			buildConfigurationList = 8D1107220486CEB800E47090 /* Build configuration list for PBXProject "Exhale" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -276,7 +276,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8D1107260486CEB800E47090 /* LungQuest */,
+				8D1107260486CEB800E47090 /* Exhale */,
 			);
 		};
 /* End PBXProject section */
@@ -541,7 +541,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		8D1107220486CEB800E47090 /* Build configuration list for PBXProject "LungQuest" */ = {
+		8D1107220486CEB800E47090 /* Build configuration list for PBXProject "Exhale" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8D11072A0486CEB800E47090 /* Debug */,
@@ -550,7 +550,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8D11072C0486CEB800E47090 /* Build configuration list for PBXNativeTarget "LungQuest" */ = {
+		8D11072C0486CEB800E47090 /* Build configuration list for PBXNativeTarget "Exhale" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8D11072D0486CEB800E47090 /* Debug */,
