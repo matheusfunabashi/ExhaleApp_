@@ -122,15 +122,17 @@ struct MainTabView: View {
                 TabNavigationManager.shared.selectedTab = newValue
             }
         }
-        .safeAreaInset(edge: .bottom) {
-                HStack {
-                    Spacer()
-                    PanicButton { showPanic = true }
-                    Spacer()
-                }
-            .padding(.bottom, 8)
+        .safeAreaInset(edge: .bottom, spacing: 6) {
+            // Panic button raised: top padding + spacing keep a clear gap below the tab
+            // bar so tab items stay easily tappable; extra bottom padding lifts the button.
+            HStack {
+                Spacer()
+                PanicButton { showPanic = true }
+                Spacer()
+            }
+            .padding(.top, 14)
+            .padding(.bottom, 18)
             .background(Color.clear)
-            .allowsHitTesting(true)
         }
         .fullScreenCover(isPresented: $showPanic) {
             PanicHelpView(isPresented: $showPanic)
