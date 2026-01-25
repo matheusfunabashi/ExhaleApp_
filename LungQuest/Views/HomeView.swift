@@ -1124,32 +1124,17 @@ private struct ReadingOfTheDayButton: View {
     }
     
     private func getReadingOfTheDay() -> Lesson {
-        let allReadings = [
-            Lesson.withContent(
+        let allReadings = LearningView.allLessonsForDailyReading()
+        guard !allReadings.isEmpty else {
+            return Lesson.withContent(
                 title: "Benefits of quitting",
                 summary: "Your body heals from day one.",
                 durationMinutes: 9,
-                icon: "❤️",
+                icon: "heart.fill",
                 content: getExpandedBenefitsContent(),
                 sources: ["American Heart Association - Benefits of Quitting Smoking", "Centers for Disease Control and Prevention - Health Benefits Timeline", "Mayo Clinic - Quitting Smoking: Health Benefits", "National Cancer Institute - Health Benefits of Quitting", "American Lung Association - Benefits of Quitting", "World Health Organization - Tobacco Cessation Benefits"]
-            ),
-            Lesson.withContent(
-                title: "What vaping does",
-                summary: "Understand short and long-term risks.",
-                durationMinutes: 12,
-                icon: "🫁",
-                content: getExpandedVapingContent(),
-                sources: ["National Institute on Drug Abuse - Vaping Health Effects", "American Lung Association - Health Risks of Vaping", "World Health Organization - Electronic Nicotine Delivery Systems", "Centers for Disease Control and Prevention - Health Effects of E-Cigarettes", "Journal of the American Heart Association - Cardiovascular Effects of E-Cigarettes", "Nature Reviews Drug Discovery - Nicotine Addiction and Health Effects"]
-            ),
-            Lesson.withContent(
-                title: "Tips to quit",
-                summary: "Craving hacks and routines that work.",
-                durationMinutes: 9,
-                icon: "💡",
-                content: getExpandedTipsContent(),
-                sources: ["Centers for Disease Control and Prevention - Tips for Quitting", "American Cancer Society - Quitting Guide", "Smokefree.gov - Quit Plan", "National Institute on Drug Abuse - Principles of Drug Addiction Treatment", "Mayo Clinic - Quitting Smoking: 10 Ways to Resist Tobacco Cravings", "American Psychological Association - Strategies for Behavior Change"]
             )
-        ]
+        }
         
         // Get today's date as a seed for consistent daily selection
         let calendar = Calendar.current
