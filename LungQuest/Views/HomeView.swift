@@ -1064,7 +1064,7 @@ private struct ReadingOfTheDayButton: View {
     }
     
     private var isCompleted: Bool {
-        dataStore.isReadingOfTheDayCompleted()
+        dataStore.isReadingOfTheDayCompleted(todayTitle: readingOfTheDay.title)
     }
     
     var body: some View {

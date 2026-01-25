@@ -176,23 +176,21 @@ private struct BenefitRow: View {
                 Text(title)
                     .font(.system(size: 15, weight: .semibold, design: .rounded))
                     .foregroundColor(.black)
-                    .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
                 
                 Text(description)
                     .font(.system(size: 13, weight: .regular, design: .rounded))
                     .foregroundColor(Color.black.opacity(0.7))
-                    .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(cardPadding)
         .frame(maxWidth: .infinity, alignment: .topLeading)
-        .frame(height: 115)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .fill(Color.white.opacity(0.95))
         )
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
 }

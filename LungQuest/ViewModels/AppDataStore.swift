@@ -349,9 +349,10 @@ class AppDataStore: ObservableObject {
         return readLessons.contains(lessonTitle)
     }
     
-    func isReadingOfTheDayCompleted() -> Bool {
-        let readingOfTheDay = getReadingOfTheDayTitle()
-        return isLessonRead(readingOfTheDay)
+    /// Returns whether the given lesson (today's reading) has been marked as read.
+    /// The caller must pass the same title used for the daily reading (e.g. from HomeView).
+    func isReadingOfTheDayCompleted(todayTitle: String) -> Bool {
+        return isLessonRead(todayTitle)
     }
     
     // MARK: - Notification Management
@@ -367,22 +368,6 @@ class AppDataStore: ObservableObject {
     func hasCheckedInToday() -> Bool {
         let today = Calendar.current.startOfDay(for: Date())
         return dailyProgress.contains { Calendar.current.isDate($0.date, inSameDayAs: today) }
-    }
-    
-    private func getReadingOfTheDayTitle() -> String {
-        let allReadings = [
-            "Benefits of quitting",
-            "What vaping does",
-            "Tips to quit"
-        ]
-        
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let dayOfYear = calendar.ordinality(of: .day, in: .year, for: today) ?? 0
-        
-        // Use day of year as index to get consistent selection per day
-        let index = dayOfYear % allReadings.count
-        return allReadings[index]
     }
     
     // MARK: - Utility
