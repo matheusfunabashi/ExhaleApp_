@@ -85,6 +85,10 @@ class AppDataStore: ObservableObject {
             progress.puffInterval = puffInterval
             dailyProgress.append(progress)
         }
+
+        if !wasVapeFree {
+            resetQuitTimerForSlip()
+        }
         
         updateStreak()
         updateLungHealth()
@@ -103,6 +107,13 @@ class AppDataStore: ObservableObject {
             hasOpenedProgressView: false,
             hasCompletedCheckIn: true
         )
+    }
+
+    private func resetQuitTimerForSlip() {
+        guard var user = currentUser else { return }
+        user.startDate = Date()
+        currentUser = user
+        UserDefaults.standard.set(0, forKey: "lastMilestoneNotifiedDays")
     }
     
     private func updateStreak() {

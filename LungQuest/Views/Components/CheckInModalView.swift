@@ -45,7 +45,7 @@ struct CheckInModalView: View {
                     MoodSection(selectedMood: $selectedMood)
                     
                     // Puff count tracking
-                    PuffCountSection(selectedPuffInterval: $selectedPuffInterval)
+                    PuffCountSection(selectedPuffInterval: $selectedPuffInterval, wasVapeFree: $wasVapeFree)
                     
                     // Notes
                     NotesSection(notes: $notes)
@@ -417,6 +417,7 @@ struct OptionButton: View {
 
 struct PuffCountSection: View {
     @Binding var selectedPuffInterval: PuffInterval
+    @Binding var wasVapeFree: Bool
     
     private let accentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
     
@@ -433,6 +434,7 @@ struct PuffCountSection: View {
             
             VStack(spacing: 10) {
                 ForEach(PuffInterval.allCases, id: \.self) { interval in
+                    let isDisabled = !wasVapeFree && interval == .none
                     OptionButton(
                         title: interval.displayName,
                         subtitle: getSubtitle(for: interval),
@@ -440,6 +442,8 @@ struct PuffCountSection: View {
                         accentColor: accentColor,
                         action: { selectedPuffInterval = interval }
                     )
+                    .disabled(isDisabled)
+                    .opacity(isDisabled ? 0.4 : 1.0)
                 }
             }
             
@@ -451,6 +455,11 @@ struct PuffCountSection: View {
                 .padding(.top, 4)
         }
         .softCard(accent: accentColor, cornerRadius: 28)
+        .onChange(of: wasVapeFree) { _, newValue in
+            if !newValue && selectedPuffInterval == .none {
+                selectedPuffInterval = .light
+            }
+        }
     }
     
     private func getSubtitle(for interval: PuffInterval) -> String {
