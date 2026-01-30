@@ -69,6 +69,7 @@ struct OnboardingStep10View: View {
             .padding(.horizontal, 24)
             .padding(.top, 52)
             .padding(.bottom, 32)
+            .dismissKeyboardOnTap()
         }
         .navigationBarBackButtonHidden(true)
     }

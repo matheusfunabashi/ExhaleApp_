@@ -13,6 +13,18 @@ class AppDataStore: ObservableObject {
     private let dataService = DataService()
     private let questService = QuestService()
     
+    /// Currency symbol for the current user (from profile.vapingHistory.currency).
+    var currencySymbol: String {
+        let code = currentUser?.profile.vapingHistory.currency ?? "USD"
+        switch code {
+        case "USD": return "$"
+        case "EUR": return "€"
+        case "GBP": return "£"
+        case "BRL": return "R$"
+        default: return "$"
+        }
+    }
+    
     init(autoLoad: Bool = true) {
         if autoLoad {
             loadUserData()

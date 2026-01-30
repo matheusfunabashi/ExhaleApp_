@@ -26,6 +26,9 @@ struct OnboardingStep11bView: View {
                     Text(userName.isEmpty ? "Why do you want to quit vaping?" : "\(userName), why do you want to quit vaping?")
                         .font(.system(size: 18, weight: .semibold, design: .rounded))
                         .foregroundColor(Color.black.opacity(0.75))
+                        .onTapGesture {
+                            isTextFieldFocused = false
+                        }
                     
                     ZStack(alignment: .topLeading) {
                         if reason.isEmpty {
@@ -81,6 +84,7 @@ struct OnboardingStep11bView: View {
             .padding(.horizontal, 24)
             .padding(.top, 52)
             .padding(.bottom, 32)
+            .dismissKeyboardOnTap()
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {

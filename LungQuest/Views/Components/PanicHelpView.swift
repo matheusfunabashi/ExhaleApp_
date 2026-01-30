@@ -240,37 +240,130 @@ struct PanicHelpView: View {
     }
 }
 
+// MARK: - 4-7-8 Breathing (Inhale 4s, Hold 7s, Exhale 8s = 19s cycle)
+private enum BreathingPhase: String, Equatable {
+    case inhale   // 4s – bubble expands
+    case hold     // 7s – bubble stays full
+    case exhale   // 8s – bubble contracts
+}
+
 private struct BreathingCoach: View {
-    @State private var phase: Bool = false
-    private var timer: Timer.TimerPublisher { Timer.publish(every: 4, on: .main, in: .common) }
+    @State private var cycleStartTime: Date = Date()
+    
+    private let totalCycleDuration: TimeInterval = 19
+    private let inhaleDuration: TimeInterval = 4
+    private let holdDuration: TimeInterval = 7
+    private let exhaleDuration: TimeInterval = 8
+    private let bubbleOuterSize: CGFloat = 160
+    private let bubbleMinScale: CGFloat = 80 / 160  // 0.5
+    
     var body: some View {
-        VStack(spacing: 14) {
-            Text(phase ? "Breathe out" : "Breathe in")
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.primary)
+        TimelineView(.animation(minimumInterval: 0.05)) { context in
+            let now = context.date
+            let t = now.timeIntervalSince(cycleStartTime)
+            let tInCycle = t.truncatingRemainder(dividingBy: totalCycleDuration)
+            let (phase, progress) = phaseAndProgress(tInCycle)
+            let scale = bubbleScale(phase: phase, progress: progress)
+            let opacity = 0.35 + 0.12 * (scale - bubbleMinScale) / (1 - bubbleMinScale)  // slight glow: higher when full
             
-            ZStack {
-                Circle()
-                    .stroke(Color(red: 0.45, green: 0.72, blue: 0.99).opacity(0.2), lineWidth: 5)
-                    .frame(width: 160, height: 160)
-                Circle()
-                    .fill(Color(red: 0.45, green: 0.72, blue: 0.99).opacity(0.4))
-                    .frame(width: phase ? 160 : 80, height: phase ? 160 : 80)
-                    .animation(.easeInOut(duration: 4.0), value: phase)
+            VStack(spacing: 14) {
+                Text(phaseLabel(phase))
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.primary)
+                
+                Text("\(secondsRemainingInPhase(phase: phase, tInCycle: tInCycle))")
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundColor(Color(red: 0.45, green: 0.72, blue: 0.99))
+                    .monospacedDigit()
+                
+                ZStack {
+                    Circle()
+                        .stroke(Color(red: 0.45, green: 0.72, blue: 0.99).opacity(0.2), lineWidth: 5)
+                        .frame(width: bubbleOuterSize, height: bubbleOuterSize)
+                    Circle()
+                        .fill(Color(red: 0.45, green: 0.72, blue: 0.99).opacity(opacity))
+                        .frame(width: bubbleOuterSize, height: bubbleOuterSize)
+                        .scaleEffect(scale)
+                }
+                .frame(maxWidth: .infinity)
+                
+                Text("4-7-8 breathing: In 4 • Hold 7 • Out 8")
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondary)
             }
-            .frame(maxWidth: .infinity)
-            Text("4-7-8 breathing: In 4 • Hold 7 • Out 8")
-                .font(.system(size: 13))
-                .foregroundColor(.secondary)
+            .background(PhaseChangeHaptic(phase: phase))
         }
-        .onAppear { phase = true }
-        .onReceive(timer.autoconnect()) { _ in
-            withAnimation(.easeInOut(duration: 4.0)) {
-                phase.toggle()
-            }
-        }
+        .onAppear { cycleStartTime = Date() }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Guided breathing coach")
+        .accessibilityLabel("Guided 4-7-8 breathing coach")
+    }
+    
+    private func phaseAndProgress(_ tInCycle: TimeInterval) -> (BreathingPhase, Double) {
+        if tInCycle < inhaleDuration {
+            return (.inhale, tInCycle / inhaleDuration)
+        } else if tInCycle < inhaleDuration + holdDuration {
+            return (.hold, (tInCycle - inhaleDuration) / holdDuration)
+        } else {
+            return (.exhale, (tInCycle - inhaleDuration - holdDuration) / exhaleDuration)
+        }
+    }
+    
+    /// Ease-in-out (smoothstep) for smooth fill/empty; no bounce.
+    private static func easeInOut(_ p: Double) -> Double {
+        guard p >= 0, p <= 1 else { return p }
+        return p * p * (3 - 2 * p)
+    }
+    
+    private func bubbleScale(phase: BreathingPhase, progress: Double) -> CGFloat {
+        let p = Self.easeInOut(progress)
+        switch phase {
+        case .inhale:
+            return bubbleMinScale + (1 - bubbleMinScale) * CGFloat(p)
+        case .hold:
+            return 1
+        case .exhale:
+            return 1 - (1 - bubbleMinScale) * CGFloat(p)
+        }
+    }
+    
+    private func phaseLabel(_ phase: BreathingPhase) -> String {
+        switch phase {
+        case .inhale: return "Breathe in"
+        case .hold: return "Hold"
+        case .exhale: return "Breathe out"
+        }
+    }
+    
+    /// Seconds left in the current phase (4, 3, 2, 1 for inhale; 7…1 for hold; 8…1 for exhale).
+    private func secondsRemainingInPhase(phase: BreathingPhase, tInCycle: TimeInterval) -> Int {
+        let remaining: TimeInterval
+        switch phase {
+        case .inhale:
+            remaining = inhaleDuration - tInCycle
+        case .hold:
+            remaining = (inhaleDuration + holdDuration) - tInCycle
+        case .exhale:
+            remaining = totalCycleDuration - tInCycle
+        }
+        return max(1, Int(remaining.rounded(.up)))
+    }
+}
+
+/// Triggers a soft haptic when the breathing phase changes.
+private struct PhaseChangeHaptic: View {
+    let phase: BreathingPhase
+    @State private var lastPhase: BreathingPhase?
+    
+    var body: some View {
+        Color.clear
+            .onChange(of: phase) { newPhase in
+                if lastPhase != nil, lastPhase != newPhase {
+                    let gen = UIImpactFeedbackGenerator(style: .soft)
+                    gen.impactOccurred()
+                }
+                lastPhase = newPhase
+            }
+            .onAppear { lastPhase = phase }
     }
 }
 
