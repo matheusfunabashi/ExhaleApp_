@@ -220,7 +220,7 @@ struct QuickStatsSection: View {
             
             QuickStatCard(
                 title: "Money Saved",
-                value: String(format: "$%.0f", moneySavedFromStartDate),
+                value: "\(dataStore.currencySymbol)\(Int(moneySavedFromStartDate))",
                 emoji: "💰",
                 color: .blue
             )
@@ -936,7 +936,7 @@ struct EditProfileView: View {
                                 
                                 // Name Field
                                 TextField("Name", text: $name)
-                                    .font(.system(size: 24, weight: .bold, design: .serif))
+                                    .font(.title2.weight(.bold))
                                     .multilineTextAlignment(.center)
                                     .padding(.top, 8)
                                 
@@ -1029,6 +1029,7 @@ struct EditProfileView: View {
                         .padding(.top, 20)
                     }
                 }
+                .dismissKeyboardOnTap()
             }
             .navigationTitle("Your Profile")
             .navigationBarTitleDisplayMode(.inline)
@@ -1476,6 +1477,7 @@ struct FAQItem: View {
                 }
                 .padding(.vertical, 14)
                 .padding(.horizontal, 16)
+                .contentShape(Rectangle())
             }
             .buttonStyle(PlainButtonStyle())
             

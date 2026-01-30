@@ -73,6 +73,7 @@ struct CheckInModalView: View {
                     Spacer(minLength: 20)
                 }
                 .padding()
+                .dismissKeyboardOnTap()
             }
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(

@@ -147,23 +147,33 @@ class AppFlowManager: ObservableObject {
     #if !DEBUG
     @MainActor
     private func verifySubscriptionOnStartup() async {
-        // First, try to load from SubscriptionManager
+        // Load from SubscriptionManager; StoreKit can be slow on first launch.
         await subscriptionManager.refreshEntitlements()
         
-        // Check if subscription manager found a subscription
+        if subscriptionManager.isSubscribed {
+            setSubscription(active: true)
+            isCheckingSubscription = false
+            isLoading = false
+            return
+        }
+        
+        // UserDefaults fallback: trust cached "subscribed" so we don't show paywall to existing subscribers.
+        let savedState = UserDefaults.standard.bool(forKey: "isSubscribed")
+        if savedState {
+            setSubscription(active: true)
+            isCheckingSubscription = false
+            isLoading = false
+            return
+        }
+        
+        // No cached subscription; give StoreKit a short moment to finish (avoids showing paywall on slow first load).
+        try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5s
+        await subscriptionManager.refreshEntitlements()
+        
         if subscriptionManager.isSubscribed {
             setSubscription(active: true)
         } else {
-            // If no subscription found, check UserDefaults as fallback
-            let savedState = UserDefaults.standard.bool(forKey: "isSubscribed")
-            if savedState {
-                // UserDefaults says subscribed but SubscriptionManager doesn't
-                // This could be a referral code or manual unlock
-                // Trust UserDefaults for now
-                setSubscription(active: true)
-            } else {
-                setSubscription(active: false)
-            }
+            setSubscription(active: false)
         }
         
         isCheckingSubscription = false
@@ -172,13 +182,15 @@ class AppFlowManager: ObservableObject {
     
     @MainActor
     private func verifySubscriptionInBackground() async {
-        // Verify subscription without blocking UI
+        // Verify subscription without blocking UI.
+        // Never downgrade: if we already believe the user is subscribed (e.g. from UserDefaults),
+        // do not set isSubscribed = false when StoreKit is slow or fails—only upgrade when we confirm.
         await subscriptionManager.refreshEntitlements()
         
-        // Update if SubscriptionManager found a different state
-        if subscriptionManager.isSubscribed != isSubscribed {
-            setSubscription(active: subscriptionManager.isSubscribed)
+        if subscriptionManager.isSubscribed {
+            setSubscription(active: true)
         }
+        // If subscriptionManager says false, leave isSubscribed unchanged (don't kick subscribed users to paywall)
         
         isCheckingSubscription = false
     }

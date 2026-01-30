@@ -125,13 +125,18 @@ struct OnboardingStep13View: View {
             
             if currentPage == 0 {
                 Button(action: { withAnimation(pagingAnimation) { currentPage = 1 } }) {
-                    Image(systemName: "chevron.down.double")
-                        .font(.system(size: 34, weight: .black))
-                        .foregroundColor(.white)
-                        .padding(18)
-                        .background(Color.white.opacity(0.22), in: Circle())
-                        .shadow(color: Color.black.opacity(0.25), radius: 12, x: 0, y: 10)
-                        .accessibilityLabel("Reveal next step")
+                    VStack(spacing: 6) {
+                        Text("Swipe or tap")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.white.opacity(0.9))
+                        Image(systemName: "arrow.down")
+                            .font(.system(size: 28, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(14)
+                            .background(Color.white.opacity(0.2), in: Circle())
+                            .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 6)
+                    }
+                    .accessibilityLabel("Next step – swipe up or tap")
                 }
                 .buttonStyle(.plain)
                 .padding(.bottom, 24)
@@ -176,13 +181,18 @@ struct OnboardingStep13View: View {
                 Spacer(minLength: 12)
                 
                 Button(action: { withAnimation(pagingAnimation) { currentPage = 2 } }) {
-                    Image(systemName: "chevron.down.double")
-                        .font(.system(size: 34, weight: .black))
-                        .foregroundColor(.white)
-                        .padding(18)
-                        .background(Color.white.opacity(0.22), in: Circle())
-                        .shadow(color: Color.black.opacity(0.25), radius: 12, x: 0, y: 10)
-                        .accessibilityLabel("Reveal next step")
+                    VStack(spacing: 6) {
+                        Text("Swipe or tap")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.white.opacity(0.9))
+                        Image(systemName: "arrow.down")
+                            .font(.system(size: 28, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(14)
+                            .background(Color.white.opacity(0.2), in: Circle())
+                            .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 6)
+                    }
+                    .accessibilityLabel("Next step – swipe up or tap")
                 }
                 .buttonStyle(.plain)
                 .padding(.bottom, 24)
@@ -242,11 +252,16 @@ struct OnboardingStep13View: View {
             }
             .onEnded { value in
                 let translation = value.translation.height
-                let threshold = height * 0.18
+                let velocity = value.predictedEndTranslation.height - value.translation.height
+                // Lower threshold (8% of height) so a short swipe advances; fast flick also advances
+                let threshold = height * 0.08
+                let velocityThreshold: CGFloat = 80
+                let shouldAdvance = translation < -threshold || (translation < 0 && velocity < -velocityThreshold)
+                let shouldGoBack = translation > threshold || (translation > 0 && velocity > velocityThreshold)
                 
-                if translation < -threshold, currentPage < 2 {
+                if shouldAdvance, currentPage < 2 {
                     withAnimation(pagingAnimation) { currentPage += 1 }
-                } else if translation > threshold, currentPage > 0 {
+                } else if shouldGoBack, currentPage > 0 {
                     withAnimation(pagingAnimation) { currentPage -= 1 }
                 }
             }

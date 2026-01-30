@@ -488,8 +488,8 @@ struct StatsSection: View {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.maximumFractionDigits = 0
-        formatter.currencySymbol = "$"
-        return formatter.string(from: NSNumber(value: moneySavedFromStartDate)) ?? "$0"
+        formatter.currencySymbol = dataStore.currencySymbol
+        return formatter.string(from: NSNumber(value: moneySavedFromStartDate)) ?? "\(dataStore.currencySymbol)0"
     }
     
     private var moneySavedFromStartDate: Double {
@@ -809,7 +809,7 @@ struct MoneySavedView: View {
                             }
                         }
                         .frame(height: 16)
-                        Text("$\(Int(val))").frame(width: 70, alignment: .trailing)
+                        Text("\(dataStore.currencySymbol)\(Int(val))").frame(width: 70, alignment: .trailing)
                     }
                 }
             }
@@ -821,7 +821,7 @@ struct MoneySavedView: View {
                 let weeklyCost = (dataStore.currentUser?.profile.vapingHistory.dailyCost ?? 0) > 0
                     ? (dataStore.currentUser?.profile.vapingHistory.dailyCost ?? 0)
                     : 20.0
-                Text("Your weekly cost: $\(Int(weeklyCost))")
+                Text("Your weekly cost: \(dataStore.currencySymbol)\(Int(weeklyCost))")
                     .font(.footnote)
                     .foregroundColor(.secondary)
                 Text("Estimated savings assume consistent avoidance of vaping.")

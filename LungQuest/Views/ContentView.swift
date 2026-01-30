@@ -151,6 +151,7 @@ struct MainTabView: View {
 
 struct PaywallGateView: View {
     @EnvironmentObject var flowManager: AppFlowManager
+    @State private var hasAutoChecked = false
     
     var body: some View {
         VStack(spacing: 20) {
@@ -209,5 +210,18 @@ struct PaywallGateView: View {
             Spacer()
         }
         .padding()
+        .onAppear {
+            // If user is already subscribed (e.g. StoreKit was slow), refresh once and dismiss paywall.
+            guard !hasAutoChecked else { return }
+            hasAutoChecked = true
+            Task { @MainActor in
+                flowManager.isCheckingSubscription = true
+                await SubscriptionManager.shared.refreshEntitlements()
+                if SubscriptionManager.shared.isSubscribed {
+                    flowManager.setSubscription(active: true)
+                }
+                flowManager.isCheckingSubscription = false
+            }
+        }
     }
 }

@@ -37,6 +37,7 @@ struct OnboardingStep11View: View {
                     )
                 }
                 .padding(.top, 12)
+                .dismissKeyboardOnTap()
                 
                 Spacer()
                 

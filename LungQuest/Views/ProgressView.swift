@@ -85,7 +85,7 @@ struct StatsOverviewSection: View {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 2), spacing: 12) {
                 StatCard(
                     title: "Money Saved",
-                    value: String(format: "$%.0f", moneySavedFromStartDate),
+                    value: "\(dataStore.currencySymbol)\(Int(moneySavedFromStartDate))",
                     emoji: "💰",
                     accentColor: Color(red: 0.2, green: 0.6, blue: 0.9), // Soft blue
                     subtitle: "Keep it up!"
@@ -178,7 +178,7 @@ struct StatsOverviewSection: View {
         let savings = moneySavedFromStartDate
         switch savings {
         case ..<5:
-            return ("🍃", "Every dollar counts—$\(Int(savings)) saved already is a fresh start fund.", Color.green)
+            return ("🍃", "Every bit counts—\(dataStore.currencySymbol)\(Int(savings)) saved already is a fresh start fund.", Color.green)
         case 5..<12:
             return ("☕", "You've saved enough for a cozy coffee break—treat yourself mindfully!", Color.brown)
         case 12..<25:
