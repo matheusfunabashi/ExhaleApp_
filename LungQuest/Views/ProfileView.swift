@@ -213,14 +213,14 @@ struct QuickStatsSection: View {
             
             QuickStatCard(
                 title: "Best Streak",
-                value: "\(longestStreakFromStartDate) days",
+                value: "\(dataStore.currentUser?.quitGoal.longestStreak ?? 0) days",
                 emoji: "🏆",
                 color: .orange.opacity(0.9)
             )
             
             QuickStatCard(
                 title: "Money Saved",
-                value: "\(dataStore.currencySymbol)\(Int(moneySavedFromStartDate))",
+                value: dataStore.formattedMoneySaved(),
                 emoji: "💰",
                 color: .blue
             )
@@ -240,50 +240,6 @@ struct QuickStatsSection: View {
         return max(0, Int(elapsed) / 86_400)
     }
     
-    private var moneySavedFromStartDate: Double {
-        guard let user = dataStore.currentUser else { return 0 }
-        
-        // Get daily cost from onboarding, or use $20/week as fallback
-        let weeklyCost = user.profile.vapingHistory.dailyCost > 0 
-            ? user.profile.vapingHistory.dailyCost 
-            : 20.0
-        let dailyCost = weeklyCost / 7.0
-        
-        // Calculate days from startDate (same as main counter)
-        let days = daysFromStartDate
-        
-        return Double(days) * dailyCost
-    }
-    
-    private var longestStreakFromStartDate: Int {
-        guard let startDate = dataStore.currentUser?.startDate else { return 0 }
-        
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        var longestStreak = 0
-        var currentStreak = 0
-        var currentDate = startDate
-        
-        // Calculate longest streak from startDate
-        while currentDate <= today {
-            let dayStart = calendar.startOfDay(for: currentDate)
-            let hasCheckIn = dataStore.dailyProgress.contains { progress in
-                calendar.isDate(progress.date, inSameDayAs: dayStart) && progress.wasVapeFree
-            }
-            
-            if hasCheckIn {
-                currentStreak += 1
-                longestStreak = max(longestStreak, currentStreak)
-            } else {
-                currentStreak = 0
-            }
-            
-            guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else { break }
-            currentDate = nextDate
-        }
-        
-        return longestStreak
-    }
 }
 
 struct ProgressionRewardsSection: View {

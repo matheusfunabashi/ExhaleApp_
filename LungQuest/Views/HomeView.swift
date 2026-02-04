@@ -5,7 +5,6 @@ import SuperwallKit
 struct HomeView: View {
     @EnvironmentObject var dataStore: AppDataStore
     @State private var showCheckIn = false
-    @State private var showCelebration = false
     @State private var showCalendar = false
     @State private var showMoney = false
     @State private var showHealth = false
@@ -65,7 +64,6 @@ struct HomeView: View {
                             
                             NewHeroTimerView(
                                 onMilestone: {
-                                    showCelebration = true
                                     triggerHeroGlow()
                                 }
                             )
@@ -252,9 +250,6 @@ struct HomeView: View {
                 .environmentObject(dataStore)
         }
         #endif
-        .overlay(
-            CelebrationView(isShowing: $showCelebration)
-        )
         .alert("Are you sure?", isPresented: $showSlipSecondConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button("Yes, I relapsed", role: .destructive) {
@@ -378,15 +373,8 @@ struct HomeView: View {
     }
 
     private func resetTimerForSlip() {
-        // Record slip for today and reset timer to now
-        dataStore.checkIn(wasVapeFree: false)
-        if var user = dataStore.currentUser {
-            user.startDate = Date()
-            dataStore.currentUser = user
-        }
-        UserDefaults.standard.set(0, forKey: "lastMilestoneNotifiedDays")
-        dataStore.updateLungHealth()
-        dataStore.persist()
+        // Record relapse and reset timer without doing a full check-in (no automatic check-in flow)
+        dataStore.recordRelapse()
     }
 }
 
@@ -461,7 +449,7 @@ struct StatsSection: View {
             
             StatsCard(
                 title: "Money Saved",
-                value: formattedMoneySaved,
+                value: dataStore.formattedMoneySaved(),
                 emoji: "💰",
                 color: .blue,
                 onTap: { onMoneyTapped?() },
@@ -484,32 +472,9 @@ struct StatsSection: View {
         return max(0, Int(elapsed) / 86_400)
     }
     
-    private var formattedMoneySaved: String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.maximumFractionDigits = 0
-        formatter.currencySymbol = dataStore.currencySymbol
-        return formatter.string(from: NSNumber(value: moneySavedFromStartDate)) ?? "\(dataStore.currencySymbol)0"
-    }
-    
-    private var moneySavedFromStartDate: Double {
-        guard let user = dataStore.currentUser else { return 0 }
-        
-        // Get daily cost from onboarding, or use $20/week as fallback
-        let weeklyCost = user.profile.vapingHistory.dailyCost > 0 
-            ? user.profile.vapingHistory.dailyCost 
-            : 20.0
-        let dailyCost = weeklyCost / 7.0
-        
-        // Calculate days from startDate (same as main counter)
-        let days = daysFromStartDate
-        
-        return Double(days) * dailyCost
-    }
-    
     private var moneyValueFont: Font {
         // Use a slightly smaller font when the numeric portion hits 3+ digits.
-        let digits = formattedMoneySaved.filter { $0.isNumber }
+        let digits = dataStore.formattedMoneySaved().filter { $0.isNumber }
         if digits.count >= 3 {
             return .system(size: 24, weight: .bold, design: .rounded)
         } else {
@@ -783,7 +748,6 @@ struct MonthlyCalendarView: View {
 struct MoneySavedView: View {
     @EnvironmentObject var dataStore: AppDataStore
     private var perDay: Double {
-        // Get weekly cost from onboarding, or use $20/week as fallback
         let weeklyCost = (dataStore.currentUser?.profile.vapingHistory.dailyCost ?? 0) > 0
             ? (dataStore.currentUser?.profile.vapingHistory.dailyCost ?? 0)
             : 20.0
@@ -792,45 +756,67 @@ struct MoneySavedView: View {
     private var projections: [(title: String, days: Int)] {
         [("1 Month", 30), ("6 Months", 182), ("1 Year", 365)]
     }
+    private func formatAmount(_ value: Double) -> String {
+        "\(dataStore.currencySymbol)\(Int(value))"
+    }
     var body: some View {
-        VStack(spacing: 16) {
-            // Simple bar chart
+        VStack(spacing: 24) {
             let maxVal = max(1.0, projections.map { Double($0.days) * perDay }.max() ?? 1)
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 18) {
                 ForEach(projections, id: \.title) { item in
                     let val = Double(item.days) * perDay
-                    HStack {
-                        Text(item.title).frame(width: 90, alignment: .leading)
+                    HStack(alignment: .center, spacing: 12) {
+                        Text(item.title)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                            .frame(width: 80, alignment: .leading)
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
-                                Capsule().fill(Color.gray.opacity(0.15))
-                                Capsule().fill(Color.blue.opacity(0.6))
-                                    .frame(width: max(8, geo.size.width * CGFloat(val / maxVal)))
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(Color.gray.opacity(0.12))
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(Color(red: 0.2, green: 0.55, blue: 0.95))
+                                    .frame(width: maxVal > 0 ? max(0, geo.size.width * CGFloat(val / maxVal)) : 0)
                             }
                         }
-                        .frame(height: 16)
-                        Text("\(dataStore.currencySymbol)\(Int(val))").frame(width: 70, alignment: .trailing)
+                        .frame(height: 10)
+                        Text(formatAmount(val))
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .monospacedDigit()
+                            .foregroundColor(.primary)
+                            .frame(width: 72, alignment: .trailing)
                     }
                 }
             }
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.9)))
-            .shadow(radius: 4)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 22)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color.white)
+                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(Color.black.opacity(0.04), lineWidth: 1)
+                    )
+            )
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(spacing: 8) {
                 let weeklyCost = (dataStore.currentUser?.profile.vapingHistory.dailyCost ?? 0) > 0
                     ? (dataStore.currentUser?.profile.vapingHistory.dailyCost ?? 0)
                     : 20.0
-                Text("Your weekly cost: \(dataStore.currencySymbol)\(Int(weeklyCost))")
-                    .font(.footnote)
-                    .foregroundColor(.secondary)
+                Text("Your weekly cost: \(formatAmount(weeklyCost))")
+                    .font(.caption)
+                    .foregroundColor(.secondary.opacity(0.9))
                 Text("Estimated savings assume consistent avoidance of vaping.")
                     .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.secondary.opacity(0.75))
             }
             Spacer()
         }
-        .padding()
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+        .padding(.bottom, 24)
         .breathableBackground()
     }
 }
@@ -878,59 +864,6 @@ struct HealthImprovementsView: View {
             .padding()
         }
         .breathableBackground()
-    }
-}
-
-struct CelebrationView: View {
-    @Binding var isShowing: Bool
-    @State private var animationPhase = 0
-    
-    var body: some View {
-        if isShowing {
-            ZStack {
-                Color.black.opacity(0.4)
-                    .onTapGesture {
-                        isShowing = false
-                    }
-                
-                ConfettiView()
-                    .allowsHitTesting(false)
-                    .accessibilityHidden(true)
-                
-                VStack(spacing: 20) {
-                    Text("🌟")
-                        .font(.system(size: 64))
-                        .scaleEffect(animationPhase == 0 ? 0.6 : 1.15)
-                        .animation(.spring(response: 0.6, dampingFraction: 0.75), value: animationPhase)
-                    
-                    VStack(spacing: 8) {
-                        Text("Milestone unlocked")
-                            .font(.title2.weight(.bold))
-                            .foregroundColor(Color(red: 0.85, green: 0.32, blue: 0.57))
-                        Text("Each milestone unlocks brighter breathing—take a moment to feel that win.")
-                            .font(.body)
-                            .multilineTextAlignment(.center)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    Button("Continue") {
-                        isShowing = false
-                    }
-                    .buttonStyle(PrimaryButtonStyle())
-                }
-                .padding(30)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.white)
-                        .shadow(radius: 20)
-                )
-                .scaleEffect(animationPhase == 0 ? 0.8 : 1.0)
-                .animation(.spring(response: 0.6, dampingFraction: 0.8), value: animationPhase)
-            }
-            .onAppear {
-                animationPhase = 1
-            }
-        }
     }
 }
 
