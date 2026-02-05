@@ -44,8 +44,16 @@ final class SubscriptionManager: ObservableObject {
     }
     
     /// Checks current entitlements to see if the user is active.
+    /// TestFlight uses sandbox subscriptions; bypass paywall to avoid flaky entitlement timing.
     @MainActor
     private func checkEntitlements() async {
+        // TestFlight/sandbox environment: treat as premium to avoid paywall issues
+        if isSandboxEnvironment() {
+            isSubscribed = true
+            return
+        }
+        
+        // Production: verify actual subscription entitlements via StoreKit 2
         var found = false
         for await result in Transaction.currentEntitlements {
             if case .verified(let transaction) = result,
@@ -68,6 +76,33 @@ final class SubscriptionManager: ObservableObject {
             }
         }
     }
+    
+    /// Detects if the app is running in TestFlight/sandbox environment.
+    /// Returns true for TestFlight builds and sandbox receipts, false for production App Store builds.
+    /// This prevents TestFlight users from seeing paywalls due to sandbox subscription quirks.
+    private func isSandboxEnvironment() -> Bool {
+        // Check if the App Store receipt is a sandbox receipt
+        guard let receiptURL = Bundle.main.appStoreReceiptURL else {
+            // No receipt URL means we're likely in simulator or a very early launch state
+            // Treat as sandbox to be safe (won't affect production)
+            #if DEBUG
+            return true
+            #else
+            return false
+            #endif
+        }
+        
+        // TestFlight and sandbox builds have "sandboxReceipt" in the receipt path
+        let receiptPath = receiptURL.path
+        let lastComponent = receiptURL.lastPathComponent
+        
+        // Check both the last path component and the full path for "sandboxReceipt"
+        if lastComponent == "sandboxReceipt" || receiptPath.contains("sandboxReceipt") {
+            return true
+        }
+        
+        return false
+    }
 }
 
 class AppFlowManager: ObservableObject {
@@ -86,52 +121,55 @@ class AppFlowManager: ObservableObject {
         self.subscriptionManager = subscriptionManager
         self.isOnboarding = dataStore.currentUser == nil
         
-        #if DEBUG
-        // Auto-bypass paywall em builds de desenvolvimento
-        self.isSubscribed = true
-        self.isLoading = false
-        self.isCheckingSubscription = false
-        UserDefaults.standard.set(true, forKey: "isSubscribed")
-        #else
-        // Load subscription state from UserDefaults first (trust it initially)
-        let savedSubscriptionState = UserDefaults.standard.bool(forKey: "isSubscribed")
-        self.isSubscribed = savedSubscriptionState
+        // TestFlight uses sandbox subscriptions; bypass paywall to avoid flaky entitlement timing.
+        let isTestFlightOrDebug = isSandboxEnvironment()
         
-        // If we have a saved subscription state, show app immediately and verify in background
-        // Otherwise, check subscription before showing app
-        if savedSubscriptionState {
+        if isTestFlightOrDebug {
+            // Auto-bypass paywall in TestFlight and debug builds
+            self.isSubscribed = true
             self.isLoading = false
-            self.isCheckingSubscription = true
-            // Verify subscription in background without blocking
-            Task { @MainActor in
-                await self.verifySubscriptionInBackground()
-            }
+            self.isCheckingSubscription = false
+            UserDefaults.standard.set(true, forKey: "isSubscribed")
         } else {
-            self.isLoading = true
-            self.isCheckingSubscription = true
-            // Check subscription before showing app
-            Task { @MainActor in
-                await self.verifySubscriptionOnStartup()
+            // Production: normal subscription flow
+            // Load subscription state from UserDefaults first (trust it initially)
+            let savedSubscriptionState = UserDefaults.standard.bool(forKey: "isSubscribed")
+            self.isSubscribed = savedSubscriptionState
+            
+            // If we have a saved subscription state, show app immediately and verify in background
+            // Otherwise, check subscription before showing app
+            if savedSubscriptionState {
+                self.isLoading = false
+                self.isCheckingSubscription = true
+                // Verify subscription in background without blocking
+                Task { @MainActor in
+                    await self.verifySubscriptionInBackground()
+                }
+            } else {
+                self.isLoading = true
+                self.isCheckingSubscription = true
+                // Check subscription before showing app
+                Task { @MainActor in
+                    await self.verifySubscriptionOnStartup()
+                }
             }
         }
-        #endif
         
         subscriptionManager.$isSubscribed
             .receive(on: RunLoop.main)
             .sink { [weak self] active in
-                #if !DEBUG
                 guard let self = self else { return }
-                // Only update if we're not in the middle of initial check
-                if !self.isCheckingSubscription {
+                // Only update if we're not in sandbox/TestFlight and not in the middle of initial check
+                if !isTestFlightOrDebug && !self.isCheckingSubscription {
                     self.setSubscription(active: active)
                 }
-                #endif
             }
             .store(in: &cancellables)
         
-        #if !DEBUG
-        subscriptionManager.start()
-        #endif
+        // Only start subscription monitoring in production
+        if !isTestFlightOrDebug {
+            subscriptionManager.start()
+        }
         
         dataStore.objectWillChange
             .sink { [weak self] _ in
@@ -144,10 +182,17 @@ class AppFlowManager: ObservableObject {
             .store(in: &cancellables)
     }
     
-    #if !DEBUG
     @MainActor
     private func verifySubscriptionOnStartup() async {
-        // Load from SubscriptionManager; StoreKit can be slow on first launch.
+        // TestFlight uses sandbox subscriptions; bypass paywall to avoid flaky entitlement timing.
+        if isSandboxEnvironment() {
+            setSubscription(active: true)
+            isCheckingSubscription = false
+            isLoading = false
+            return
+        }
+        
+        // Production: Load from SubscriptionManager; StoreKit can be slow on first launch.
         await subscriptionManager.refreshEntitlements()
         
         if subscriptionManager.isSubscribed {
@@ -173,7 +218,6 @@ class AppFlowManager: ObservableObject {
         if subscriptionManager.isSubscribed {
             setSubscription(active: true)
         } else {
-            // NOT subscribed - they need to see the paywall
             setSubscription(active: false)
         }
         
@@ -183,7 +227,14 @@ class AppFlowManager: ObservableObject {
     
     @MainActor
     private func verifySubscriptionInBackground() async {
-        // Verify subscription without blocking UI.
+        // TestFlight uses sandbox subscriptions; bypass paywall to avoid flaky entitlement timing.
+        if isSandboxEnvironment() {
+            setSubscription(active: true)
+            isCheckingSubscription = false
+            return
+        }
+        
+        // Production: Verify subscription without blocking UI.
         // Never downgrade: if we already believe the user is subscribed (e.g. from UserDefaults),
         // do not set isSubscribed = false when StoreKit is slow or fails—only upgrade when we confirm.
         await subscriptionManager.refreshEntitlements()
@@ -195,7 +246,32 @@ class AppFlowManager: ObservableObject {
         
         isCheckingSubscription = false
     }
-    #endif
+    
+    /// Detects if the app is running in TestFlight/sandbox environment.
+    /// Returns true for TestFlight builds and sandbox receipts, false for production App Store builds.
+    /// This prevents TestFlight users from seeing paywalls due to sandbox subscription quirks.
+    private func isSandboxEnvironment() -> Bool {
+        #if DEBUG
+        return true
+        #else
+        // Check if the App Store receipt is a sandbox receipt
+        guard let receiptURL = Bundle.main.appStoreReceiptURL else {
+            // No receipt URL means we're likely in simulator or a very early launch state
+            return false
+        }
+        
+        // TestFlight and sandbox builds have "sandboxReceipt" in the receipt path
+        let receiptPath = receiptURL.path
+        let lastComponent = receiptURL.lastPathComponent
+        
+        // Check both the last path component and the full path for "sandboxReceipt"
+        if lastComponent == "sandboxReceipt" || receiptPath.contains("sandboxReceipt") {
+            return true
+        }
+        
+        return false
+        #endif
+    }
     
     // MARK: - Flow Transitions
     func completeOnboarding(name: String?, age: Int?, weeklyCost: Double? = nil, currency: String? = nil) {
