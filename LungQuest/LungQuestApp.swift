@@ -11,8 +11,12 @@ struct ExhaleApp: App {
     init() {
         Superwall.configure(apiKey: "pk_632iyoKuponK4hKuK_GL9")
         let store = AppDataStore()
+        let flow = AppFlowManager(dataStore: store)
         _dataStore = StateObject(wrappedValue: store)
-        _flowManager = StateObject(wrappedValue: AppFlowManager(dataStore: store))
+        _flowManager = StateObject(wrappedValue: flow)
+        
+        // Set up Superwall delegate to update subscription status
+        Superwall.shared.delegate = SuperwallDelegateHandler(flowManager: flow)
         
         // Track app launch for review prompt
         ReviewManager.shared.trackAppLaunch()
@@ -24,6 +28,38 @@ struct ExhaleApp: App {
                 .environmentObject(flowManager)
                 .environmentObject(dataStore)
                 .preferredColorScheme(.light) // Force light mode
+        }
+    }
+}
+
+// MARK: - Superwall Delegate
+class SuperwallDelegateHandler: SuperwallDelegate {
+    weak var flowManager: AppFlowManager?
+    
+    init(flowManager: AppFlowManager) {
+        self.flowManager = flowManager
+    }
+    
+    func handleSuperwallEvent(withInfo eventInfo: SuperwallEventInfo) {
+        switch eventInfo.event {
+        case .transactionComplete:
+            // User successfully subscribed
+            Task { @MainActor in
+                await SubscriptionManager.shared.refreshEntitlements()
+                if SubscriptionManager.shared.isSubscribed {
+                    flowManager?.setSubscription(active: true)
+                }
+            }
+        case .transactionRestore:
+            // User restored their subscription
+            Task { @MainActor in
+                await SubscriptionManager.shared.refreshEntitlements()
+                if SubscriptionManager.shared.isSubscribed {
+                    flowManager?.setSubscription(active: true)
+                }
+            }
+        default:
+            break
         }
     }
 }
