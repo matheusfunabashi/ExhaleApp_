@@ -37,6 +37,7 @@ class AppDataStore: ObservableObject {
         var newUser = User(name: name, email: email)
         newUser.age = age
         newUser.profile.vapingHistory = vapingHistory
+        newUser.profile.quitStartDate = newUser.profile.quitStartDate ?? newUser.startDate
         currentUser = newUser
         saveUserData()
         generateDailyQuests()
@@ -63,6 +64,7 @@ class AppDataStore: ObservableObject {
             }
             user.profile.vapingHistory.currency = currencyCode
         }
+        user.profile.quitStartDate = user.profile.quitStartDate ?? user.startDate
         currentUser = user
         saveUserData()
         generateDailyQuests()
@@ -121,9 +123,27 @@ class AppDataStore: ObservableObject {
         )
     }
 
+    /// Call when user taps "I relapsed". Resets streak timer and marks today as not vape-free without doing a full check-in (no review prompt, etc.).
+    func recordRelapse() {
+        guard currentUser != nil else { return }
+        let today = Calendar.current.startOfDay(for: Date())
+        if let existingIndex = dailyProgress.firstIndex(where: { Calendar.current.isDate($0.date, inSameDayAs: today) }) {
+            dailyProgress[existingIndex].wasVapeFree = false
+        } else {
+            var progress = DailyProgress(date: today, wasVapeFree: false)
+            dailyProgress.append(progress)
+        }
+        resetQuitTimerForSlip()
+        updateStreak()
+        updateLungHealth()
+        calculateStatistics()
+        saveUserData()
+    }
+
     private func resetQuitTimerForSlip() {
         guard var user = currentUser else { return }
         user.startDate = Date()
+        // Do not change user.profile.quitStartDate — Money Saved uses it so it does not reset on relapse
         currentUser = user
         UserDefaults.standard.set(0, forKey: "lastMilestoneNotifiedDays")
     }
@@ -198,11 +218,9 @@ class AppDataStore: ObservableObject {
         let daysSinceStart = daysSinceQuitStartDate()
         let dailyXP = calculateDailyXP(days: daysSinceStart)
         
-        // Update total XP: ensure it's at least the daily XP (preserve any additional XP from quests)
+        // Update total XP: never decrease (e.g. on relapse); preserve XP from quests and past days
         let oldLevel = statistics.currentLevel
-        if dailyXP > statistics.totalXP {
-            statistics.totalXP = dailyXP
-        }
+        statistics.totalXP = max(statistics.totalXP, dailyXP)
         statistics.currentLevel = (statistics.totalXP / 100) + 1
         // If level increased, trigger notification
         if statistics.currentLevel > oldLevel {
@@ -288,7 +306,8 @@ class AppDataStore: ObservableObject {
     // MARK: - Persistence
     func loadUserData() {
         if let userData = UserDefaults.standard.data(forKey: "currentUser"),
-           let user = try? JSONDecoder().decode(User.self, from: userData) {
+           var user = try? JSONDecoder().decode(User.self, from: userData) {
+            user.profile.quitStartDate = user.profile.quitStartDate ?? user.startDate
             currentUser = user
         }
         
@@ -407,10 +426,34 @@ class AppDataStore: ObservableObject {
         return max(0, components.day ?? 0)
     }
     
+    /// Days since the user's first quit date (never reset on relapse). Used for Money Saved and similar.
+    func daysSinceFirstQuitDate() -> Int {
+        guard let user = currentUser else { return 0 }
+        let firstDate = user.profile.quitStartDate ?? user.startDate
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(for: firstDate)
+        let today = calendar.startOfDay(for: Date())
+        let components = calendar.dateComponents([.day], from: start, to: today)
+        return max(0, components.day ?? 0)
+    }
+    
     func getMoneySaved() -> Double {
         guard let user = currentUser else { return 0 }
         let perDayCost = user.profile.vapingHistory.dailyCost / 7.0
         return Double(getDaysVapeFree()) * perDayCost
+    }
+    
+    /// Money saved since first quit date (never resets on relapse). Same value used on Home, Progress, and Profile.
+    func moneySavedFromFirstQuit() -> Double {
+        guard let user = currentUser else { return 0 }
+        let weeklyCost = user.profile.vapingHistory.dailyCost > 0 ? user.profile.vapingHistory.dailyCost : 20.0
+        let dailyCost = weeklyCost / 7.0
+        return Double(daysSinceFirstQuitDate()) * dailyCost
+    }
+    
+    /// Formatted money saved string: symbol + integer, no space (e.g. "R$11" or "$11").
+    func formattedMoneySaved() -> String {
+        "\(currencySymbol)\(Int(moneySavedFromFirstQuit()))"
     }
     
     func getHealthImprovements() -> String {

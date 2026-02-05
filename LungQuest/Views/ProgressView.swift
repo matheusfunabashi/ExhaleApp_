@@ -85,7 +85,7 @@ struct StatsOverviewSection: View {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 2), spacing: 12) {
                 StatCard(
                     title: "Money Saved",
-                    value: "\(dataStore.currencySymbol)\(Int(moneySavedFromStartDate))",
+                    value: dataStore.formattedMoneySaved(),
                     emoji: "💰",
                     accentColor: Color(red: 0.2, green: 0.6, blue: 0.9), // Soft blue
                     subtitle: "Keep it up!"
@@ -93,7 +93,7 @@ struct StatsOverviewSection: View {
                 
                 StatCard(
                     title: "Longest Streak",
-                    value: "\(longestStreakFromStartDate)",
+                    value: "\(dataStore.currentUser?.quitGoal.longestStreak ?? 0)",
                     emoji: "🏆",
                     accentColor: Color(red: 0.95, green: 0.7, blue: 0.3), // Soft orange
                     subtitle: "Personal best"
@@ -128,57 +128,11 @@ struct StatsOverviewSection: View {
         return max(0, Int(elapsed) / 86_400)
     }
     
-    private var moneySavedFromStartDate: Double {
-        guard let user = dataStore.currentUser else { return 0 }
-        
-        // Get daily cost from onboarding, or use $20/week as fallback
-        let weeklyCost = user.profile.vapingHistory.dailyCost > 0 
-            ? user.profile.vapingHistory.dailyCost 
-            : 20.0
-        let dailyCost = weeklyCost / 7.0
-        
-        // Calculate days from startDate (same as main counter)
-        let days = daysFromStartDate
-        
-        return Double(days) * dailyCost
-    }
-    
-    private var longestStreakFromStartDate: Int {
-        let calendar = Calendar.current
-        
-        // Get all check-in dates (wasVapeFree = true) and sort by date
-        let checkInDates = dataStore.dailyProgress
-            .filter { $0.wasVapeFree }
-            .map { calendar.startOfDay(for: $0.date) }
-            .sorted { $0 < $1 }
-        
-        guard !checkInDates.isEmpty else { return 0 }
-        
-        var longestStreak = 1
-        var currentStreak = 1
-        
-        // Calculate longest consecutive streak of check-ins
-        for i in 1..<checkInDates.count {
-            let daysBetween = calendar.dateComponents([.day], from: checkInDates[i - 1], to: checkInDates[i]).day ?? 0
-            
-            if daysBetween == 1 {
-                // Consecutive day
-                currentStreak += 1
-                longestStreak = max(longestStreak, currentStreak)
-            } else {
-                // Streak broken
-                currentStreak = 1
-            }
-        }
-        
-        return longestStreak
-    }
-    
     private var savingsHighlight: (emoji: String, message: String, color: Color)? {
-        let savings = moneySavedFromStartDate
+        let savings = dataStore.moneySavedFromFirstQuit()
         switch savings {
         case ..<5:
-            return ("🍃", "Every bit counts—\(dataStore.currencySymbol)\(Int(savings)) saved already is a fresh start fund.", Color.green)
+            return ("🍃", "Every bit counts—\(dataStore.formattedMoneySaved()) saved already is a fresh start fund.", Color.green)
         case 5..<12:
             return ("☕", "You've saved enough for a cozy coffee break—treat yourself mindfully!", Color.brown)
         case 12..<25:
@@ -723,6 +677,150 @@ struct BadgeView: View {
     }
 }
 
+// MARK: - Chart day slot: one per day in range; progress nil = no check-in
+private struct PuffChartDaySlot: Identifiable {
+    let id: Date
+    let date: Date
+    let progress: DailyProgress?
+}
+
+// MARK: - Vertical bar chart: X = all days, Y = discrete puff levels; 0 puffs = tick, no data = placeholder
+private struct PuffBarChart: View {
+    let slots: [PuffChartDaySlot]
+    let maxY: Int
+    let primaryAccentColor: Color
+    
+    private static let yLevels: [(label: String, level: Int)] = [
+        ("0", 0),
+        ("1–10", 1),
+        ("11–30", 2),
+        ("31–60", 3),
+        ("61+", 4)
+    ]
+    private static let levelCount: Int = 5
+    private let weekdayFormat: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "EEE"
+        return f
+    }()
+    
+    private let plotHeight: CGFloat = 120
+    private let barCornerRadius: CGFloat = 5
+    private let barSpacing: CGFloat = 6
+    private let tickHeight: CGFloat = 4
+    private let placeholderHeight: CGFloat = 4
+    
+    var body: some View {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        
+        HStack(alignment: .bottom, spacing: 0) {
+            // Y-axis labels (discrete levels), aligned to grid
+            VStack(alignment: .trailing, spacing: 0) {
+                ForEach(Array(Self.yLevels.enumerated().reversed()), id: \.element.level) { idx, item in
+                    Text(item.label)
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundColor(.secondary.opacity(0.85))
+                        .lineLimit(1)
+                    if idx < Self.yLevels.count - 1 {
+                        Spacer()
+                            .frame(height: max(0, plotHeight / CGFloat(Self.levelCount) - 1))
+                    }
+                }
+            }
+            .frame(height: plotHeight)
+            .frame(width: 28)
+            .padding(.trailing, 6)
+            
+            // Chart area: grid + bars + X-axis
+            VStack(spacing: 0) {
+                ZStack(alignment: .bottom) {
+                    // Soft horizontal grid at each discrete level
+                    VStack(spacing: 0) {
+                        ForEach(0..<Self.levelCount, id: \.self) { _ in
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.08))
+                                .frame(height: 1)
+                            Spacer()
+                                .frame(height: max(0, plotHeight / CGFloat(Self.levelCount) - 1))
+                        }
+                    }
+                    .frame(height: plotHeight)
+                    
+                    // One visual per day: bar, tick (0 puffs), or placeholder (no check-in); bars slightly narrower
+                    HStack(alignment: .bottom, spacing: barSpacing) {
+                        ForEach(slots) { slot in
+                            dayBarView(date: slot.date, progress: slot.progress, today: today, calendar: calendar)
+                                .padding(.horizontal, 3)
+                        }
+                    }
+                    .padding(.horizontal, 4)
+                }
+                .frame(height: plotHeight)
+                
+                // X-axis: day labels (all days)
+                HStack(spacing: barSpacing) {
+                    ForEach(slots) { slot in
+                        Text(weekdayFormat.string(from: slot.date))
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundColor(.secondary.opacity(0.9))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+                .padding(.horizontal, 4)
+                .padding(.top, 10)
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+    
+    @ViewBuilder
+    private func dayBarView(date: Date, progress: DailyProgress?, today: Date, calendar: Calendar) -> some View {
+        let isToday = calendar.isDate(date, inSameDayAs: today)
+        
+        if let progress = progress {
+            let level = progress.puffInterval.numericValue
+            if level == 0 {
+                // 0 puffs: small visible tick at baseline (distinct from no-data)
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(Color(red: 0.25, green: 0.65, blue: 0.45))
+                    .frame(height: tickHeight)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 2)
+                            .strokeBorder(isToday ? Color.primary.opacity(0.15) : Color.clear, lineWidth: 1)
+                    )
+            } else {
+                // >0 puffs: filled bar (softer, narrower)
+                let heightRatio = CGFloat(level + 1) / CGFloat(Self.levelCount)
+                let barHeight = max(4, plotHeight * heightRatio)
+                let barColor = barColorForLevel(level, isToday: isToday)
+                RoundedRectangle(cornerRadius: barCornerRadius)
+                    .fill(barColor)
+                    .frame(height: barHeight)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: barCornerRadius)
+                            .strokeBorder(isToday ? Color.primary.opacity(0.18) : Color.clear, lineWidth: 1)
+                    )
+            }
+        } else {
+            // No check-in: neutral placeholder at baseline (outline, distinct from 0 puffs)
+            RoundedRectangle(cornerRadius: 2)
+                .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
+                .foregroundColor(Color.gray.opacity(0.35))
+                .frame(height: placeholderHeight)
+        }
+    }
+    
+    private func barColorForLevel(_ level: Int, isToday: Bool) -> Color {
+        // Use same blue as "Best day" / "0 puffs" text (primaryAccentColor) for consistency
+        let opacity = level == 0 ? 0.75 : (0.58 + Double(level) * 0.06)
+        let color = primaryAccentColor.opacity(opacity)
+        return isToday ? color.opacity(0.95) : color
+    }
+}
+
 struct PuffCountChartSection: View {
     @EnvironmentObject var dataStore: AppDataStore
     let timeFrame: ProgressView.TimeFrame
@@ -773,45 +871,16 @@ struct PuffCountChartSection: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
             
-            // Chart - secondary to insight
-            if filteredProgressData.isEmpty {
-                EmptyChartView(message: "No puff data available for this time period")
+            // Chart: all days in range get a visual (bar, 0-puff tick, or no-check-in placeholder)
+            if chartDaySlots.isEmpty {
+                EmptyChartView(message: "No days in this time period")
             } else {
-                Chart(filteredProgressData, id: \.date) { progress in
-                    BarMark(
-                        x: .value("Date", progress.date),
-                        y: .value("Puffs", progress.puffInterval.numericValue)
-                    )
-                    .foregroundStyle(progress.puffInterval == .none ? primaryAccentColor : primaryAccentColor.opacity(0.6))
-                    .cornerRadius(4)
-                }
-                .frame(height: 180)
-                .chartYScale(domain: chartYDomain)
-                .chartXAxis {
-                    AxisMarks(values: .stride(by: .day, count: timeFrame == .week ? 1 : 7)) { value in
-                        AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [2, 4]))
-                            .foregroundStyle(Color.gray.opacity(0.15))
-                        AxisValueLabel(format: .dateTime.weekday(.abbreviated))
-                            .foregroundStyle(Color.secondary)
-                            .font(.caption2)
-                    }
-                }
-                .chartYAxis {
-                    AxisMarks(position: .leading) { value in
-                        AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [2, 4]))
-                            .foregroundStyle(Color.gray.opacity(0.15))
-                        if let intValue = value.as(Int.self),
-                           intValue >= 0 && intValue <= 4 {
-                            AxisValueLabel {
-                                if let interval = PuffInterval.allCases.first(where: { $0.numericValue == intValue }) {
-                                    Text(interval == .none ? "0" : interval.shortName)
-                                        .font(.caption2)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                        }
-                    }
-                }
+                PuffBarChart(
+                    slots: chartDaySlots,
+                    maxY: chartYMax,
+                    primaryAccentColor: primaryAccentColor
+                )
+                .frame(height: chartContentHeight)
             }
             
             // Stats row - game rewards style
@@ -849,13 +918,18 @@ struct PuffCountChartSection: View {
         return filteredProgressData.first { Calendar.current.isDateInToday($0.date) }
     }
     
-    private var chartYDomain: ClosedRange<Int> {
+    /// Y-axis cap: user's recent max so chart isn't dominated by empty space (no fixed 61+).
+    private var chartYMax: Int {
         let maxValue = filteredProgressData.map { $0.puffInterval.numericValue }.max() ?? 0
-        // If all values are zero, compress the domain to show zero prominently
-        if maxValue == 0 {
-            return 0...1
-        }
-        return 0...4
+        return max(1, maxValue)
+    }
+    
+    /// Height fits content (no tall empty area when values are low).
+    private var chartContentHeight: CGFloat {
+        let maxVal = chartYMax
+        if maxVal <= 1 { return 118 }
+        if maxVal <= 2 { return 130 }
+        return 145
     }
     
     private var filteredProgressData: [DailyProgress] {
@@ -877,10 +951,38 @@ struct PuffCountChartSection: View {
             .sorted { $0.date < $1.date }
     }
     
+    /// All days in the current time range, each with optional progress (nil = no check-in). Used so every day has a visual.
+    private var chartDaySlots: [PuffChartDaySlot] {
+        let calendar = Calendar.current
+        let now = Date()
+        let startDate: Date
+        let endDate = calendar.startOfDay(for: now)
+        switch timeFrame {
+        case .week:
+            startDate = calendar.date(byAdding: .day, value: -6, to: endDate) ?? endDate
+        case .month:
+            startDate = calendar.date(byAdding: .month, value: -1, to: endDate) ?? endDate
+        case .all:
+            startDate = dataStore.dailyProgress.first.map { calendar.startOfDay(for: $0.date) } ?? calendar.date(byAdding: .day, value: -6, to: endDate) ?? endDate
+        }
+        var slots: [PuffChartDaySlot] = []
+        var current = startDate
+        while current <= endDate {
+            let progress = dataStore.dailyProgress.first { calendar.isDate($0.date, inSameDayAs: current) }
+            slots.append(PuffChartDaySlot(id: current, date: current, progress: progress))
+            guard let next = calendar.date(byAdding: .day, value: 1, to: current) else { break }
+            current = next
+        }
+        return slots
+    }
+    
+    /// On tie for most common count, pick the lowest puff level (0 puffs before 1–10, etc.) so the UI doesn’t flip.
     private var mostCommonInterval: PuffInterval {
         guard !filteredProgressData.isEmpty else { return .none }
         let intervalCounts = Dictionary(grouping: filteredProgressData, by: { $0.puffInterval })
-        return intervalCounts.max(by: { $0.value.count < $1.value.count })?.key ?? .none
+        let maxCount = intervalCounts.values.map(\.count).max() ?? 0
+        let tied = intervalCounts.filter { $0.value.count == maxCount }.keys
+        return tied.min(by: { $0.numericValue < $1.numericValue }) ?? .none
     }
     
     private var bestInterval: PuffInterval {
