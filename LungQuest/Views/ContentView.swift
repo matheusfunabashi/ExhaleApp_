@@ -36,12 +36,10 @@ struct ContentView: View {
                 .environmentObject(flowManager)
                 .environmentObject(dataStore)
             } else if flowManager.isSubscribed {
-                // User is subscribed - show main app
                 MainTabView()
                     .environmentObject(flowManager)
                     .environmentObject(dataStore)
             } else {
-                // User completed onboarding but is NOT subscribed - show paywall again
                 PaywallGateView()
                     .environmentObject(flowManager)
                     .environmentObject(dataStore)
