@@ -173,6 +173,7 @@ class AppFlowManager: ObservableObject {
         if subscriptionManager.isSubscribed {
             setSubscription(active: true)
         } else {
+            // NOT subscribed - they need to see the paywall
             setSubscription(active: false)
         }
         
