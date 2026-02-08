@@ -397,6 +397,33 @@ class AppDataStore: ObservableObject {
         return isLessonRead(todayTitle)
     }
     
+    // MARK: - Daily Reading (one random reading per calendar day)
+    private let dailyReadingLastDateKey = "dailyReadingLastDate"
+    private let dailyReadingTitleKey = "dailyReadingTitle"
+    
+    /// Returns the title of today's reading. If current calendar day != last stored date, picks a new random title from the pool and persists it with today's date. Otherwise returns the stored title. Single source of truth for the "Complete today's reading" button.
+    func getDailyReadingTitle(fromTitles titles: [String]) -> String? {
+        guard !titles.isEmpty else { return nil }
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let storedTimeInterval = UserDefaults.standard.object(forKey: dailyReadingLastDateKey) as? TimeInterval
+        let storedTitle = UserDefaults.standard.string(forKey: dailyReadingTitleKey)
+        let isSameDay: Bool = {
+            guard let ti = storedTimeInterval else { return false }
+            let storedDay = Date(timeIntervalSince1970: ti)
+            return calendar.isDate(storedDay, inSameDayAs: today)
+        }()
+        if isSameDay, let title = storedTitle, titles.contains(title) {
+            return title
+        }
+        // New day or invalid stored title: pick random and persist
+        let chosen = titles.randomElement() ?? titles[0]
+        UserDefaults.standard.set(today.timeIntervalSince1970, forKey: dailyReadingLastDateKey)
+        UserDefaults.standard.set(chosen, forKey: dailyReadingTitleKey)
+        objectWillChange.send()
+        return chosen
+    }
+    
     // MARK: - Notification Management
     func setupNotificationsIfEnabled() {
         guard let user = currentUser else { return }
@@ -415,6 +442,12 @@ class AppDataStore: ObservableObject {
     // MARK: - Utility
     func getDaysVapeFree() -> Int {
         return currentUser?.quitGoal.currentStreak ?? 0
+    }
+    
+    /// Same source of truth as the main "X days vape-free" counter (DaysCounterView). Elapsed seconds since startDate / 86400. Resets when user relapses (startDate is reset). Use this for Lung Boost / Health Improvements so they stay in sync with the main counter.
+    func daysVapeFreeForMainCounter() -> Int {
+        guard let startDate = currentUser?.startDate else { return 0 }
+        return max(0, Int(Date().timeIntervalSince(startDate)) / 86_400)
     }
     
     func daysSinceQuitStartDate() -> Int {

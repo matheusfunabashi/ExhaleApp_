@@ -473,12 +473,13 @@ struct StatsSection: View {
     }
     
     private var moneyValueFont: Font {
-        // Use a slightly smaller font when the numeric portion hits 3+ digits.
+        // Scale down as digits increase so "R$128" / "R$1234" stay on one line on all phones.
         let digits = dataStore.formattedMoneySaved().filter { $0.isNumber }
-        if digits.count >= 3 {
-            return .system(size: 24, weight: .bold, design: .rounded)
-        } else {
-            return .system(size: 28, weight: .bold, design: .rounded)
+        switch digits.count {
+        case 0...2: return .system(size: 28, weight: .bold, design: .rounded)
+        case 3:     return .system(size: 24, weight: .bold, design: .rounded)
+        case 4:     return .system(size: 20, weight: .bold, design: .rounded)
+        default:    return .system(size: 18, weight: .bold, design: .rounded)
         }
     }
 }
@@ -497,11 +498,13 @@ struct StatsCard: View {
             Text(emoji)
                 .font(.system(size: 40))
             
-            // Value
+            // Value: keep on one line (e.g. "R$128"); shrink to fit on small devices
             Text(value)
                 .font(valueFont)
                 .foregroundColor(.primary)
                 .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
             
             // Title
             Text(title)
@@ -824,8 +827,9 @@ struct MoneySavedView: View {
 // MARK: - Health Improvements Detail
 struct HealthImprovementsView: View {
     @EnvironmentObject var dataStore: AppDataStore
+    /// Same source of truth as the main "X days vape-free" counter: elapsed time since startDate. No independent persistence; resets when user relapses.
     private var days: Int {
-        dataStore.getDaysVapeFree()
+        dataStore.daysVapeFreeForMainCounter()
     }
     private var timeline: [(when: String, description: String, minDays: Int)] {
         [
@@ -992,8 +996,13 @@ private struct ReadingOfTheDayButton: View {
     @EnvironmentObject var dataStore: AppDataStore
     @Binding var selectedLesson: Lesson?
     
+    /// One reading per calendar day from the store; refreshes when the day changes.
     private var readingOfTheDay: Lesson {
-        getReadingOfTheDay()
+        let pool = LearningView.allLessonsForDailyReading()
+        guard !pool.isEmpty else { return fallbackLesson() }
+        let titles = pool.map(\.title)
+        guard let title = dataStore.getDailyReadingTitle(fromTitles: titles) else { return fallbackLesson() }
+        return pool.first(where: { $0.title == title }) ?? pool[0]
     }
     
     private var isCompleted: Bool {
@@ -1056,43 +1065,15 @@ private struct ReadingOfTheDayButton: View {
         .buttonStyle(PlainButtonStyle())
     }
     
-    private func getReadingOfTheDay() -> Lesson {
-        let allReadings = LearningView.allLessonsForDailyReading()
-        guard !allReadings.isEmpty else {
-            return Lesson.withContent(
-                title: "Benefits of quitting",
-                summary: "Your body heals from day one.",
-                durationMinutes: 9,
-                icon: "heart.fill",
-                content: getExpandedBenefitsContent(),
-                sources: ["American Heart Association - Benefits of Quitting Smoking", "Centers for Disease Control and Prevention - Health Benefits Timeline", "Mayo Clinic - Quitting Smoking: Health Benefits", "National Cancer Institute - Health Benefits of Quitting", "American Lung Association - Benefits of Quitting", "World Health Organization - Tobacco Cessation Benefits"]
-            )
-        }
-        
-        // Get today's date as a seed for consistent daily selection
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let dayOfYear = calendar.ordinality(of: .day, in: .year, for: today) ?? 0
-        
-        // Use day of year as seed to get consistent random selection per day
-        var generator = SeededRandomNumberGenerator(seed: UInt64(dayOfYear))
-        let randomIndex = Int.random(in: 0..<allReadings.count, using: &generator)
-        
-        return allReadings[randomIndex]
-    }
-}
-
-// Helper for seeded random number generation
-struct SeededRandomNumberGenerator: RandomNumberGenerator {
-    private var state: UInt64
-    
-    init(seed: UInt64) {
-        self.state = seed
-    }
-    
-    mutating func next() -> UInt64 {
-        state = state &* 1103515245 &+ 12345
-        return state
+    private func fallbackLesson() -> Lesson {
+        Lesson.withContent(
+            title: "Benefits of quitting",
+            summary: "Your body heals from day one.",
+            durationMinutes: 9,
+            icon: "heart.fill",
+            content: getExpandedBenefitsContent(),
+            sources: ["American Heart Association - Benefits of Quitting Smoking", "Centers for Disease Control and Prevention - Health Benefits Timeline", "Mayo Clinic - Quitting Smoking: Health Benefits", "National Cancer Institute - Health Benefits of Quitting", "American Lung Association - Benefits of Quitting", "World Health Organization - Tobacco Cessation Benefits"]
+        )
     }
 }
 
@@ -1712,6 +1693,7 @@ private struct ActionButton: View {
 
 struct FireStreakIcon: View {
     @EnvironmentObject var dataStore: AppDataStore
+    @State private var showStreakExplanation = false
     
     private var consecutiveCheckInDays: Int {
         let calendar = Calendar.current
@@ -1739,26 +1721,38 @@ struct FireStreakIcon: View {
     }
     
     var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: "flame.fill")
-                .font(.title3)
-                .foregroundColor(.orange)
-            
-            Text("\(consecutiveCheckInDays)")
-                .font(.headline)
-                .fontWeight(.bold)
-                .foregroundColor(.orange)
+        Button {
+            showStreakExplanation = true
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "flame.fill")
+                    .font(.title3)
+                    .foregroundColor(.orange)
+                
+                Text("\(consecutiveCheckInDays)")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.orange)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.orange.opacity(0.1))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+                    )
+            )
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.orange.opacity(0.1))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.orange.opacity(0.3), lineWidth: 1)
-                )
-        )
+        .buttonStyle(PlainButtonStyle())
+        .alert("Check-in streak", isPresented: $showStreakExplanation) {
+            Button("Got it", role: .cancel) {}
+        } message: {
+            Text("This is your check-in streak. It increases each day you complete a check-in and resets if you miss one. It’s separate from your vape-free counter.")
+        }
+        .accessibilityLabel("Check-in streak: \(consecutiveCheckInDays) days. Tap for explanation.")
+        .accessibilityHint("Double-tap to learn what this streak means.")
     }
 }
 
