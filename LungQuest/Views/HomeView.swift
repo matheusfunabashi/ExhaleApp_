@@ -4,6 +4,9 @@ import SuperwallKit
 
 struct HomeView: View {
     @EnvironmentObject var dataStore: AppDataStore
+    #if DEBUG
+    @EnvironmentObject var flowManager: AppFlowManager
+    #endif
     @State private var showCheckIn = false
     @State private var showCalendar = false
     @State private var showMoney = false
@@ -16,14 +19,18 @@ struct HomeView: View {
     @State private var selectedTodayCheckIn: DailyProgress? = nil
     #if DEBUG
     @State private var showDevMenu = false
-    @State private var showDevOptions = false
-    @State private var devDestination: DevDestination?
     #endif
     
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 28) {
+                    #if DEBUG
+                    Text("DEBUG")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(.orange)
+                        .frame(maxWidth: .infinity)
+                    #endif
                     // App Title with Fire Streak
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
@@ -43,6 +50,15 @@ struct HomeView: View {
                             }
                         }
                         Spacer()
+                        #if DEBUG
+                        Button("Dev") {
+                            print("[DevMode] Manual Dev button tapped; setting showDevMenu = true")
+                            showDevMenu = true
+                        }
+                        .font(.caption2)
+                        .foregroundColor(.orange)
+                        .padding(4)
+                        #endif
                         FireStreakIcon()
                     }
                     .padding(.horizontal)
@@ -86,6 +102,16 @@ struct HomeView: View {
                                     .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
                             )
                         }
+                        #if DEBUG
+                        .overlay(
+                            Color.clear
+                                .contentShape(Rectangle())
+                                .onTapGesture(count: 5) {
+                                    print("[DevMode] 5-tap gesture fired on time counter")
+                                    showDevMenu = true
+                                }
+                        )
+                        #endif
                         
                         // Four action buttons
                         HStack(spacing: 0) {
@@ -150,12 +176,6 @@ struct HomeView: View {
                             .animation(.easeInOut(duration: 1.1), value: showHeroGlow)
                     )
                     .padding(.horizontal)
-                    #if DEBUG
-                    .contentShape(Rectangle())
-                    .onTapGesture(count: 5) {
-                        showDevOptions = true
-                    }
-                    #endif
                     
                     HomeSection(
                         title: "Your journey",
@@ -192,6 +212,7 @@ struct HomeView: View {
             .navigationBarHidden(true)
             .breathableBackground()
         }
+        .navigationViewStyle(.stack)
         .sheet(isPresented: $showCheckIn) {
             CheckInModalView()
         }
@@ -216,6 +237,7 @@ struct HomeView: View {
                     }
                 }
             }
+            .navigationViewStyle(.stack)
             .environmentObject(dataStore)
         }
         .sheet(isPresented: $showMoney) {
@@ -223,12 +245,13 @@ struct HomeView: View {
                 MoneySavedView()
                     .navigationTitle("Money Saved")
                     .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Close") { showMoney = false }
-                        }
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Close") { showMoney = false }
                     }
+                }
             }
+            .navigationViewStyle(.stack)
             .environmentObject(dataStore)
         }
         .sheet(isPresented: $showHealth) {
@@ -236,18 +259,20 @@ struct HomeView: View {
                 HealthImprovementsView()
                     .navigationTitle("Health Improvements")
                     .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Close") { showHealth = false }
-                        }
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Close") { showHealth = false }
                     }
+                }
             }
+            .navigationViewStyle(.stack)
             .environmentObject(dataStore)
         }
         #if DEBUG
         .sheet(isPresented: $showDevMenu) {
             DevMenuView()
                 .environmentObject(dataStore)
+                .environmentObject(flowManager)
         }
         #endif
         .alert("Are you sure?", isPresented: $showSlipSecondConfirmation) {
@@ -276,29 +301,6 @@ struct HomeView: View {
             LessonDetailModal(lesson: lesson, accent: Color(red: 0.95, green: 0.65, blue: 0.75))
                 .environmentObject(dataStore)
         }
-        #if DEBUG
-        .confirmationDialog(
-            "Debug options",
-            isPresented: $showDevOptions,
-            titleVisibility: .visible
-        ) {
-            Button("Open Onboarding preview") { devDestination = .onboarding }
-            Button("Developer menu") { showDevMenu = true }
-            Button("Test Superwall") {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                    Superwall.shared.register(placement: "onboarding_end")
-                }
-            }
-            Button("Cancel", role: .cancel) { }
-        }
-        .sheet(item: $devDestination) { destination in
-            switch destination {
-            case .onboarding:
-                OnboardingView()
-                    .environmentObject(dataStore)
-            }
-        }
-        #endif
     }
     
     private func checkForNewStreak() { }
@@ -880,14 +882,6 @@ struct CheckInSectionWrapper: View {
     }
 }
 
-#if DEBUG
-private enum DevDestination: Identifiable {
-    case onboarding
-    
-    var id: Int { hashValue }
-}
-#endif
-
 // MARK: - New Hero Views
 
 private struct HomeSection<Content: View>: View {
@@ -1260,11 +1254,13 @@ struct SupportMessage: View {
 }
 
 #if DEBUG
-// MARK: - Developer Menu (DEBUG only)
+// MARK: - Developer Tools (DEBUG only – never shipped in TestFlight/App Store)
 struct DevMenuView: View {
     @EnvironmentObject var dataStore: AppDataStore
+    @EnvironmentObject var flowManager: AppFlowManager
     @Environment(\.presentationMode) var presentationMode
     @State private var showDevCheckIn: Bool = false
+    @State private var showOnboarding: Bool = false
     
     var body: some View {
         NavigationView {
@@ -1280,8 +1276,14 @@ struct DevMenuView: View {
                     Button("Re-do today's check-in") { showDevCheckIn = true }
                 }
                 
-                Section(header: Text("Superwall")) {
-                    Button("Test 'onboarding_end' placement") {Superwall.shared.register(placement: "onboarding_end")}
+                Section(header: Text("Onboarding")) {
+                    Button("Redo onboarding") { showOnboarding = true }
+                }
+                
+                Section(header: Text("Paywall (Superwall)")) {
+                    Button("Test 'onboarding_end' placement") {
+                        Superwall.shared.register(placement: "onboarding_end")
+                    }
                 }
             }
             .navigationTitle("Developer Tools")
@@ -1292,9 +1294,19 @@ struct DevMenuView: View {
                 }
             }
         }
+        .navigationViewStyle(.stack)
+        .onAppear { print("[DevMode] DevMenuView sheet presented") }
         .sheet(isPresented: $showDevCheckIn) {
             CheckInModalView()
                 .environmentObject(dataStore)
+        }
+        .sheet(isPresented: $showOnboarding) {
+            OnboardingView(onSkipAll: { name, age, weeklyCost, currency in
+                flowManager.completeOnboarding(name: name, age: age, weeklyCost: weeklyCost, currency: currency)
+                showOnboarding = false
+            })
+            .environmentObject(flowManager)
+            .environmentObject(dataStore)
         }
     }
     

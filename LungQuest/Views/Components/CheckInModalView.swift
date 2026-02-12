@@ -84,6 +84,7 @@ struct CheckInModalView: View {
             )
             .breathableBackground()
         }
+        .navigationViewStyle(.stack)
         .overlay(
             SuccessAnimationView(isShowing: $showSuccessAnimation)
         )

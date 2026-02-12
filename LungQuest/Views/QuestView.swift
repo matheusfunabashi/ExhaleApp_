@@ -33,6 +33,7 @@ struct QuestView: View {
                 )
             )
         }
+        .navigationViewStyle(.stack)
     }
 }
 

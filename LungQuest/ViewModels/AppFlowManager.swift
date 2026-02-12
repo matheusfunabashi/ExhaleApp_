@@ -131,27 +131,13 @@ class AppFlowManager: ObservableObject {
             self.isCheckingSubscription = false
             UserDefaults.standard.set(true, forKey: "isSubscribed")
         } else {
-            // Production: normal subscription flow
-            // Load subscription state from UserDefaults first (trust it initially)
+            // Production: show app immediately; Superwall handles paywall presentation. Do not block on subscription.
             let savedSubscriptionState = UserDefaults.standard.bool(forKey: "isSubscribed")
             self.isSubscribed = savedSubscriptionState
-            
-            // If we have a saved subscription state, show app immediately and verify in background
-            // Otherwise, check subscription before showing app
-            if savedSubscriptionState {
-                self.isLoading = false
-                self.isCheckingSubscription = true
-                // Verify subscription in background without blocking
-                Task { @MainActor in
-                    await self.verifySubscriptionInBackground()
-                }
-            } else {
-                self.isLoading = true
-                self.isCheckingSubscription = true
-                // Check subscription before showing app
-                Task { @MainActor in
-                    await self.verifySubscriptionOnStartup()
-                }
+            self.isLoading = false
+            self.isCheckingSubscription = false
+            Task { @MainActor in
+                await self.verifySubscriptionInBackground()
             }
         }
         
@@ -180,49 +166,6 @@ class AppFlowManager: ObservableObject {
                 }
             }
             .store(in: &cancellables)
-    }
-    
-    @MainActor
-    private func verifySubscriptionOnStartup() async {
-        // TestFlight uses sandbox subscriptions; bypass paywall to avoid flaky entitlement timing.
-        if isSandboxEnvironment() {
-            setSubscription(active: true)
-            isCheckingSubscription = false
-            isLoading = false
-            return
-        }
-        
-        // Production: Load from SubscriptionManager; StoreKit can be slow on first launch.
-        await subscriptionManager.refreshEntitlements()
-        
-        if subscriptionManager.isSubscribed {
-            setSubscription(active: true)
-            isCheckingSubscription = false
-            isLoading = false
-            return
-        }
-        
-        // UserDefaults fallback: trust cached "subscribed" so we don't show paywall to existing subscribers.
-        let savedState = UserDefaults.standard.bool(forKey: "isSubscribed")
-        if savedState {
-            setSubscription(active: true)
-            isCheckingSubscription = false
-            isLoading = false
-            return
-        }
-        
-        // No cached subscription; give StoreKit a short moment to finish (avoids showing paywall on slow first load).
-        try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5s
-        await subscriptionManager.refreshEntitlements()
-        
-        if subscriptionManager.isSubscribed {
-            setSubscription(active: true)
-        } else {
-            setSubscription(active: false)
-        }
-        
-        isCheckingSubscription = false
-        isLoading = false
     }
     
     @MainActor
