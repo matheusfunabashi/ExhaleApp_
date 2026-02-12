@@ -54,6 +54,7 @@ struct ProfileView: View {
             )
             .breathableBackground()
         }
+        .navigationViewStyle(.stack)
         .sheet(isPresented: $showEditProfile) {
             EditProfileView()
                 .environmentObject(dataStore)
@@ -1004,6 +1005,7 @@ struct EditProfileView: View {
                 .foregroundColor(Color(red: 0.45, green: 0.72, blue: 0.99))
             )
         }
+        .navigationViewStyle(.stack)
         .onAppear {
             loadCurrentData()
         }
@@ -1148,6 +1150,7 @@ struct ExportDataView: View {
                 }
             )
         }
+        .navigationViewStyle(.stack)
     }
 }
 
@@ -1178,6 +1181,7 @@ struct ShareStreakView: View {
             .navigationTitle("Share Your Streak")
             .navigationBarTitleDisplayMode(.inline)
         }
+        .navigationViewStyle(.stack)
     }
 }
 

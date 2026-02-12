@@ -46,6 +46,7 @@ struct ProgressView: View {
                 )
             }
         }
+        .navigationViewStyle(.stack)
     }
 }
 
@@ -1750,6 +1751,7 @@ struct CheckInDetailView: View {
             )
             .breathableBackground()
         }
+        .navigationViewStyle(.stack)
     }
     
     private func cravingsColor(_ level: Int) -> Color {

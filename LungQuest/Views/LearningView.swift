@@ -165,6 +165,7 @@ struct LearningView: View {
             .navigationTitle("Learn")
             .breathableBackground()
         }
+        .navigationViewStyle(.stack)
         .sheet(item: $selectedLesson) { lesson in
             LessonDetailModal(lesson: lesson, accent: accentForLesson(lesson))
                 .environmentObject(dataStore)
@@ -493,6 +494,7 @@ struct LessonDetailModal: View {
                 stickyCTAButton
             }
         }
+        .navigationViewStyle(.stack)
         .preferredColorScheme(nil) // Support both light and dark mode
     }
     

@@ -27,7 +27,7 @@ struct ContentView: View {
     
     var body: some View {
         Group {
-            if flowManager.isLoading || flowManager.isCheckingSubscription {
+            if flowManager.isLoading {
                 LoadingView()
             } else if flowManager.isOnboarding {
                 OnboardingView(onSkipAll: { name, age, weeklyCost, currency in
@@ -35,19 +35,30 @@ struct ContentView: View {
                 })
                 .environmentObject(flowManager)
                 .environmentObject(dataStore)
-            } else if flowManager.isSubscribed {
-                MainTabView()
-                    .environmentObject(flowManager)
-                    .environmentObject(dataStore)
             } else {
-                PaywallGateView()
+                MainTabView()
                     .environmentObject(flowManager)
                     .environmentObject(dataStore)
             }
         }
+        .modifier(ResponsiveContentWidth())
         .animation(.easeInOut(duration: 0.3), value: flowManager.isOnboarding)
         .animation(.easeInOut(duration: 0.3), value: flowManager.isLoading)
-        .animation(.easeInOut(duration: 0.3), value: flowManager.isCheckingSubscription)
+    }
+}
+
+// MARK: - iPad-responsive layout (iPhone unchanged)
+/// On wide screens (e.g. iPad, width > 600pt), constrains content to max 600pt and centers it.
+/// On iPhone, content uses full width with no visual change.
+private struct ResponsiveContentWidth: ViewModifier {
+    func body(content: Content) -> some View {
+        GeometryReader { geo in
+            let isWide = geo.size.width > 600
+            content
+                .frame(maxWidth: isWide ? 600 : .infinity)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.horizontal, isWide ? 24 : 0)
+        }
     }
 }
 
@@ -75,40 +86,30 @@ struct MainTabView: View {
     @EnvironmentObject var dataStore: AppDataStore
     @State private var selectedTab: Int = 0
     @State private var showPanic: Bool = false
-    
+    /// Defer safe area inset until after first layout so the tab bar is laid out and hit-testable first.
+    /// Prevents first-launch / fresh-install bug where tab bar taps were blocked (inset view in hierarchy over tab bar).
+    @State private var tabBarReadyForInset: Bool = false
+
     var body: some View {
-            TabView(selection: $selectedTab) {
-                HomeView()
-                    .tabItem {
-                        Image(systemName: "house.fill")
-                        Text("Home")
-                    }
-                    .tag(0)
-                
-                LearningView()
-                    .tabItem {
-                        Image(systemName: "book.fill")
-                        Text("Learn")
-                    }
-                    .tag(1)
-                
-                ProgressView()
-                    .tabItem {
-                        Image(systemName: "chart.line.uptrend.xyaxis")
-                        Text("Progress")
-                    }
-                    .tag(2)
-                
-                ProfileView()
-                    .tabItem {
-                        Image(systemName: "person.fill")
-                        Text("Profile")
-                    }
-                    .tag(3)
-            }
+        tabViewContent
         .accentColor(Color(red: 0.45, green: 0.72, blue: 0.99))
         .onAppear {
             selectedTab = TabNavigationManager.shared.selectedTab
+            // Diagnostics: log hierarchy on appear and after delays to compare first launch vs later.
+            if TabBarDiagnostics.enabled {
+                TabBarDiagnostics.logHierarchy(label: "MainTabView.onAppear")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    TabBarDiagnostics.logHierarchy(label: "MainTabView +0.5s")
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    TabBarDiagnostics.logHierarchy(label: "MainTabView +1.5s")
+                }
+            }
+            // Lifecycle fix: apply safe area inset only after the TabView has completed its first layout.
+            // This ensures the underlying UITabBar is in the hierarchy and hit-testable before we add the inset view.
+            DispatchQueue.main.async {
+                tabBarReadyForInset = true
+            }
         }
         .onReceive(TabNavigationManager.shared.$selectedTab) { newTab in
             if selectedTab != newTab {
@@ -122,22 +123,73 @@ struct MainTabView: View {
                 TabNavigationManager.shared.selectedTab = newValue
             }
         }
-        .safeAreaInset(edge: .bottom, spacing: 6) {
-            // Panic button raised: top padding + spacing keep a clear gap below the tab
-            // bar so tab items stay easily tappable; extra bottom padding lifts the button.
-            HStack {
-                Spacer()
-                PanicButton { showPanic = true }
-                Spacer()
-            }
-            .padding(.top, 14)
-            .padding(.bottom, 18)
-            .background(Color.clear)
-        }
+        .modifier(ConditionalSafeAreaInset(apply: tabBarReadyForInset, spacing: 6, content: { panicButtonInset }))
         .fullScreenCover(isPresented: $showPanic) {
             PanicHelpView(isPresented: $showPanic)
         }
         .animation(.easeInOut(duration: 0.2), value: selectedTab)
+    }
+
+    private var tabViewContent: some View {
+        TabView(selection: $selectedTab) {
+            HomeView()
+                .tabItem {
+                    Image(systemName: "house.fill")
+                    Text("Home")
+                }
+                .tag(0)
+
+            LearningView()
+                .tabItem {
+                    Image(systemName: "book.fill")
+                    Text("Learn")
+                }
+                .tag(1)
+
+            ProgressView()
+                .tabItem {
+                    Image(systemName: "chart.line.uptrend.xyaxis")
+                    Text("Progress")
+                }
+                .tag(2)
+
+            ProfileView()
+                .tabItem {
+                    Image(systemName: "person.fill")
+                    Text("Profile")
+                }
+                .tag(3)
+        }
+    }
+
+    @ViewBuilder
+    private var panicButtonInset: some View {
+        HStack {
+            Spacer()
+            PanicButton { showPanic = true }
+            Spacer()
+        }
+        .padding(.top, 14)
+        .padding(.bottom, 18)
+        .background(Color.clear)
+    }
+}
+
+// MARK: - Deferred safe area inset (lifecycle fix for tab bar touches)
+/// Applies safe area inset only when `apply` is true. Used so the tab bar is laid out and
+/// hit-testable before the inset view is added, avoiding first-launch tap failures.
+private struct ConditionalSafeAreaInset<InsetContent: View>: ViewModifier {
+    let apply: Bool
+    let spacing: CGFloat
+    @ViewBuilder let content: () -> InsetContent
+
+    func body(content: Content) -> some View {
+        if apply {
+            content
+                .safeAreaInset(edge: .bottom, spacing: spacing, content: self.content)
+        } else {
+            content
+        }
     }
 }
 
@@ -149,79 +201,3 @@ struct MainTabView: View {
         .environmentObject(store)
 }
 
-struct PaywallGateView: View {
-    @EnvironmentObject var flowManager: AppFlowManager
-    @State private var hasAutoChecked = false
-    
-    var body: some View {
-        VStack(spacing: 20) {
-            Spacer()
-            Image(systemName: "lock.fill")
-                .font(.system(size: 40, weight: .bold))
-                .foregroundColor(.blue)
-            Text("Unlock Exhale Premium")
-                .font(.title2.weight(.semibold))
-            Text("Subscribe to continue past onboarding.")
-                .font(.body)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
-            
-            VStack(spacing: 12) {
-                Button(action: {
-                    Superwall.shared.register(placement: "onboarding_end")
-                }) {
-                    Text("Show Paywall")
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
-                }
-                
-                Button(action: {
-                    Task { @MainActor in
-                        flowManager.isCheckingSubscription = true
-                        await SubscriptionManager.shared.refreshEntitlements()
-                        if SubscriptionManager.shared.isSubscribed {
-                            flowManager.setSubscription(active: true)
-                        }
-                        flowManager.isCheckingSubscription = false
-                    }
-                }) {
-                    HStack {
-                        if flowManager.isCheckingSubscription {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .blue))
-                                .scaleEffect(0.8)
-                        }
-                        Text(flowManager.isCheckingSubscription ? "Checking..." : "Restore Purchases")
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(Color.gray.opacity(0.15))
-                    .foregroundColor(.blue)
-                    .cornerRadius(12)
-                }
-                .disabled(flowManager.isCheckingSubscription)
-            }
-            .padding(.horizontal, 24)
-            
-            Spacer()
-        }
-        .padding()
-        .onAppear {
-            // If user is already subscribed (e.g. StoreKit was slow), refresh once and dismiss paywall.
-            guard !hasAutoChecked else { return }
-            hasAutoChecked = true
-            Task { @MainActor in
-                flowManager.isCheckingSubscription = true
-                await SubscriptionManager.shared.refreshEntitlements()
-                if SubscriptionManager.shared.isSubscribed {
-                    flowManager.setSubscription(active: true)
-                }
-                flowManager.isCheckingSubscription = false
-            }
-        }
-    }
-}
