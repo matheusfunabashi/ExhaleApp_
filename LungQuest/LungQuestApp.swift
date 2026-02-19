@@ -47,7 +47,7 @@ final class SuperwallDelegateHandler: SuperwallDelegate {
     
     func handleSuperwallEvent(withInfo eventInfo: SuperwallEventInfo) {
         switch eventInfo.event {
-        case .transactionStart(let product):
+        case let .transactionStart(product, _):
             print("💳 Superwall: Transaction started for product: \(product.productIdentifier)")
             
         case .transactionComplete:
@@ -63,7 +63,7 @@ final class SuperwallDelegateHandler: SuperwallDelegate {
                 await flowManager?.subscriptionManager.refreshEntitlements()
             }
             
-        case .transactionFail(let error):
+        case let .transactionFail(error, _):
             print("❌ Superwall: Transaction failed - \(error)")
             
         case .transactionAbandon:
