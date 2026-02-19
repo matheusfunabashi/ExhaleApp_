@@ -20,8 +20,7 @@ struct OnboardingStep5View: View {
                 
                 QuestionTitleView(
                     title: "Question #2",
-                    subtitle: "With what frequency do you vape?",
-                    progress: 5.0 / 13.0
+                    subtitle: "With what frequency do you vape?"
                 )
                 .padding(.bottom, 32)
                 
@@ -43,6 +42,11 @@ struct OnboardingStep5View: View {
             .padding(.horizontal, 24)
             .padding(.top, 52)
             .padding(.bottom, 32)
+        }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            OnboardingProgressBar(currentStep: 5, totalSteps: 13)
+                .padding(.top, 8)
+                .padding(.horizontal, 16)
         }
         .navigationBarBackButtonHidden(true)
     }
@@ -96,43 +100,19 @@ private struct StaticOnboardingBackground: View {
 private struct QuestionTitleView: View {
     let title: String
     let subtitle: String
-    let progress: Double
     
     var body: some View {
-        VStack(spacing: 18) {
-            ProgressBar(progress: progress)
-                .frame(height: 6)
+        VStack(spacing: 12) {
+            Text(title)
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .foregroundColor(.black)
+                .frame(maxWidth: .infinity, alignment: .center)
             
-            VStack(spacing: 12) {
-                Text(title)
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(.black)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                
-                Text(subtitle)
-                    .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .foregroundColor(Color.black.opacity(0.8))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 16)
-            }
-        }
-    }
-}
-
-private struct ProgressBar: View {
-    let progress: Double
-    
-    var body: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(Color.black.opacity(0.12))
-                    .frame(height: geo.size.height)
-                
-                Capsule()
-                    .fill(Color.black.opacity(0.4))
-                    .frame(width: max(0, min(1, progress)) * geo.size.width, height: geo.size.height)
-            }
+            Text(subtitle)
+                .font(.system(size: 18, weight: .medium, design: .rounded))
+                .foregroundColor(Color.black.opacity(0.8))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 16)
         }
     }
 }

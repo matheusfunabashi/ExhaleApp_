@@ -21,6 +21,7 @@
 		8D1107620486CEB800E47090 /* PanicHelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1107610486CEB800E47090 /* PanicHelpView.swift */; };
 		8D1107660486CEB800E47090 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1107650486CEB800E47090 /* PaywallView.swift */; };
 		8D11076A0486CEB800E47090 /* CommonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1107690486CEB800E47090 /* CommonStyles.swift */; };
+		8D11076B0486CEB800E47091 /* OnboardingProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D11076A0486CEB800E47091 /* OnboardingProgressBar.swift */; };
 		9701BB4D2E81E7E500716F78 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9701BB4C2E81E7E500716F78 /* Assets.xcassets */; };
 		971C04602E7DFED500540355 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 971C045F2E7DFED500540355 /* FirebaseAnalytics */; };
 		971C04622E7DFED500540355 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 971C04612E7DFED500540355 /* FirebaseAuth */; };
@@ -69,6 +70,7 @@
 		8D1107610486CEB800E47090 /* PanicHelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanicHelpView.swift; sourceTree = "<group>"; };
 		8D1107650486CEB800E47090 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
 		8D1107690486CEB800E47090 /* CommonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonStyles.swift; sourceTree = "<group>"; };
+		8D11076A0486CEB800E47091 /* OnboardingProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingProgressBar.swift; sourceTree = "<group>"; };
 		9701BB4C2E81E7E500716F78 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97E3A6B32F3B0F7B00A4D5EA /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		97FE9EA92FCFA826006FDDE7 /* OnboardingStep2View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStep2View.swift; sourceTree = "<group>"; };
@@ -207,6 +209,7 @@
 				8D1107510486CEB800E47090 /* CheckInModalView.swift */,
 				8D1107610486CEB800E47090 /* PanicHelpView.swift */,
 				8D1107690486CEB800E47090 /* CommonStyles.swift */,
+				8D11076A0486CEB800E47091 /* OnboardingProgressBar.swift */,
 				97FE9EAF2FCFB1B8006FDDE7 /* WaveGradientBackground.swift */,
 			);
 			path = Components;
@@ -319,6 +322,7 @@
 				8D1107520486CEB800E47090 /* CheckInModalView.swift in Sources */,
 				8D1107620486CEB800E47090 /* PanicHelpView.swift in Sources */,
 				8D11076A0486CEB800E47090 /* CommonStyles.swift in Sources */,
+				8D11076B0486CEB800E47091 /* OnboardingProgressBar.swift in Sources */,
 				97E3A6B42F3B0F7B00A4D5EA /* OnboardingView.swift in Sources */,
 				97FE9EAA2FCFA826006FDDE7 /* OnboardingStep2View.swift in Sources */,
 				97FE9EAD2FCFB151006FDDE7 /* OnboardingStep3View.swift in Sources */,
@@ -548,7 +552,7 @@
 				8D11072B0486CEB800E47090 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		8D11072C0486CEB800E47090 /* Build configuration list for PBXNativeTarget "Exhale" */ = {
 			isa = XCConfigurationList;
@@ -557,7 +561,7 @@
 				8D11072E0486CEB800E47090 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 

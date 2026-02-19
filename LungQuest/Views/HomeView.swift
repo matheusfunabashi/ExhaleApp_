@@ -4,9 +4,7 @@ import SuperwallKit
 
 struct HomeView: View {
     @EnvironmentObject var dataStore: AppDataStore
-    #if DEBUG
     @EnvironmentObject var flowManager: AppFlowManager
-    #endif
     @State private var showCheckIn = false
     @State private var showCalendar = false
     @State private var showMoney = false
@@ -18,19 +16,15 @@ struct HomeView: View {
     @State private var selectedReadingOfTheDay: Lesson? = nil
     @State private var selectedTodayCheckIn: DailyProgress? = nil
     #if DEBUG
-    @State private var showDevMenu = false
+    @State private var devTapCount = 0
+    @State private var showDevTools = false
+    @State private var showDevCheckIn = false
     #endif
     
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 28) {
-                    #if DEBUG
-                    Text("DEBUG")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundColor(.orange)
-                        .frame(maxWidth: .infinity)
-                    #endif
                     // App Title with Fire Streak
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
@@ -50,15 +44,6 @@ struct HomeView: View {
                             }
                         }
                         Spacer()
-                        #if DEBUG
-                        Button("Dev") {
-                            print("[DevMode] Manual Dev button tapped; setting showDevMenu = true")
-                            showDevMenu = true
-                        }
-                        .font(.caption2)
-                        .foregroundColor(.orange)
-                        .padding(4)
-                        #endif
                         FireStreakIcon()
                     }
                     .padding(.horizontal)
@@ -75,8 +60,16 @@ struct HomeView: View {
                                 .font(.system(.footnote, design: .rounded).weight(.medium))
                                 .foregroundColor(.secondary)
                             
+                            #if DEBUG
+                            DaysCounterView(
+                                devTapCount: $devTapCount,
+                                showDevTools: $showDevTools
+                            )
+                            .environmentObject(dataStore)
+                            #else
                             DaysCounterView()
                                 .environmentObject(dataStore)
+                            #endif
                             
                             NewHeroTimerView(
                                 onMilestone: {
@@ -102,16 +95,6 @@ struct HomeView: View {
                                     .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
                             )
                         }
-                        #if DEBUG
-                        .overlay(
-                            Color.clear
-                                .contentShape(Rectangle())
-                                .onTapGesture(count: 5) {
-                                    print("[DevMode] 5-tap gesture fired on time counter")
-                                    showDevMenu = true
-                                }
-                        )
-                        #endif
                         
                         // Four action buttons
                         HStack(spacing: 0) {
@@ -269,10 +252,16 @@ struct HomeView: View {
             .environmentObject(dataStore)
         }
         #if DEBUG
-        .sheet(isPresented: $showDevMenu) {
-            DevMenuView()
+        .sheet(isPresented: $showDevTools) {
+            DeveloperToolsView(
+                dataStore: dataStore,
+                showCheckIn: $showDevCheckIn
+            )
+            .environmentObject(flowManager)
+        }
+        .sheet(isPresented: $showDevCheckIn) {
+            CheckInModalView()
                 .environmentObject(dataStore)
-                .environmentObject(flowManager)
         }
         #endif
         .alert("Are you sure?", isPresented: $showSlipSecondConfirmation) {
@@ -1254,35 +1243,45 @@ struct SupportMessage: View {
 }
 
 #if DEBUG
-// MARK: - Developer Tools (DEBUG only – never shipped in TestFlight/App Store)
-struct DevMenuView: View {
-    @EnvironmentObject var dataStore: AppDataStore
-    @EnvironmentObject var flowManager: AppFlowManager
+// MARK: - Developer Tools (DEBUG only, triggered by 5 taps on main counter)
+private struct DeveloperToolsView: View {
+    @ObservedObject var dataStore: AppDataStore
+    @Binding var showCheckIn: Bool
     @Environment(\.presentationMode) var presentationMode
-    @State private var showDevCheckIn: Bool = false
-    @State private var showOnboarding: Bool = false
+    @EnvironmentObject var flowManager: AppFlowManager
     
     var body: some View {
         NavigationView {
             List {
-                Section(header: Text("Timer")) {
-                    Button("Reset timer to now") { setStartDate(to: Date()) }
-                    Button("Advance +1 hour") { shiftStartDate(hours: 1) }
-                    Button("Advance +1 day") { shiftStartDate(days: 1) }
-                    Button("Advance +7 days") { shiftStartDate(days: 7) }
+                Section(header: Text("Time Controls")) {
+                    Button("Advance +1 hour") {
+                        shiftStartDate(hours: 1)
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                    Button("Advance +1 day") {
+                        shiftStartDate(days: 1)
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                    Button("Advance +7 days") {
+                        shiftStartDate(days: 7)
+                        presentationMode.wrappedValue.dismiss()
+                    }
                 }
                 
-                Section(header: Text("Check-in")) {
-                    Button("Re-do today's check-in") { showDevCheckIn = true }
+                Section(header: Text("Check-in Control")) {
+                    Button("Redo today's check-in") {
+                        resetTodayCheckIn()
+                        presentationMode.wrappedValue.dismiss()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            showCheckIn = true
+                        }
+                    }
                 }
                 
-                Section(header: Text("Onboarding")) {
-                    Button("Redo onboarding") { showOnboarding = true }
-                }
-                
-                Section(header: Text("Paywall (Superwall)")) {
-                    Button("Test 'onboarding_end' placement") {
-                        Superwall.shared.register(placement: "onboarding_end")
+                Section(header: Text("Onboarding Control")) {
+                    Button("Restart onboarding flow") {
+                        restartOnboarding()
+                        presentationMode.wrappedValue.dismiss()
                     }
                 }
             }
@@ -1290,40 +1289,34 @@ struct DevMenuView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Close") { presentationMode.wrappedValue.dismiss() }
+                    Button("Close") {
+                        presentationMode.wrappedValue.dismiss()
+                    }
                 }
             }
         }
         .navigationViewStyle(.stack)
-        .onAppear { print("[DevMode] DevMenuView sheet presented") }
-        .sheet(isPresented: $showDevCheckIn) {
-            CheckInModalView()
-                .environmentObject(dataStore)
-        }
-        .sheet(isPresented: $showOnboarding) {
-            OnboardingView(onSkipAll: { name, age, weeklyCost, currency in
-                flowManager.completeOnboarding(name: name, age: age, weeklyCost: weeklyCost, currency: currency)
-                showOnboarding = false
-            })
-            .environmentObject(flowManager)
-            .environmentObject(dataStore)
-        }
     }
     
-    private func setStartDate(to date: Date) {
+    private func shiftStartDate(days: Int = 0, hours: Int = 0) {
+        let seconds = (days * 86_400) + (hours * 3_600)
         guard var user = dataStore.currentUser else { return }
-        user.startDate = date
+        let newDate = user.startDate.addingTimeInterval(TimeInterval(-seconds))
+        user.startDate = newDate
         dataStore.currentUser = user
-        dataStore.persist()
         dataStore.updateLungHealth()
+        dataStore.persist()
         NotificationCenter.default.post(name: NSNotification.Name("UserStartDateChanged"), object: nil)
     }
     
-    private func shiftStartDate(days: Int = 0, hours: Int = 0, minutes: Int = 0) {
-        let seconds = (days * 86_400) + (hours * 3_600) + (minutes * 60)
-        guard let current = dataStore.currentUser?.startDate else { return }
-        let newDate = current.addingTimeInterval(TimeInterval(-seconds))
-        setStartDate(to: newDate)
+    private func resetTodayCheckIn() {
+        let today = Calendar.current.startOfDay(for: Date())
+        dataStore.dailyProgress.removeAll { Calendar.current.isDate($0.date, inSameDayAs: today) }
+        dataStore.persist()
+    }
+    
+    private func restartOnboarding() {
+        flowManager.resetForNewSession(devMode: true)
     }
 }
 #endif
@@ -1399,6 +1392,17 @@ struct CheckInButton: View {
 struct DaysCounterView: View {
     @EnvironmentObject var dataStore: AppDataStore
     @State private var now: Date = Date()
+    #if DEBUG
+    @Binding var devTapCount: Int
+    @Binding var showDevTools: Bool
+    
+    init(devTapCount: Binding<Int>, showDevTools: Binding<Bool>) {
+        _devTapCount = devTapCount
+        _showDevTools = showDevTools
+    }
+    #else
+    init() {}
+    #endif
     
     private var timer: Timer.TimerPublisher {
         Timer.publish(every: 1, on: .main, in: .common)
@@ -1424,6 +1428,21 @@ struct DaysCounterView: View {
                 .foregroundColor(.primary)
                 .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
         }
+        .contentShape(Rectangle())
+        #if DEBUG
+        .onTapGesture {
+            devTapCount += 1
+            if devTapCount >= 5 {
+                devTapCount = 0
+                showDevTools = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                if devTapCount > 0 {
+                    devTapCount = 0
+                }
+            }
+        }
+        #endif
         .onReceive(timer.autoconnect()) { newValue in
             now = newValue
         }
@@ -1769,6 +1788,9 @@ struct FireStreakIcon: View {
 }
 
 #Preview {
-    HomeView()
-        .environmentObject(AppDataStore())
+    let store = AppDataStore()
+    let flow = AppFlowManager(dataStore: store)
+    return HomeView()
+        .environmentObject(store)
+        .environmentObject(flow)
 }

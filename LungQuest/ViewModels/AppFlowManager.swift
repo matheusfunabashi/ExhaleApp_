@@ -44,16 +44,9 @@ final class SubscriptionManager: ObservableObject {
     }
     
     /// Checks current entitlements to see if the user is active.
-    /// TestFlight uses sandbox subscriptions; bypass paywall to avoid flaky entitlement timing.
     @MainActor
     private func checkEntitlements() async {
-        // TestFlight/sandbox environment: treat as premium to avoid paywall issues
-        if isSandboxEnvironment() {
-            isSubscribed = true
-            return
-        }
-        
-        // Production: verify actual subscription entitlements via StoreKit 2
+        // Verify actual subscription entitlements via StoreKit 2
         var found = false
         for await result in Transaction.currentEntitlements {
             if case .verified(let transaction) = result,
@@ -77,40 +70,17 @@ final class SubscriptionManager: ObservableObject {
         }
     }
     
-    /// Detects if the app is running in TestFlight/sandbox environment.
-    /// Returns true for TestFlight builds and sandbox receipts, false for production App Store builds.
-    /// This prevents TestFlight users from seeing paywalls due to sandbox subscription quirks.
-    private func isSandboxEnvironment() -> Bool {
-        // Check if the App Store receipt is a sandbox receipt
-        guard let receiptURL = Bundle.main.appStoreReceiptURL else {
-            // No receipt URL means we're likely in simulator or a very early launch state
-            // Treat as sandbox to be safe (won't affect production)
-            #if DEBUG
-            return true
-            #else
-            return false
-            #endif
-        }
-        
-        // TestFlight and sandbox builds have "sandboxReceipt" in the receipt path
-        let receiptPath = receiptURL.path
-        let lastComponent = receiptURL.lastPathComponent
-        
-        // Check both the last path component and the full path for "sandboxReceipt"
-        if lastComponent == "sandboxReceipt" || receiptPath.contains("sandboxReceipt") {
-            return true
-        }
-        
-        return false
-    }
 }
 
 class AppFlowManager: ObservableObject {
     @Published var isOnboarding: Bool = true
     @Published var isSubscribed: Bool = false
     @Published var isLoading: Bool = true
-    @Published var isCheckingSubscription: Bool = false
+    @Published var shouldShowPaywall: Bool = false
     @Published var errorMessage: String?
+    #if DEBUG
+    @Published var isDevModeOnboarding: Bool = false
+    #endif
     
     let dataStore: AppDataStore
     let subscriptionManager: SubscriptionManager
@@ -119,107 +89,74 @@ class AppFlowManager: ObservableObject {
     init(dataStore: AppDataStore, subscriptionManager: SubscriptionManager = .shared) {
         self.dataStore = dataStore
         self.subscriptionManager = subscriptionManager
-        self.isOnboarding = dataStore.currentUser == nil
         
-        // TestFlight uses sandbox subscriptions; bypass paywall to avoid flaky entitlement timing.
-        let isTestFlightOrDebug = isSandboxEnvironment()
+        // Determine onboarding state from persistent flag
+        let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
+        self.isOnboarding = !hasCompletedOnboarding
         
-        if isTestFlightOrDebug {
-            // Auto-bypass paywall in TestFlight and debug builds
-            self.isSubscribed = true
-            self.isLoading = false
-            self.isCheckingSubscription = false
-            UserDefaults.standard.set(true, forKey: "isSubscribed")
-        } else {
-            // Production: show app immediately; Superwall handles paywall presentation. Do not block on subscription.
-            let savedSubscriptionState = UserDefaults.standard.bool(forKey: "isSubscribed")
-            self.isSubscribed = savedSubscriptionState
-            self.isLoading = false
-            self.isCheckingSubscription = false
-            Task { @MainActor in
-                await self.verifySubscriptionInBackground()
-            }
-        }
+        // Start with subscription verification
+        self.isLoading = true
         
+        // Start subscription monitoring immediately
+        subscriptionManager.start()
+        
+        // Observe subscription changes from SubscriptionManager
         subscriptionManager.$isSubscribed
             .receive(on: RunLoop.main)
             .sink { [weak self] active in
                 guard let self = self else { return }
-                // Only update if we're not in sandbox/TestFlight and not in the middle of initial check
-                if !isTestFlightOrDebug && !self.isCheckingSubscription {
-                    self.setSubscription(active: active)
-                }
+                self.isSubscribed = active
+                // Update paywall state
+                self.updatePaywallState()
             }
             .store(in: &cancellables)
         
-        // Only start subscription monitoring in production
-        if !isTestFlightOrDebug {
-            subscriptionManager.start()
-        }
-        
+        // Observe dataStore changes
         dataStore.objectWillChange
             .sink { [weak self] _ in
                 guard let self = self else { return }
                 self.objectWillChange.send()
-                if self.isOnboarding && self.dataStore.currentUser != nil {
-                    self.isOnboarding = false
-                }
             }
             .store(in: &cancellables)
+        
+        // Verify subscription status before showing UI
+        Task { @MainActor in
+            await self.verifySubscriptionInBackground()
+        }
     }
     
     @MainActor
     private func verifySubscriptionInBackground() async {
-        // TestFlight uses sandbox subscriptions; bypass paywall to avoid flaky entitlement timing.
-        if isSandboxEnvironment() {
-            setSubscription(active: true)
-            isCheckingSubscription = false
-            return
-        }
-        
-        // Production: Verify subscription without blocking UI.
-        // Never downgrade: if we already believe the user is subscribed (e.g. from UserDefaults),
-        // do not set isSubscribed = false when StoreKit is slow or fails—only upgrade when we confirm.
+        // Verify subscription via StoreKit
         await subscriptionManager.refreshEntitlements()
         
-        if subscriptionManager.isSubscribed {
-            setSubscription(active: true)
-        }
-        // If subscriptionManager says false, leave isSubscribed unchanged (don't kick subscribed users to paywall)
+        // Update state from subscription manager
+        isSubscribed = subscriptionManager.isSubscribed
         
-        isCheckingSubscription = false
+        // Determine if paywall should be shown
+        updatePaywallState()
+        
+        // Finished loading
+        isLoading = false
     }
     
-    /// Detects if the app is running in TestFlight/sandbox environment.
-    /// Returns true for TestFlight builds and sandbox receipts, false for production App Store builds.
-    /// This prevents TestFlight users from seeing paywalls due to sandbox subscription quirks.
-    private func isSandboxEnvironment() -> Bool {
-        #if DEBUG
-        return true
-        #else
-        // Check if the App Store receipt is a sandbox receipt
-        guard let receiptURL = Bundle.main.appStoreReceiptURL else {
-            // No receipt URL means we're likely in simulator or a very early launch state
-            return false
-        }
-        
-        // TestFlight and sandbox builds have "sandboxReceipt" in the receipt path
-        let receiptPath = receiptURL.path
-        let lastComponent = receiptURL.lastPathComponent
-        
-        // Check both the last path component and the full path for "sandboxReceipt"
-        if lastComponent == "sandboxReceipt" || receiptPath.contains("sandboxReceipt") {
-            return true
-        }
-        
-        return false
-        #endif
+    /// Updates paywall state based on onboarding and subscription status
+    private func updatePaywallState() {
+        let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
+        shouldShowPaywall = hasCompletedOnboarding && !isSubscribed
     }
     
     // MARK: - Flow Transitions
     func completeOnboarding(name: String?, age: Int?, weeklyCost: Double? = nil, currency: String? = nil) {
         dataStore.completeOnboarding(name: name, age: age, weeklyCost: weeklyCost, currency: currency)
+        
+        // Mark onboarding as completed persistently
+        UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+        
         isOnboarding = false
+        
+        // Update paywall state
+        updatePaywallState()
     }
     
     func skipOnboarding() {
@@ -227,7 +164,10 @@ class AppFlowManager: ObservableObject {
         isOnboarding = false
     }
     
-    func resetForNewSession() {
+    func resetForNewSession(devMode: Bool = false) {
+        #if DEBUG
+        isDevModeOnboarding = devMode
+        #endif
         let defaults = UserDefaults.standard
         [
             "currentUser",
@@ -235,14 +175,22 @@ class AppFlowManager: ObservableObject {
             "lungState",
             "statistics",
             "questionnaire",
-            "isSubscribed",
+            "hasCompletedOnboarding",
             "lastMilestoneNotifiedDays"
         ].forEach { defaults.removeObject(forKey: $0) }
         
         dataStore.loadUserData()
         isSubscribed = false
         isOnboarding = true
+        shouldShowPaywall = false
     }
+    
+    #if DEBUG
+    func exitDevModeOnboarding() {
+        isDevModeOnboarding = false
+        isOnboarding = false
+    }
+    #endif
     
     // MARK: - Subscription Helpers
     func applyReferralCode(_ code: String) -> Bool {
@@ -258,12 +206,17 @@ class AppFlowManager: ObservableObject {
     
     func setSubscription(active: Bool) {
         isSubscribed = active
-        UserDefaults.standard.set(active, forKey: "isSubscribed")
+        updatePaywallState()
     }
     
     // Placeholder for Superwall delegate hook
     func handleSubscriptionStatusChange(_ status: Bool) {
         setSubscription(active: status)
+    }
+    
+    /// Dismiss paywall after successful subscription
+    func dismissPaywall() {
+        shouldShowPaywall = false
     }
 }
 

@@ -34,6 +34,9 @@ struct OnboardingView: View {
     @State private var collectedWeeklyCost: Double = 0
     @State private var collectedCurrency: String = "$"
     private let onSkipAll: (String?, Int?, Double?, String?) -> Void
+    #if DEBUG
+    @EnvironmentObject var flowManager: AppFlowManager
+    #endif
     
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -71,6 +74,21 @@ struct OnboardingView: View {
                 .padding(.vertical, 40)
             }
             .navigationBarBackButtonHidden(true)
+            #if DEBUG
+            .toolbar {
+                if flowManager.isDevModeOnboarding {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: {
+                            flowManager.exitDevModeOnboarding()
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.white)
+                                .font(.title3)
+                        }
+                    }
+                }
+            }
+            #endif
             .navigationDestination(for: OnboardingRoute.self) { route in
                 switch route {
                 case .step2:

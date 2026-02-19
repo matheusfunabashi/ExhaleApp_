@@ -269,9 +269,8 @@ struct OnboardingStep13View: View {
     
     private func handleContinue() {
         onContinue()
-        if !flowManager.isSubscribed {
-            Superwall.shared.register(placement: "onboarding_end")
-        }
+        // Paywall logic is now handled by AppFlowManager + ContentView
+        // No need to call Superwall.shared.register() here anymore
     }
 }
 
