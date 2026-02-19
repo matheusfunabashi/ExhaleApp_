@@ -2,13 +2,21 @@ import Foundation
 import Combine
 import StoreKit
 
+// MARK: - Subscription State
+/// Explicit subscription state to avoid race conditions during async verification
+enum SubscriptionState {
+    case unknown    // Verification in progress or not yet started
+    case active     // User has active subscription
+    case inactive   // Verified: no active subscription
+}
+
 // MARK: - Subscription Manager
 /// Tracks subscription entitlements using StoreKit 2.
-/// Keeps a simple boolean that the rest of the app can observe.
+/// Uses explicit state enum to prevent race conditions.
 final class SubscriptionManager: ObservableObject {
     static let shared = SubscriptionManager()
     
-    @Published private(set) var isSubscribed: Bool = false
+    @Published private(set) var subscriptionState: SubscriptionState = .unknown
     
     /// Keep product IDs aligned with StoreKit config and Superwall.
     private let subscribedProductIDs: Set<String> = [
@@ -44,8 +52,13 @@ final class SubscriptionManager: ObservableObject {
     }
     
     /// Checks current entitlements to see if the user is active.
+    /// CRITICAL: Does NOT reset to .inactive before verification completes.
+    /// This prevents race condition flashing during async verification.
     @MainActor
     private func checkEntitlements() async {
+        // Keep state as .unknown during verification
+        // Do NOT set to .inactive here
+        
         // Verify actual subscription entitlements via StoreKit 2
         var found = false
         for await result in Transaction.currentEntitlements {
@@ -55,7 +68,9 @@ final class SubscriptionManager: ObservableObject {
                 break
             }
         }
-        isSubscribed = found
+        
+        // Only update state after verification completes
+        subscriptionState = found ? .active : .inactive
     }
     
     /// Listens to new transactions and updates subscription state accordingly.
@@ -63,18 +78,17 @@ final class SubscriptionManager: ObservableObject {
         for await result in Transaction.updates {
             if case .verified(let transaction) = result {
                 if subscribedProductIDs.contains(transaction.productID) {
-                    await MainActor.run { self.isSubscribed = true }
+                    await MainActor.run { self.subscriptionState = .active }
                 }
                 await transaction.finish()
             }
         }
     }
-    
 }
 
 class AppFlowManager: ObservableObject {
     @Published var isOnboarding: Bool = true
-    @Published var isSubscribed: Bool = false
+    @Published var subscriptionState: SubscriptionState = .unknown
     @Published var isLoading: Bool = true
     @Published var shouldShowPaywall: Bool = false
     @Published var errorMessage: String?
@@ -94,19 +108,20 @@ class AppFlowManager: ObservableObject {
         let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
         self.isOnboarding = !hasCompletedOnboarding
         
-        // Start with subscription verification
+        // Start with subscription state as .unknown (verification in progress)
+        self.subscriptionState = .unknown
         self.isLoading = true
         
         // Start subscription monitoring immediately
         subscriptionManager.start()
         
-        // Observe subscription changes from SubscriptionManager
-        subscriptionManager.$isSubscribed
+        // Observe subscription state changes from SubscriptionManager
+        subscriptionManager.$subscriptionState
             .receive(on: RunLoop.main)
-            .sink { [weak self] active in
+            .sink { [weak self] state in
                 guard let self = self else { return }
-                self.isSubscribed = active
-                // Update paywall state
+                self.subscriptionState = state
+                // Update paywall state whenever subscription state changes
                 self.updatePaywallState()
             }
             .store(in: &cancellables)
@@ -128,12 +143,11 @@ class AppFlowManager: ObservableObject {
     @MainActor
     private func verifySubscriptionInBackground() async {
         // Verify subscription via StoreKit
+        // State remains .unknown during verification
         await subscriptionManager.refreshEntitlements()
         
-        // Update state from subscription manager
-        isSubscribed = subscriptionManager.isSubscribed
-        
-        // Determine if paywall should be shown
+        // State is now updated by SubscriptionManager (either .active or .inactive)
+        // Update paywall state after verification completes
         updatePaywallState()
         
         // Finished loading
@@ -141,9 +155,14 @@ class AppFlowManager: ObservableObject {
     }
     
     /// Updates paywall state based on onboarding and subscription status
+    /// CRITICAL: Only show paywall when subscription is definitively .inactive
+    /// Never show paywall during .unknown (verification in progress)
     private func updatePaywallState() {
         let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
-        shouldShowPaywall = hasCompletedOnboarding && !isSubscribed
+        
+        // Only trigger paywall when we KNOW user is not subscribed
+        // Never trigger during .unknown state (prevents race condition flashing)
+        shouldShowPaywall = hasCompletedOnboarding && subscriptionState == .inactive
     }
     
     // MARK: - Flow Transitions
@@ -180,7 +199,7 @@ class AppFlowManager: ObservableObject {
         ].forEach { defaults.removeObject(forKey: $0) }
         
         dataStore.loadUserData()
-        isSubscribed = false
+        subscriptionState = .unknown
         isOnboarding = true
         shouldShowPaywall = false
     }
@@ -198,20 +217,30 @@ class AppFlowManager: ObservableObject {
         guard !normalized.isEmpty else { return false }
         
         if normalized == "goodhealth" {
-            setSubscription(active: true)
+            setSubscriptionActive()
             return true
         }
         return false
     }
     
-    func setSubscription(active: Bool) {
-        isSubscribed = active
+    /// Sets subscription state to active immediately
+    /// Used after successful purchase or referral code
+    func setSubscriptionActive() {
+        subscriptionState = .active
+        updatePaywallState()
+    }
+    
+    /// Sets subscription state to inactive
+    /// Used when subscription expires or is cancelled
+    func setSubscriptionInactive() {
+        subscriptionState = .inactive
         updatePaywallState()
     }
     
     // Placeholder for Superwall delegate hook
-    func handleSubscriptionStatusChange(_ status: Bool) {
-        setSubscription(active: status)
+    func handleSubscriptionStatusChange(_ isActive: Bool) {
+        subscriptionState = isActive ? .active : .inactive
+        updatePaywallState()
     }
     
     /// Dismiss paywall after successful subscription
