@@ -1250,6 +1250,28 @@ private struct DeveloperToolsView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var flowManager: AppFlowManager
     
+    private var subscriptionStatusText: String {
+        switch flowManager.subscriptionState {
+        case .unknown:
+            return "⏳ Unknown"
+        case .active:
+            return "✅ Active"
+        case .inactive:
+            return "❌ Inactive"
+        }
+    }
+    
+    private var subscriptionStatusColor: Color {
+        switch flowManager.subscriptionState {
+        case .unknown:
+            return .orange
+        case .active:
+            return .green
+        case .inactive:
+            return .red
+        }
+    }
+    
     var body: some View {
         NavigationView {
             List {
@@ -1282,6 +1304,37 @@ private struct DeveloperToolsView: View {
                     Button("Restart onboarding flow") {
                         restartOnboarding()
                         presentationMode.wrappedValue.dismiss()
+                    }
+                }
+                
+                Section(header: Text("Subscription Debug")) {
+                    HStack {
+                        Text("Status:")
+                        Spacer()
+                        Text(subscriptionStatusText)
+                            .foregroundColor(subscriptionStatusColor)
+                            .font(.system(.body, design: .monospaced))
+                    }
+                    
+                    Button("🔄 Refresh Entitlements") {
+                        Task { @MainActor in
+                            await flowManager.subscriptionManager.refreshEntitlements()
+                        }
+                    }
+                    
+                    Button("🧹 Clear Stuck Transactions") {
+                        Task { @MainActor in
+                            await flowManager.subscriptionManager.clearStuckTransactions()
+                        }
+                    }
+                    .foregroundColor(.orange)
+                    
+                    Button("✅ Force Active (Test)") {
+                        flowManager.setSubscriptionActive()
+                    }
+                    
+                    Button("❌ Force Inactive (Test)") {
+                        flowManager.setSubscriptionInactive()
                     }
                 }
             }

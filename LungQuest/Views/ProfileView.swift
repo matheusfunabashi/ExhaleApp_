@@ -36,6 +36,13 @@ struct ProfileView: View {
                     }
                     
                     ProfileSection(
+                        title: "Subscription",
+                        subtitle: "Manage your premium access."
+                    ) {
+                        SubscriptionManagementSection()
+                    }
+                    
+                    ProfileSection(
                         title: "Data & support",
                         subtitle: "Find the help you need."
                     ) {
@@ -1499,7 +1506,149 @@ struct DataManagementSectionWrapper: View {
     }
 }
 
+struct SubscriptionManagementSection: View {
+    @EnvironmentObject var flowManager: AppFlowManager
+    @State private var isRefreshing: Bool = false
+    @State private var isClearing: Bool = false
+    
+    private let primaryAccentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
+    
+    private var subscriptionStatusText: String {
+        switch flowManager.subscriptionState {
+        case .unknown:
+            return "Checking..."
+        case .active:
+            return "Active"
+        case .inactive:
+            return "Not Active"
+        }
+    }
+    
+    private var subscriptionStatusColor: Color {
+        switch flowManager.subscriptionState {
+        case .unknown:
+            return .orange
+        case .active:
+            return .green
+        case .inactive:
+            return .gray
+        }
+    }
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            // Status display
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Premium Status")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                    Text(subscriptionStatusText)
+                        .font(.caption)
+                        .foregroundColor(subscriptionStatusColor)
+                }
+                
+                Spacer()
+                
+                ZStack {
+                    Circle()
+                        .fill(subscriptionStatusColor.opacity(0.15))
+                        .frame(width: 44, height: 44)
+                    
+                    Image(systemName: flowManager.subscriptionState == .active ? "checkmark.circle.fill" : "lock.circle")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundColor(subscriptionStatusColor)
+                }
+            }
+            
+            // Restore purchases button
+            Button(action: {
+                Task { @MainActor in
+                    isRefreshing = true
+                    print("🔄 User tapped Restore Purchases")
+                    await flowManager.subscriptionManager.refreshEntitlements()
+                    isRefreshing = false
+                }
+            }) {
+                HStack {
+                    if isRefreshing {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .scaleEffect(0.9)
+                        Text("Checking...")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                    } else {
+                        Image(systemName: "arrow.clockwise.circle.fill")
+                            .font(.system(size: 18))
+                        Text("Restore Purchases")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                    }
+                }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(primaryAccentColor)
+                        .shadow(color: primaryAccentColor.opacity(0.3), radius: 8, x: 0, y: 4)
+                )
+            }
+            .disabled(isRefreshing)
+            .buttonStyle(PlainButtonStyle())
+            
+            #if DEBUG
+            // Debug-only: Clear stuck transactions button
+            Button(action: {
+                Task { @MainActor in
+                    isClearing = true
+                    print("🧹 User tapped Clear Stuck Transactions")
+                    await flowManager.subscriptionManager.clearStuckTransactions()
+                    isClearing = false
+                }
+            }) {
+                HStack {
+                    if isClearing {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                        Text("Clearing...")
+                            .font(.caption)
+                    } else {
+                        Image(systemName: "trash.circle")
+                            .font(.system(size: 16))
+                        Text("Clear Stuck Transactions (Dev)")
+                            .font(.caption)
+                    }
+                }
+                .foregroundColor(.orange)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color.orange.opacity(0.1))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+                        )
+                )
+            }
+            .disabled(isClearing)
+            .buttonStyle(PlainButtonStyle())
+            #endif
+            
+            // Help text
+            Text("If you purchased premium but don't see it active, tap 'Restore Purchases'. If issues persist in TestFlight, use the dev tools to clear stuck transactions.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+}
+
 #Preview {
     ProfileView()
         .environmentObject(AppDataStore())
+        .environmentObject(AppFlowManager(dataStore: AppDataStore()))
 }

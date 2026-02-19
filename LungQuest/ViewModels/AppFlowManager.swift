@@ -33,8 +33,40 @@ final class SubscriptionManager: ObservableObject {
     /// Start listening for entitlement and transaction updates.
     func start() {
         updatesTask = Task { [weak self] in
+            await self?.clearAnyStuckTransactions()
             await self?.refreshEntitlements()
             await self?.listenForTransactions()
+        }
+    }
+    
+    /// Clear any stuck/unfinished transactions on startup (especially for sandbox testing)
+    /// This prevents the monthly subscription from auto-activating without payment confirmation
+    private func clearAnyStuckTransactions() async {
+        print("🧹 Checking for stuck transactions...")
+        var clearedCount = 0
+        
+        // Check all transactions and finish any pending ones
+        for await result in Transaction.all {
+            switch result {
+            case .verified(let transaction):
+                // Check if transaction is for our products
+                if subscribedProductIDs.contains(transaction.productID) {
+                    print("  ℹ️ Found transaction for \(transaction.productID)")
+                    // Only finish if it's not already consumed
+                    await transaction.finish()
+                    clearedCount += 1
+                }
+            case .unverified(let transaction, let error):
+                print("  ⚠️ Found unverified transaction: \(transaction.productID) - \(error)")
+                await transaction.finish()
+                clearedCount += 1
+            }
+        }
+        
+        if clearedCount > 0 {
+            print("✅ Cleared \(clearedCount) stuck transactions")
+        } else {
+            print("✅ No stuck transactions found")
         }
     }
     
@@ -51,6 +83,14 @@ final class SubscriptionManager: ObservableObject {
         await checkEntitlements()
     }
     
+    /// Public method to manually clear stuck transactions (useful for debugging sandbox issues)
+    @MainActor
+    func clearStuckTransactions() async {
+        await clearAnyStuckTransactions()
+        // Refresh entitlements after clearing
+        await refreshEntitlements()
+    }
+    
     /// Checks current entitlements to see if the user is active.
     /// CRITICAL: Does NOT reset to .inactive before verification completes.
     /// This prevents race condition flashing during async verification.
@@ -59,28 +99,62 @@ final class SubscriptionManager: ObservableObject {
         // Keep state as .unknown during verification
         // Do NOT set to .inactive here
         
+        print("🔍 Checking subscription entitlements...")
+        
         // Verify actual subscription entitlements via StoreKit 2
         var found = false
+        var foundProductID: String?
+        
         for await result in Transaction.currentEntitlements {
             if case .verified(let transaction) = result,
                subscribedProductIDs.contains(transaction.productID) {
                 found = true
+                foundProductID = transaction.productID
+                print("  ✅ Found active entitlement: \(transaction.productID)")
+                print("  📅 Purchase date: \(transaction.purchaseDate)")
+                print("  🔄 Renewal info: \(transaction.expirationDate?.description ?? "N/A")")
                 break
             }
         }
         
         // Only update state after verification completes
         subscriptionState = found ? .active : .inactive
+        
+        if found {
+            print("✅ Subscription verified: \(foundProductID ?? "unknown")")
+        } else {
+            print("ℹ️ No active subscription found")
+        }
     }
     
     /// Listens to new transactions and updates subscription state accordingly.
     private func listenForTransactions() async {
+        print("👂 Listening for transaction updates...")
+        
         for await result in Transaction.updates {
-            if case .verified(let transaction) = result {
+            switch result {
+            case .verified(let transaction):
+                print("📦 Transaction received: \(transaction.productID)")
+                print("  Purchase date: \(transaction.purchaseDate)")
+                print("  Transaction ID: \(transaction.id)")
+                
                 if subscribedProductIDs.contains(transaction.productID) {
+                    print("  ✅ Valid subscription product - activating")
                     await MainActor.run { self.subscriptionState = .active }
+                } else {
+                    print("  ⚠️ Unknown product ID")
                 }
+                
+                // CRITICAL: Always finish transactions
                 await transaction.finish()
+                print("  ✓ Transaction finished")
+                
+            case .unverified(let transaction, let error):
+                print("  ⚠️ Unverified transaction: \(transaction.productID)")
+                print("  Error: \(error)")
+                // Still finish unverified transactions to prevent queue buildup
+                await transaction.finish()
+                print("  ✓ Unverified transaction finished")
             }
         }
     }

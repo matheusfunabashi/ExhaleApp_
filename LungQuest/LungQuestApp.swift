@@ -47,17 +47,39 @@ final class SuperwallDelegateHandler: SuperwallDelegate {
     
     func handleSuperwallEvent(withInfo eventInfo: SuperwallEventInfo) {
         switch eventInfo.event {
+        case .transactionStart(let product):
+            print("💳 Superwall: Transaction started for product: \(product.productIdentifier)")
+            
         case .transactionComplete:
+            print("✅ Superwall: Transaction completed successfully")
             // User completed a purchase - IMMEDIATELY set to active
             // Do NOT wait for background entitlement refresh
             flowManager?.setSubscriptionActive()
             flowManager?.dismissPaywall()
+            
+            // Also refresh entitlements in background to verify
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay
+                await flowManager?.subscriptionManager.refreshEntitlements()
+            }
+            
+        case .transactionFail(let error):
+            print("❌ Superwall: Transaction failed - \(error)")
+            
+        case .transactionAbandon:
+            print("ℹ️ Superwall: User abandoned transaction")
+            
+        case .paywallOpen:
+            print("🔵 Superwall: Paywall opened")
+            
         case .paywallClose:
+            print("🔵 Superwall: Paywall closed")
             // User closed paywall - refresh to get latest state
             // State remains .unknown during refresh, preventing flashing
             Task { @MainActor in
                 await flowManager?.subscriptionManager.refreshEntitlements()
             }
+            
         default:
             break
         }
