@@ -19,7 +19,7 @@ struct OnboardingStep11bView: View {
             VStack(spacing: 24) {
                 header
                 
-                FinalHeadingView(progress: 11.5 / 13.0)
+                FinalHeadingView()
                     .padding(.top, 4)
                 
                 VStack(alignment: .leading, spacing: 16) {
@@ -86,6 +86,11 @@ struct OnboardingStep11bView: View {
             .padding(.bottom, 32)
             .dismissKeyboardOnTap()
         }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            OnboardingProgressBar(currentStep: 12, totalSteps: 13)
+                .padding(.top, 8)
+                .padding(.horizontal, 16)
+        }
         .navigationBarBackButtonHidden(true)
         .onAppear {
             // Focus the text field when view appears
@@ -147,43 +152,18 @@ private struct StaticOnboardingBackground: View {
 }
 
 private struct FinalHeadingView: View {
-    let progress: Double
-    
     var body: some View {
-        VStack(spacing: 20) {
-            ProgressBar(progress: progress)
-                .frame(height: 6)
+        VStack(spacing: 10) {
+            Text("Finally!")
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .foregroundColor(.black)
+                .frame(maxWidth: .infinity, alignment: .center)
             
-            VStack(spacing: 10) {
-                Text("Finally!")
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundColor(.black)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                
-                Text("Let's gather some last information to tailor this app for you")
-                    .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .foregroundColor(Color.black.opacity(0.8))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 16)
-            }
-        }
-    }
-}
-
-private struct ProgressBar: View {
-    let progress: Double
-    
-    var body: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(Color.black.opacity(0.12))
-                    .frame(height: geo.size.height)
-                
-                Capsule()
-                    .fill(Color.black.opacity(0.4))
-                    .frame(width: max(0, min(1, progress)) * geo.size.width, height: geo.size.height)
-            }
+            Text("Let's gather some last information to tailor this app for you")
+                .font(.system(size: 18, weight: .medium, design: .rounded))
+                .foregroundColor(Color.black.opacity(0.8))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 16)
         }
     }
 }

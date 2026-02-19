@@ -35,6 +35,10 @@ struct ContentView: View {
                 })
                 .environmentObject(flowManager)
                 .environmentObject(dataStore)
+            } else if flowManager.shouldShowPaywall {
+                PaywallHostView()
+                    .environmentObject(flowManager)
+                    .environmentObject(dataStore)
             } else {
                 MainTabView()
                     .environmentObject(flowManager)
@@ -44,6 +48,22 @@ struct ContentView: View {
         .modifier(ResponsiveContentWidth())
         .animation(.easeInOut(duration: 0.3), value: flowManager.isOnboarding)
         .animation(.easeInOut(duration: 0.3), value: flowManager.isLoading)
+        .animation(.easeInOut(duration: 0.3), value: flowManager.shouldShowPaywall)
+    }
+}
+
+/// Dedicated view to host Superwall paywall presentation
+private struct PaywallHostView: View {
+    @EnvironmentObject var flowManager: AppFlowManager
+    
+    var body: some View {
+        ZStack {
+            Color.white.ignoresSafeArea()
+        }
+        .onAppear {
+            // Trigger Superwall paywall immediately
+            Superwall.shared.register(placement: "onboarding_end")
+        }
     }
 }
 

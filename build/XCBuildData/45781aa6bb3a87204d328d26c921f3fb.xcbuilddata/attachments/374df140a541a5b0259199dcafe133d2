@@ -1,0 +1,388 @@
+{
+  "" : {
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/Exhale-master.dia",
+    "emit-module-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/Exhale-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/Exhale-master-emit-module.dia",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/Exhale-master.swiftdeps"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/LungQuestApp.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LungQuestApp.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LungQuestApp.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LungQuestApp.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LungQuestApp.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LungQuestApp.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LungQuestApp.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LungQuestApp.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LungQuestApp~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Models/DataModels.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/DataModels.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/DataModels.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/DataModels.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/DataModels.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/DataModels.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/DataModels.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/DataModels.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/DataModels~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Models/UserProfile.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/UserProfile.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/UserProfile.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/UserProfile.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/UserProfile.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/UserProfile.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/UserProfile.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/UserProfile.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/UserProfile~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Services/DataService.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/DataService.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/DataService.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/DataService.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/DataService.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/DataService.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/DataService.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/DataService.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/DataService~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Services/NotificationService.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/NotificationService.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/NotificationService.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/NotificationService.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/NotificationService.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/NotificationService.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/NotificationService.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/NotificationService.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/NotificationService~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Services/ReviewManager.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ReviewManager.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ReviewManager.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ReviewManager.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ReviewManager.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ReviewManager.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ReviewManager.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ReviewManager.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ReviewManager~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Services/TabBarDiagnostics.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/TabBarDiagnostics.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/TabBarDiagnostics.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/TabBarDiagnostics.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/TabBarDiagnostics.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/TabBarDiagnostics.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/TabBarDiagnostics.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/TabBarDiagnostics.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/TabBarDiagnostics~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/ViewModels/AppDataStore.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/AppDataStore.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/AppDataStore.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/AppDataStore.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/AppDataStore.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/AppDataStore.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/AppDataStore.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/AppDataStore.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/AppDataStore~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/ViewModels/AppFlowManager.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/AppFlowManager.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/AppFlowManager.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/AppFlowManager.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/AppFlowManager.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/AppFlowManager.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/AppFlowManager.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/AppFlowManager.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/AppFlowManager~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/Components/CheckInModalView.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/CheckInModalView.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/CheckInModalView.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/CheckInModalView.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/CheckInModalView.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/CheckInModalView.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/CheckInModalView.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/CheckInModalView.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/CheckInModalView~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/Components/CommonStyles.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/CommonStyles.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/CommonStyles.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/CommonStyles.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/CommonStyles.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/CommonStyles.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/CommonStyles.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/CommonStyles.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/CommonStyles~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/Components/LungCharacter.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LungCharacter.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LungCharacter.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LungCharacter.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LungCharacter.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LungCharacter.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LungCharacter.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LungCharacter.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LungCharacter~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/Components/OnboardingProgressBar.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingProgressBar.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingProgressBar.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingProgressBar.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingProgressBar.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingProgressBar.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingProgressBar.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingProgressBar.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingProgressBar~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/Components/PanicHelpView.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/PanicHelpView.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/PanicHelpView.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/PanicHelpView.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/PanicHelpView.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/PanicHelpView.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/PanicHelpView.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/PanicHelpView.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/PanicHelpView~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/Components/WaveGradientBackground.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/WaveGradientBackground.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/WaveGradientBackground.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/WaveGradientBackground.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/WaveGradientBackground.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/WaveGradientBackground.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/WaveGradientBackground.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/WaveGradientBackground.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/WaveGradientBackground~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/ContentView.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ContentView.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ContentView.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ContentView.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ContentView.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ContentView.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ContentView.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ContentView.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ContentView~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/HomeView.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/HomeView.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/HomeView.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/HomeView.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/HomeView.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/HomeView.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/HomeView.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/HomeView.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/HomeView~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/LearningView.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LearningView.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LearningView.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LearningView.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LearningView.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LearningView.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LearningView.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LearningView.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/LearningView~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/OnboardingStep10View.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep10View.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep10View.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep10View.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep10View.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep10View.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep10View.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep10View.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep10View~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/OnboardingStep10bView.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep10bView.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep10bView.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep10bView.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep10bView.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep10bView.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep10bView.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep10bView.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep10bView~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/OnboardingStep11View.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep11View.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep11View.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep11View.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep11View.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep11View.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep11View.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep11View.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep11View~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/OnboardingStep11bView.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep11bView.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep11bView.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep11bView.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep11bView.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep11bView.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep11bView.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep11bView.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep11bView~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/OnboardingStep12View.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep12View.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep12View.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep12View.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep12View.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep12View.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep12View.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep12View.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep12View~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/OnboardingStep12bView.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep12bView.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep12bView.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep12bView.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep12bView.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep12bView.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep12bView.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep12bView.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep12bView~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/OnboardingStep13View.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep13View.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep13View.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep13View.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep13View.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep13View.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep13View.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep13View.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep13View~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/OnboardingStep2View.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep2View.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep2View.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep2View.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep2View.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep2View.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep2View.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep2View.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep2View~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/OnboardingStep3View.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep3View.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep3View.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep3View.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep3View.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep3View.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep3View.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep3View.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep3View~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/OnboardingStep4View.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep4View.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep4View.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep4View.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep4View.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep4View.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep4View.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep4View.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep4View~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/OnboardingStep5View.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep5View.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep5View.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep5View.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep5View.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep5View.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep5View.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep5View.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep5View~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/OnboardingStep6View.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep6View.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep6View.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep6View.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep6View.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep6View.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep6View.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep6View.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep6View~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/OnboardingStep7View.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep7View.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep7View.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep7View.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep7View.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep7View.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep7View.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep7View.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep7View~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/OnboardingStep8View.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep8View.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep8View.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep8View.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep8View.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep8View.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep8View.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep8View.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep8View~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/OnboardingStep9View.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep9View.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep9View.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep9View.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep9View.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep9View.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep9View.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep9View.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingStep9View~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/OnboardingView.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingView.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingView.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingView.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingView.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingView.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingView.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingView.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/OnboardingView~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/PaywallView.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/PaywallView.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/PaywallView.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/PaywallView.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/PaywallView.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/PaywallView.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/PaywallView.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/PaywallView.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/PaywallView~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/ProfileView.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ProfileView.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ProfileView.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ProfileView.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ProfileView.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ProfileView.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ProfileView.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ProfileView.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ProfileView~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/LungQuest/Views/ProgressView.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ProgressView.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ProgressView.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ProgressView.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ProgressView.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ProgressView.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ProgressView.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ProgressView.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/ProgressView~partial.swiftmodule"
+  },
+  "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/felipeassis/Desktop/ExhaleApp_/build/Exhale.build/Debug-iphonesimulator/Exhale.build/Objects-normal/x86_64/GeneratedAssetSymbols~partial.swiftmodule"
+  }
+}

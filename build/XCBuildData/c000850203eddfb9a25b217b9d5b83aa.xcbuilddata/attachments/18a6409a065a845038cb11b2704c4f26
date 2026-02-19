@@ -1,0 +1,4 @@
+module grpcWrapper {
+umbrella "/Users/felipeassis/Library/Developer/Xcode/DerivedData/Exhale-cbsxqvkgswkeptaczaxqefhdccbb/SourcePackages/checkouts/grpc-binary/grpc-Wrapper/include"
+export *
+}
