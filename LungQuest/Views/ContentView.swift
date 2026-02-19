@@ -36,6 +36,8 @@ struct ContentView: View {
                 .environmentObject(flowManager)
                 .environmentObject(dataStore)
             } else if flowManager.shouldShowPaywall {
+                // Only show paywall when subscription state is definitively .inactive
+                // Never show during .unknown (prevents race condition flashing)
                 PaywallHostView()
                     .environmentObject(flowManager)
                     .environmentObject(dataStore)

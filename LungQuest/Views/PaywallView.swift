@@ -62,7 +62,7 @@ struct PaywallView: View {
     
     private func subscribe() {
         // Simulate success (replace with StoreKit later)
-        flowManager.setSubscription(active: true)
+        flowManager.setSubscriptionActive()
         dataStore.persist()
         isPresented = false
     }

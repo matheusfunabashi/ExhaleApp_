@@ -37,6 +37,8 @@ struct ExhaleApp: App {
 }
 
 /// Handles Superwall events and updates AppFlowManager
+/// CRITICAL: Immediately sets subscription to .active on purchase completion
+/// This prevents race condition where background refresh might temporarily show paywall
 final class SuperwallDelegateHandler: SuperwallDelegate {
     static let shared = SuperwallDelegateHandler()
     weak var flowManager: AppFlowManager?
@@ -46,11 +48,13 @@ final class SuperwallDelegateHandler: SuperwallDelegate {
     func handleSuperwallEvent(withInfo eventInfo: SuperwallEventInfo) {
         switch eventInfo.event {
         case .transactionComplete:
-            // User completed a purchase
-            flowManager?.setSubscription(active: true)
+            // User completed a purchase - IMMEDIATELY set to active
+            // Do NOT wait for background entitlement refresh
+            flowManager?.setSubscriptionActive()
             flowManager?.dismissPaywall()
         case .paywallClose:
-            // User closed paywall - check if they subscribed
+            // User closed paywall - refresh to get latest state
+            // State remains .unknown during refresh, preventing flashing
             Task { @MainActor in
                 await flowManager?.subscriptionManager.refreshEntitlements()
             }
