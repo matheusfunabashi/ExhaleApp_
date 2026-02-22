@@ -46,6 +46,7 @@
 		97FE9ECB2FCFE6D4006FDDE7 /* OnboardingStep11bView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FE9ECA2FCFE6D4006FDDE7 /* OnboardingStep11bView.swift */; };
 		97FE9ECC2FCFE7E5006FDDE7 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		9E1E15DD2EE33C1C00BF4D96 /* SuperwallKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9E1E15DC2EE33C1C00BF4D96 /* SuperwallKit */; };
+		9E46E2E12F4B777A00E98627 /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 9E46E2E02F4B777A00E98627 /* Products.storekit */; };
 		9E9B7F2F2FE4B32E00A77077 /* AppDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9B7F2E2FE4B32E00A77077 /* AppDataStore.swift */; };
 		9E9B7F302FE4B32E00A77078 /* ReviewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9B7F2F2FE4B32E00A77078 /* ReviewManager.swift */; };
 		9E9B7F312FE4B32E00A77079 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9B7F302FE4B32E00A77079 /* NotificationService.swift */; };
@@ -88,6 +89,7 @@
 		97FE9EC82FCFE4F3006FDDE9 /* OnboardingStep12bView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStep12bView.swift; sourceTree = "<group>"; };
 		97FE9EC92FCFE5C7006FDDE7 /* OnboardingStep13View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStep13View.swift; sourceTree = "<group>"; };
 		97FE9ECA2FCFE6D4006FDDE7 /* OnboardingStep11bView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStep11bView.swift; sourceTree = "<group>"; };
+		9E46E2E02F4B777A00E98627 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		9E9B7F2E2FE4B32E00A77077 /* AppDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDataStore.swift; sourceTree = "<group>"; };
 		9E9B7F2F2FE4B32E00A77078 /* ReviewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewManager.swift; sourceTree = "<group>"; };
 		9E9B7F302FE4B32E00A77079 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
@@ -113,6 +115,7 @@
 		8D11071E0486CEB800E47090 = {
 			isa = PBXGroup;
 			children = (
+				9E46E2E02F4B777A00E98627 /* Products.storekit */,
 				9701BB4C2E81E7E500716F78 /* Assets.xcassets */,
 				8D1107290486CEB800E47090 /* LungQuest */,
 				9E26AC232EFAED03001C961B /* Frameworks */,
@@ -289,6 +292,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E46E2E12F4B777A00E98627 /* Products.storekit in Resources */,
 				9701BB4D2E81E7E500716F78 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

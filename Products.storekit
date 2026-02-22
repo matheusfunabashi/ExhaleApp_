@@ -1,0 +1,145 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "03DFE649",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6756926563",
+    "_developerTeamID" : "ZBZKP9T3S5",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 793474946.59653401,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21867691",
+      "localizations" : [
+
+      ],
+      "name" : "Exhale Access",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "39.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6756926757",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Full access to Exhale’s quit program for one year.",
+              "displayName" : "Exhale Annual",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "exhale_annual_3999",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Exhale Annual",
+          "subscriptionGroupID" : "21867691",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "7.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "6756926725",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Full access to Exhale’s quit program, billed monthly.",
+              "displayName" : "Exhale Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "exhale_monthly_799",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Exhale Monthly",
+          "subscriptionGroupID" : "21867691",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}
