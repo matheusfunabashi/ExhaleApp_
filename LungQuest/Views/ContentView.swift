@@ -1,6 +1,25 @@
 import SwiftUI
 import SuperwallKit
 import Combine
+import Network
+
+final class NetworkMonitor: ObservableObject {
+    static let shared = NetworkMonitor()
+    
+    @MainActor @Published private(set) var isOnline: Bool = true
+    
+    private let monitor = NWPathMonitor()
+    private let queue = DispatchQueue(label: "NetworkMonitor")
+    
+    private init() {
+        monitor.pathUpdateHandler = { [weak self] path in
+            Task { @MainActor in
+                self?.isOnline = (path.status == .satisfied)
+            }
+        }
+        monitor.start(queue: queue)
+    }
+}
 
 // Simple shared tab coordinator to keep programmatic tab changes in sync.
 final class TabNavigationManager: ObservableObject {
@@ -22,28 +41,139 @@ final class TabNavigationManager: ObservableObject {
 }
 
 struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject var flowManager: AppFlowManager
     @EnvironmentObject var dataStore: AppDataStore
+    @State private var lastEntitlementRefreshAt: Date = .distantPast
     
     var body: some View {
-        Group {
-            if flowManager.isLoading {
-                LoadingView()
-            } else if flowManager.isOnboarding {
-                OnboardingView(onSkipAll: { name, age, weeklyCost, currency in
-                    flowManager.completeOnboarding(name: name, age: age, weeklyCost: weeklyCost, currency: currency)
-                })
-                .environmentObject(flowManager)
-                .environmentObject(dataStore)
-            } else {
-                MainTabView()
+        ZStack {
+            Group {
+                if flowManager.isLoading {
+                    LoadingView()
+                } else if flowManager.isOnboarding {
+                    OnboardingView(onSkipAll: { name, age, weeklyCost, currency in
+                        flowManager.completeOnboarding(name: name, age: age, weeklyCost: weeklyCost, currency: currency)
+                    })
                     .environmentObject(flowManager)
                     .environmentObject(dataStore)
+                } else {
+                    MainTabView()
+                        .environmentObject(flowManager)
+                        .environmentObject(dataStore)
+                }
+            }
+            .modifier(ResponsiveContentWidth())
+            .animation(.easeInOut(duration: 0.3), value: flowManager.isOnboarding)
+            .animation(.easeInOut(duration: 0.3), value: flowManager.isLoading)
+            
+            // Strict gating: block access until subscribed after onboarding.
+            if !flowManager.isOnboarding && flowManager.accessState != .subscribed {
+                PaywallGateView()
+                    .environmentObject(flowManager)
+                    .environmentObject(dataStore)
+                    .transition(.opacity)
+                    .zIndex(1000)
             }
         }
-        .modifier(ResponsiveContentWidth())
-        .animation(.easeInOut(duration: 0.3), value: flowManager.isOnboarding)
-        .animation(.easeInOut(duration: 0.3), value: flowManager.isLoading)
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else { return }
+            // Refresh entitlements on foreground so expirations are detected even without new transactions.
+            let now = Date()
+            if now.timeIntervalSince(lastEntitlementRefreshAt) < 20 { return }
+            lastEntitlementRefreshAt = now
+            flowManager.subscriptionManager.refresh()
+        }
+    }
+}
+
+private struct PaywallGateView: View {
+    @Environment(\.scenePhase) private var scenePhase
+    @EnvironmentObject var flowManager: AppFlowManager
+    @StateObject private var network = NetworkMonitor.shared
+    @State private var lastAttemptAt: Date = .distantPast
+    
+    var body: some View {
+        ZStack {
+            Color.white.ignoresSafeArea()
+            
+            VStack(spacing: 16) {
+                Text("Exhale Premium")
+                    .font(.title2.weight(.semibold))
+                
+                switch flowManager.accessState {
+                case .unknown:
+                    ProgressView()
+                    Text("Checking your subscription…")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    
+                case .notSubscribed:
+                    if network.isOnline {
+                        ProgressView()
+                        Text("Loading paywall…")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Button("Show paywall") { attemptPaywall(force: true) }
+                            .buttonStyle(.borderedProminent)
+                    } else {
+                        Text("Requires connection")
+                            .font(.headline)
+                        Text("Connect to the internet to load the paywall and continue.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
+                        Button("Retry") { attemptPaywall(force: true) }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(!network.isOnline)
+                    }
+                    
+                case .subscribed:
+                    EmptyView()
+                }
+                
+                Button("Restore Purchases") {
+                    flowManager.subscriptionManager.refresh()
+                }
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .padding(.top, 8)
+            }
+            .padding(.vertical, 40)
+            .padding(.horizontal, 24)
+        }
+        .onAppear {
+            attemptPaywall(force: false)
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                attemptPaywall(force: false)
+            }
+        }
+        .onChange(of: network.isOnline) { _, isOnline in
+            if isOnline {
+                attemptPaywall(force: false)
+            }
+        }
+        .onChange(of: flowManager.accessState) { _, newState in
+            if newState == .notSubscribed {
+                attemptPaywall(force: false)
+            }
+        }
+    }
+    
+    private func attemptPaywall(force: Bool) {
+        guard flowManager.accessState == .notSubscribed else { return }
+        guard network.isOnline else { return }
+        
+        let now = Date()
+        if !force, now.timeIntervalSince(lastAttemptAt) < 10 {
+            return
+        }
+        lastAttemptAt = now
+        
+        Superwall.shared.register(placement: "onboarding_end")
     }
 }
 
