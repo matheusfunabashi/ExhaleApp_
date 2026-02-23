@@ -2,6 +2,33 @@ import SwiftUI
 import SuperwallKit
 import UserNotifications
 
+/// Listens to Superwall events and updates app subscription state immediately on purchase completion.
+final class SuperwallDelegateHandler: SuperwallDelegate {
+    static let shared = SuperwallDelegateHandler()
+    private init() {}
+    
+    func handleSuperwallEvent(withInfo eventInfo: SuperwallEventInfo) {
+        switch eventInfo.event {
+        case .transactionComplete:
+            // Unlock immediately, then verify via StoreKit entitlements in the background.
+            Task { @MainActor in
+                SubscriptionManager.shared.markSubscribedOptimistically()
+            }
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 500_000_000) // allow receipt/entitlements to update
+                await SubscriptionManager.shared.refreshEntitlements()
+            }
+        case .paywallClose:
+            // Refresh after closing in case user completed or restored elsewhere.
+            Task { @MainActor in
+                await SubscriptionManager.shared.refreshEntitlements()
+            }
+        default:
+            break
+        }
+    }
+}
+
 @main
 struct ExhaleApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
@@ -10,6 +37,7 @@ struct ExhaleApp: App {
     
     init() {
         Superwall.configure(apiKey: "pk_632iyoKuponK4hKuK_GL9")
+        Superwall.shared.delegate = SuperwallDelegateHandler.shared
         let store = AppDataStore()
         _dataStore = StateObject(wrappedValue: store)
         _flowManager = StateObject(wrappedValue: AppFlowManager(dataStore: store))

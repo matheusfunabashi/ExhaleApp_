@@ -56,6 +56,14 @@ final class SubscriptionManager: ObservableObject {
         scheduleFallbackToNotSubscribedIfStillUnknown()
         await checkEntitlements()
     }
+
+    /// Optimistically mark as subscribed (e.g. immediately after Superwall reports a successful transaction).
+    /// StoreKit entitlements remain the source of truth and may later downgrade if the entitlement isn't actually active.
+    @MainActor
+    func markSubscribedOptimistically() {
+        fallbackTask?.cancel()
+        accessState = .subscribed
+    }
     
     /// Checks current entitlements to see if the user is active.
     @MainActor
