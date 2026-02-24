@@ -29,6 +29,11 @@ final class SubscriptionManager: ObservableObject {
     private var updatesTask: Task<Void, Never>?
     private var fallbackTask: Task<Void, Never>?
     
+    /// Tracks if a purchase just completed to avoid race conditions with entitlement checks.
+    /// When true, we trust the optimistic state and delay background verification.
+    private var recentPurchaseTimestamp: Date?
+    private let recentPurchaseGracePeriod: TimeInterval = 15.0 // 15 seconds
+    
     deinit {
         updatesTask?.cancel()
         fallbackTask?.cancel()
@@ -52,6 +57,13 @@ final class SubscriptionManager: ObservableObject {
     /// Public method to refresh entitlements (for AppFlowManager access)
     @MainActor
     func refreshEntitlements() async {
+        // CRITICAL: If a purchase just completed, don't check entitlements yet.
+        // StoreKit can take 5-10 seconds to update, and checking too early will revert to .notSubscribed.
+        if isWithinRecentPurchaseGracePeriod {
+            print("⏰ [SUBSCRIPTION] Skipping entitlement check - within grace period after recent purchase")
+            return
+        }
+        
         // If StoreKit hangs (e.g. no active account), don't leave the app stuck in `.unknown`.
         scheduleFallbackToNotSubscribedIfStillUnknown()
         await checkEntitlements()
@@ -59,10 +71,20 @@ final class SubscriptionManager: ObservableObject {
 
     /// Optimistically mark as subscribed (e.g. immediately after Superwall reports a successful transaction).
     /// StoreKit entitlements remain the source of truth and may later downgrade if the entitlement isn't actually active.
+    /// Sets a timestamp to avoid premature entitlement checks that could revert the state.
     @MainActor
     func markSubscribedOptimistically() {
         fallbackTask?.cancel()
         accessState = .subscribed
+        recentPurchaseTimestamp = Date()
+        print("✅ [SUBSCRIPTION] Marked as subscribed optimistically (purchase just completed)")
+    }
+    
+    /// Check if we're within the grace period after a recent purchase.
+    /// During this period, we trust the optimistic state and skip aggressive entitlement checks.
+    private var isWithinRecentPurchaseGracePeriod: Bool {
+        guard let timestamp = recentPurchaseTimestamp else { return false }
+        return Date().timeIntervalSince(timestamp) < recentPurchaseGracePeriod
     }
     
     /// Checks current entitlements to see if the user is active.
