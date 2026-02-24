@@ -34,8 +34,8 @@ final class ProfileStore: ObservableObject {
            let decoded = try? decoder.decode(UserProfile.self, from: data) {
             profile = decoded
         } else {
-            let seedStart = Calendar.current.date(byAdding: .day, value: -3, to: Date())
-            profile = UserProfile(id: UUID(), quitStartDate: seedStart, lastRelapseDate: nil)
+            // New users start with 0 days - use current date as quit start date
+            profile = UserProfile(id: UUID(), quitStartDate: Date(), lastRelapseDate: nil)
             save()
         }
     }

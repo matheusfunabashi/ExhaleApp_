@@ -427,8 +427,12 @@ class AppDataStore: ObservableObject {
     // MARK: - Notification Management
     func setupNotificationsIfEnabled() {
         guard let user = currentUser else { return }
-        if user.profile.preferences.notificationsEnabled {
-            NotificationService.shared.setupNotifications()
+        
+        // Only setup notifications if user is subscribed
+        let isSubscribed = SubscriptionManager.shared.isSubscribed
+        
+        if user.profile.preferences.notificationsEnabled && isSubscribed {
+            NotificationService.shared.setupNotifications(isSubscribed: isSubscribed)
         } else {
             NotificationService.shared.cancelAllNotifications()
         }

@@ -7,11 +7,13 @@ class NotificationService {
     private init() {}
     
     // MARK: - Request Authorization
-    func requestAuthorization() {
+    // Only request authorization for subscribed users
+    func requestAuthorization(completion: ((Bool) -> Void)? = nil) {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if let error = error {
                 print("Notification authorization error: \(error.localizedDescription)")
             }
+            completion?(granted)
         }
     }
     
@@ -101,9 +103,17 @@ class NotificationService {
     }
     
     // MARK: - Setup All Notifications
-    func setupNotifications() {
-        requestAuthorization()
-        scheduleCheckInReminder()
-        scheduleReadingReminder()
+    // Only setup notifications for subscribed users
+    func setupNotifications(isSubscribed: Bool = true) {
+        guard isSubscribed else {
+            print("⚠️ Notifications not setup - user is not subscribed")
+            return
+        }
+        requestAuthorization { granted in
+            if granted {
+                self.scheduleCheckInReminder()
+                self.scheduleReadingReminder()
+            }
+        }
     }
 }

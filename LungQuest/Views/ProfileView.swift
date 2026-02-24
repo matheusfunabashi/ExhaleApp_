@@ -379,8 +379,12 @@ struct SettingsSection: View {
                             user.profile.preferences.notificationsEnabled = newValue
                             dataStore.currentUser = user
                             dataStore.saveUserData()
-                            if newValue {
-                                NotificationService.shared.setupNotifications()
+                            
+                            // Only setup notifications if user is subscribed
+                            let isSubscribed = SubscriptionManager.shared.isSubscribed
+                            
+                            if newValue && isSubscribed {
+                                NotificationService.shared.setupNotifications(isSubscribed: isSubscribed)
                             } else {
                                 NotificationService.shared.cancelAllNotifications()
                             }
