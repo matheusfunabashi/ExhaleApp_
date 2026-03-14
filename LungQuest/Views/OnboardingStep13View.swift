@@ -26,7 +26,7 @@ struct OnboardingStep13View: View {
                 planComparisonPage
                     .frame(width: geo.size.width, height: height)
                 
-                rescuePage
+                awarenessCarouselPage
                     .frame(width: geo.size.width, height: height)
             }
             .offset(y: -CGFloat(currentPage) * height + dragOffset)
@@ -234,6 +234,35 @@ struct OnboardingStep13View: View {
         }
     }
     
+    private var awarenessCarouselPage: some View {
+        TabView {
+            AwarenessPage(
+                icon: "brain_sad_icon",
+                title: "Bad Effects of Vaping on Mental Health",
+                description: "Nicotine interferes with brain chemistry and increases anxiety and stress over time. Regular vaping can make it harder for your brain to regulate mood and emotions.",
+                backgroundColor: Color(red: 214.0 / 255.0, green: 61.0 / 255.0, blue: 69.0 / 255.0)
+            )
+            
+            AwarenessPage(
+                icon: "nicotine_icon",
+                title: "How Nicotine Affects Your Body",
+                description: "Nicotine quickly reaches your bloodstream and stimulates your nervous system. Over time it increases heart strain, blood pressure, and dependency.",
+                backgroundColor: Color(red: 214.0 / 255.0, green: 61.0 / 255.0, blue: 69.0 / 255.0)
+            )
+            
+            AwarenessPage(
+                icon: "sleepy_icon",
+                title: "Why Vaping Can Cause Laziness",
+                description: "Nicotine disrupts your brain's natural dopamine balance and reduces motivation. This can make it easier to procrastinate and harder to stay focused on goals.",
+                backgroundColor: Color(red: 214.0 / 255.0, green: 61.0 / 255.0, blue: 69.0 / 255.0)
+            )
+            
+            rescuePage
+        }
+        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
+        .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
+    }
+    
     private func dragGesture(for height: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: 12, coordinateSpace: .local)
             .updating($dragOffset) { value, state, _ in
@@ -275,6 +304,47 @@ private struct RescueBackground: View {
     var body: some View {
         Color(red: 58.0 / 255.0, green: 28.0 / 255.0, blue: 82.0 / 255.0)
             .ignoresSafeArea()
+    }
+}
+
+private struct AwarenessPage: View {
+    let icon: String
+    let title: String
+    let description: String
+    let backgroundColor: Color
+    
+    var body: some View {
+        ZStack {
+            backgroundColor
+                .ignoresSafeArea()
+            
+            VStack(spacing: 22) {
+                Spacer()
+                
+                Image(icon)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 200, height: 200)
+                
+                Text(title)
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                
+                Text(description)
+                    .font(.system(size: 18, weight: .regular, design: .rounded))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
+                
+                Spacer()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 34)
+        }
     }
 }
 
