@@ -1,6 +1,139 @@
 import SwiftUI
 import UIKit
 
+enum InterFont {
+    static func font(size: CGFloat, weight: UIFont.Weight = .regular) -> Font {
+        let named: String
+        switch weight {
+        case ..<UIFont.Weight.medium:
+            named = "Inter-Regular"
+        case ..<UIFont.Weight.semibold:
+            named = "Inter-Medium"
+        case ..<UIFont.Weight.bold:
+            named = "Inter-SemiBold"
+        default:
+            named = "Inter-Bold"
+        }
+        
+        if UIFont(name: named, size: size) != nil {
+            return .custom(named, size: size)
+        }
+        return .system(size: size, weight: fontWeight(from: weight), design: .default)
+    }
+    
+    private static func fontWeight(from uiWeight: UIFont.Weight) -> Font.Weight {
+        switch uiWeight {
+        case ..<UIFont.Weight.medium: return .regular
+        case ..<UIFont.Weight.semibold: return .medium
+        case ..<UIFont.Weight.bold: return .semibold
+        default: return .bold
+        }
+    }
+}
+
+struct OnboardingGlassButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(.white)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(.ultraThinMaterial.opacity(0.10))
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .stroke(Color.white.opacity(0.22), lineWidth: 1)
+                    )
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.16),
+                                        Color.white.opacity(0.03),
+                                        Color.clear
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                    )
+                    .shadow(color: Color.white.opacity(configuration.isPressed ? 0.06 : 0.12), radius: configuration.isPressed ? 4 : 8, x: 0, y: -1)
+                    .shadow(color: Color.black.opacity(configuration.isPressed ? 0.08 : 0.14), radius: configuration.isPressed ? 5 : 10, x: 0, y: configuration.isPressed ? 2 : 6)
+            )
+            .opacity(configuration.isPressed ? 0.94 : 1.0)
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.easeInOut(duration: 0.18), value: configuration.isPressed)
+    }
+}
+
+struct OnboardingSelectableGlassButtonStyle: ButtonStyle {
+    let fillOpacity: Double
+    
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(.white)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(.ultraThinMaterial.opacity(fillOpacity))
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .stroke(Color.white.opacity(0.22), lineWidth: 1)
+                    )
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.16),
+                                        Color.white.opacity(0.03),
+                                        Color.clear
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                    )
+                    .shadow(color: Color.white.opacity(configuration.isPressed ? 0.06 : 0.12), radius: configuration.isPressed ? 4 : 8, x: 0, y: -1)
+                    .shadow(color: Color.black.opacity(configuration.isPressed ? 0.08 : 0.14), radius: configuration.isPressed ? 5 : 10, x: 0, y: configuration.isPressed ? 2 : 6)
+            )
+            .opacity(configuration.isPressed ? 0.94 : 1.0)
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.easeInOut(duration: 0.18), value: configuration.isPressed)
+    }
+}
+
+struct GlassButton: View {
+    let title: String
+    var systemImage: String? = nil
+    var assetImage: String? = nil
+    var isEnabled: Bool = true
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                if let systemImage {
+                    Image(systemName: systemImage)
+                        .font(.system(size: 16, weight: .semibold))
+                } else if let assetImage {
+                    Image(assetImage)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 16, height: 16)
+                }
+                
+                Text(title)
+                    .onboardingInter(size: 17, weight: .semibold)
+            }
+            .padding(.horizontal, 22)
+            .padding(.vertical, 16)
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(OnboardingGlassButtonStyle())
+        .disabled(!isEnabled)
+        .opacity(isEnabled ? 1.0 : 0.55)
+    }
+}
+
 struct PrimaryButtonStyle: ButtonStyle {
     private let gradient = LinearGradient(
         gradient: Gradient(colors: [Color(red: 0.45, green: 0.72, blue: 0.99), Color(red: 0.30, green: 0.60, blue: 0.90)]),
@@ -96,6 +229,10 @@ struct BreathableBackgroundModifier: ViewModifier {
 }
 
 extension View {
+    func onboardingInter(size: CGFloat = 17, weight: UIFont.Weight = .regular) -> some View {
+        self.font(InterFont.font(size: size, weight: weight))
+    }
+    
     func softCard(accent: Color = Color(red: 0.45, green: 0.72, blue: 0.99), cornerRadius: CGFloat = 24) -> some View {
         modifier(SoftCardModifier(accent: accent, cornerRadius: cornerRadius))
     }

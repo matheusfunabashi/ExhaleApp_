@@ -47,19 +47,7 @@ struct OnboardingStep8View: View {
                 Spacer()
                 
                 VStack(spacing: 20) {
-                    Button(action: onNext) {
-                        Text("Continue")
-                            .font(.headline)
-                            .foregroundColor(.black)
-                            .padding(.vertical, 16)
-                            .frame(maxWidth: .infinity)
-                            .background(Color.white.opacity(0.95))
-                            .clipShape(Capsule())
-                            .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 8)
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(selectedOptions.isEmpty)
-                    .opacity(selectedOptions.isEmpty ? 0.35 : 1)
+                    GlassButton(title: "Continue", systemImage: "arrow.right", isEnabled: !selectedOptions.isEmpty, action: onNext)
                     
                     SkipButton(title: "Skip", action: onNext)
                 }
@@ -105,15 +93,7 @@ struct OnboardingStep8View: View {
 
 private struct StaticOnboardingBackground: View {
     var body: some View {
-        LinearGradient(
-            colors: [
-                Color(red: 0.82, green: 0.92, blue: 1.0),
-                Color(red: 0.65, green: 0.80, blue: 1.0)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
+        OnboardingFlowBackground()
     }
 }
 
@@ -129,13 +109,13 @@ private struct QuestionTitleView: View {
             
             VStack(spacing: 12) {
                 Text(title)
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(.black)
+                    .onboardingInter(size: 28, weight: .bold)
+                    .foregroundColor(.white)
                     .frame(maxWidth: .infinity, alignment: .center)
                 
                 Text(subtitle)
-                    .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .foregroundColor(Color.black.opacity(0.8))
+                    .onboardingInter(size: 18, weight: .medium)
+                    .foregroundColor(Color.white.opacity(0.9))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 16)
             }
@@ -150,11 +130,11 @@ private struct ProgressBar: View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 Capsule()
-                    .fill(Color.black.opacity(0.12))
+                    .fill(Color.white.opacity(0.25))
                     .frame(height: geo.size.height)
                 
                 Capsule()
-                    .fill(Color.black.opacity(0.4))
+                    .fill(Color.white.opacity(0.75))
                     .frame(width: max(0, min(1, progress)) * geo.size.width, height: geo.size.height)
             }
         }
@@ -167,38 +147,27 @@ private struct SelectableOptionRowView: View {
     let isSelected: Bool
     let toggleSelection: () -> Void
     
-    private let highlightColor = Color(red: 0.16, green: 0.36, blue: 0.72)
-    
     var body: some View {
         Button(action: toggleSelection) {
             HStack(spacing: 14) {
                 Circle()
-                    .fill(isSelected ? highlightColor : Color.black.opacity(0.12))
+                    .fill(Color.white.opacity(0.25))
                     .frame(width: 30, height: 30)
                     .overlay(
                         Text("\(index)")
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
-                            .foregroundColor(isSelected ? .white : .black)
+                            .onboardingInter(size: 16, weight: .bold)
+                            .foregroundColor(.white)
                     )
                 
                 Text(label)
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundColor(isSelected ? .white : .black)
+                    .onboardingInter(size: 16, weight: .semibold)
+                    .foregroundColor(.white)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.vertical, 14)
             .padding(.horizontal, 18)
-            .background(
-                Capsule()
-                    .fill(isSelected ? highlightColor.opacity(0.92) : Color.white.opacity(0.95))
-            )
-            .overlay(
-                Capsule()
-                    .stroke(isSelected ? highlightColor.opacity(0.6) : Color.black.opacity(0.1), lineWidth: isSelected ? 2 : 1)
-            )
-            .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 4)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(OnboardingSelectableGlassButtonStyle(fillOpacity: isSelected ? 0.50 : 0.10))
     }
 }
 

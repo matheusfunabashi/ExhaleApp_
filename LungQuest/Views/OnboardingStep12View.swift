@@ -115,15 +115,7 @@ struct OnboardingStep12View: View {
 
 private struct StaticOnboardingBackground: View {
     var body: some View {
-        LinearGradient(
-            colors: [
-                Color(red: 0.82, green: 0.92, blue: 1.0),
-                Color(red: 0.65, green: 0.80, blue: 1.0)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
+        OnboardingFlowBackground()
     }
 }
 

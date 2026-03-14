@@ -43,16 +43,7 @@ struct OnboardingStep12bView: View {
     
     var body: some View {
         ZStack {
-            // Gradient background similar to the app
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.82, green: 0.92, blue: 1.0),
-                    Color(red: 0.65, green: 0.80, blue: 1.0)
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            OnboardingFlowBackground()
             
             VStack(spacing: 0) {
                 // Content container with max width and horizontal centering
@@ -62,9 +53,9 @@ struct OnboardingStep12bView: View {
                         Button(action: onBack) {
                             Image(systemName: "xmark")
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.black)
+                                .foregroundColor(.white)
                                 .padding(10)
-                                .background(Color.white.opacity(0.9), in: Circle())
+                                .background(.ultraThinMaterial, in: Circle())
                         }
                         .buttonStyle(.plain)
                         
@@ -76,13 +67,13 @@ struct OnboardingStep12bView: View {
                     // Headline and subtitle grouped together
                     VStack(spacing: spacingSmall) {
                         Text(titleText)
-                            .font(.system(size: 22, weight: .bold, design: .rounded))
-                            .foregroundColor(.black)
+                            .onboardingInter(size: 22, weight: .bold)
+                            .foregroundColor(.white)
                             .multilineTextAlignment(.center)
                         
                         Text("Here's what's in it for you")
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
-                            .foregroundColor(.black)
+                            .onboardingInter(size: 16, weight: .bold)
+                            .foregroundColor(.white.opacity(0.95))
                     }
                     .padding(.bottom, spacingLarge)
                     
@@ -113,32 +104,26 @@ struct OnboardingStep12bView: View {
                             .foregroundColor(Color(red: 0.45, green: 0.72, blue: 0.99))
                         
                         Text(formattedQuitDate)
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundColor(.black)
+                            .onboardingInter(size: 20, weight: .bold)
+                            .foregroundColor(.white)
                     }
                     .padding(.vertical, spacingMedium)
                     .padding(.horizontal, spacingMedium)
                     .frame(maxWidth: .infinity)
                     .background(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(Color.white.opacity(0.95))
+                            .fill(.ultraThinMaterial)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                    .stroke(Color.white.opacity(0.28), lineWidth: 1)
+                            )
                     )
                     .padding(.bottom, spacingLarge)
                     
                     Spacer(minLength: 0)
                     
                     // Continue button
-                    Button(action: onNext) {
-                        Text("Continue")
-                            .font(.system(size: 18, weight: .semibold, design: .rounded))
-                            .foregroundColor(.black)
-                            .padding(.vertical, spacingMedium)
-                            .frame(maxWidth: .infinity)
-                            .background(Color.white.opacity(0.95))
-                            .clipShape(Capsule())
-                            .shadow(color: Color.black.opacity(0.1), radius: 18, x: 0, y: 15)
-                    }
-                    .buttonStyle(.plain)
+                    GlassButton(title: "Continue", systemImage: "arrow.right", action: onNext)
                     .padding(.bottom, spacingMedium)
                 }
                 .frame(maxWidth: contentMaxWidth)
@@ -164,23 +149,23 @@ private struct BenefitRow: View {
             // Icon
             Image(systemName: icon)
                 .font(.system(size: 20, weight: .medium))
-                .foregroundColor(Color(red: 0.45, green: 0.72, blue: 0.99))
+                .foregroundColor(.white)
                 .frame(width: iconSize, height: iconSize)
                 .background(
                     Circle()
-                        .fill(Color(red: 0.45, green: 0.72, blue: 0.99).opacity(0.15))
+                        .fill(Color.white.opacity(0.14))
                 )
             
             // Text content
             VStack(alignment: .leading, spacing: 5) {
                 Text(title)
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundColor(.black)
+                    .onboardingInter(size: 15, weight: .semibold)
+                    .foregroundColor(.white)
                     .fixedSize(horizontal: false, vertical: true)
                 
                 Text(description)
-                    .font(.system(size: 13, weight: .regular, design: .rounded))
-                    .foregroundColor(Color.black.opacity(0.7))
+                    .onboardingInter(size: 13, weight: .regular)
+                    .foregroundColor(Color.white.opacity(0.85))
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -188,7 +173,11 @@ private struct BenefitRow: View {
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.white.opacity(0.95))
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                )
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)

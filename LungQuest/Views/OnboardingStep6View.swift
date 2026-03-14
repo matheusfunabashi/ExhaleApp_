@@ -82,15 +82,7 @@ struct OnboardingStep6View: View {
 
 private struct StaticOnboardingBackground: View {
     var body: some View {
-        LinearGradient(
-            colors: [
-                Color(red: 0.82, green: 0.92, blue: 1.0),
-                Color(red: 0.65, green: 0.80, blue: 1.0)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
+        OnboardingFlowBackground()
     }
 }
 
@@ -106,13 +98,13 @@ private struct QuestionTitleView: View {
             
             VStack(spacing: 12) {
                 Text(title)
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(.black)
+                    .onboardingInter(size: 28, weight: .bold)
+                    .foregroundColor(.white)
                     .frame(maxWidth: .infinity, alignment: .center)
                 
                 Text(subtitle)
-                    .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .foregroundColor(Color.black.opacity(0.8))
+                    .onboardingInter(size: 18, weight: .medium)
+                    .foregroundColor(Color.white.opacity(0.9))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 16)
             }
@@ -127,11 +119,11 @@ private struct ProgressBar: View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 Capsule()
-                    .fill(Color.black.opacity(0.12))
+                    .fill(Color.white.opacity(0.25))
                     .frame(height: geo.size.height)
                 
                 Capsule()
-                    .fill(Color.black.opacity(0.4))
+                    .fill(Color.white.opacity(0.75))
                     .frame(width: max(0, min(1, progress)) * geo.size.width, height: geo.size.height)
             }
         }
@@ -147,32 +139,23 @@ private struct OptionRowView: View {
         Button(action: action) {
             HStack(spacing: 14) {
                 Circle()
-                    .fill(Color.black.opacity(0.12))
+                    .fill(Color.white.opacity(0.25))
                     .frame(width: 30, height: 30)
                     .overlay(
                         Text("\(index)")
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
-                            .foregroundColor(.black)
+                            .onboardingInter(size: 16, weight: .bold)
+                            .foregroundColor(.white)
                     )
                 
                 Text(label)
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundColor(.black)
+                    .onboardingInter(size: 16, weight: .semibold)
+                    .foregroundColor(.white)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.vertical, 14)
             .padding(.horizontal, 18)
-            .background(
-                Capsule()
-                    .fill(Color.white.opacity(0.92))
-            )
-            .overlay(
-                Capsule()
-                    .stroke(Color.black.opacity(0.1), lineWidth: 1)
-            )
-            .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 4)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(OnboardingSelectableGlassButtonStyle(fillOpacity: 0.10))
     }
 }
 

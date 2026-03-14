@@ -38,15 +38,7 @@ struct OnboardingView: View {
     var body: some View {
         NavigationStack(path: $navigationPath) {
             ZStack {
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        Color.white,
-                        Color(red: 0.52, green: 0.72, blue: 0.97)
-                    ]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                OnboardingFlowBackground()
                 
                 VStack(spacing: 48) {
                     Spacer()
@@ -187,6 +179,8 @@ struct OnboardingView: View {
             }
         }
         .environmentObject(profileStore)
+        .onboardingInter(size: 17, weight: .regular)
+        .foregroundStyle(.white)
     }
 }
 
@@ -205,10 +199,10 @@ private struct OnboardingHeroView: View {
             LogoView()
             
             Text(displayedText)
-                .font(.system(size: 26, weight: .semibold, design: .rounded))
+                .onboardingInter(size: 26, weight: .semibold)
                 .multilineTextAlignment(.center)
-                .foregroundColor(Color.blue.opacity(0.85))
-                .shadow(color: Color.white.opacity(0.6), radius: 8, x: 0, y: 0)
+                .foregroundColor(.white)
+                .shadow(color: Color.white.opacity(0.35), radius: 8, x: 0, y: 0)
                 .padding(.horizontal, 16)
         }
         .onAppear(perform: startAnimation)
@@ -248,8 +242,8 @@ private struct LogoView: View {
                 .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 6)
             
             Text("Embrace this pause.")
-                .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundColor(Color.blue.opacity(0.6))
+                .onboardingInter(size: 16, weight: .medium)
+                .foregroundColor(.white.opacity(0.9))
         }
     }
 }
@@ -259,32 +253,7 @@ private struct ContinueButtonView: View {
     let onContinue: () -> Void
     
     var body: some View {
-        Button(action: {
-            onContinue()
-        }) {
-            HStack(spacing: 10) {
-                Text("Continue")
-                    .font(.system(size: 18, weight: .semibold, design: .rounded))
-                Image(systemName: "arrow.right")
-                    .font(.system(size: 18, weight: .semibold))
-            }
-            .padding(.vertical, 16)
-            .frame(maxWidth: .infinity)
-            .background(
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        Color.blue.opacity(0.85),
-                        Color.blue.opacity(0.65)
-                    ]),
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
-            .foregroundColor(.white)
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .shadow(color: Color.blue.opacity(0.3), radius: 12, x: 0, y: 8)
-        }
-        .disabled(!isEnabled)
+        GlassButton(title: "Continue", systemImage: "arrow.right", isEnabled: isEnabled, action: onContinue)
         .accessibilityLabel("Continue to the next onboarding step")
     }
 }

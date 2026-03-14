@@ -1,4 +1,35 @@
 import SwiftUI
+import UIKit
+
+/// Shared onboarding background that prefers a custom image asset.
+/// Add your image to Assets.xcassets > OnboardingCustomBackground.imageset.
+struct OnboardingFlowBackground: View {
+    private static let assetName = "OnboardingCustomBackground"
+
+    var body: some View {
+        GeometryReader { proxy in
+            Group {
+                if UIImage(named: Self.assetName) != nil {
+                    Image(Self.assetName)
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.82, green: 0.92, blue: 1.0),
+                            Color(red: 0.65, green: 0.80, blue: 1.0)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                }
+            }
+            .frame(width: proxy.size.width, height: proxy.size.height)
+            .clipped()
+        }
+        .ignoresSafeArea()
+    }
+}
 
 struct WaveGradientBackground: View {
     @State private var animate = false

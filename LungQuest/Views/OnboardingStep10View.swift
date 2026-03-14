@@ -21,9 +21,6 @@ struct OnboardingStep10View: View {
         return true
     }
     
-    private let buttonColor = Color.white
-    private let textColor = Color.black
-    
     var body: some View {
         ZStack {
             StaticOnboardingBackground()
@@ -46,25 +43,14 @@ struct OnboardingStep10View: View {
                 
                 Spacer()
                 
-                Button(action: {
+                GlassButton(title: "Next", systemImage: "arrow.right", isEnabled: canProceed) {
                     if canProceed {
                         let trimmedAmount = amountText.trimmingCharacters(in: .whitespacesAndNewlines)
                         if let amount = Double(trimmedAmount) {
                             onNext(amount, selectedCurrency)
                         }
                     }
-                }) {
-                    Text("Next")
-                        .font(.headline)
-                        .foregroundColor(textColor)
-                        .padding(.vertical, 18)
-                        .frame(maxWidth: .infinity)
-                        .background(buttonColor.opacity(canProceed ? 0.95 : 0.5))
-                        .clipShape(Capsule())
-                        .shadow(color: Color.black.opacity(canProceed ? 0.1 : 0.05), radius: 18, x: 0, y: 15)
                 }
-                .buttonStyle(.plain)
-                .disabled(!canProceed)
             }
             .padding(.horizontal, 24)
             .padding(.top, 52)
@@ -81,7 +67,7 @@ struct OnboardingStep10View: View {
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.white)
                     .padding(12)
-                    .background(Color.white.opacity(0.35), in: Circle())
+                    .background(.ultraThinMaterial, in: Circle())
                     .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
             }
             .buttonStyle(.plain)
@@ -98,7 +84,7 @@ struct OnboardingStep10View: View {
                 .foregroundColor(.white)
                 .padding(.vertical, 8)
                 .padding(.horizontal, 14)
-                .background(Color.white.opacity(0.35), in: Capsule())
+                .background(.ultraThinMaterial, in: Capsule())
                 .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
             }
             .buttonStyle(.plain)
@@ -108,15 +94,7 @@ struct OnboardingStep10View: View {
 
 private struct StaticOnboardingBackground: View {
     var body: some View {
-        LinearGradient(
-            colors: [
-                Color(red: 0.82, green: 0.92, blue: 1.0),
-                Color(red: 0.65, green: 0.80, blue: 1.0)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
+        OnboardingFlowBackground()
     }
 }
 
@@ -132,13 +110,13 @@ private struct QuestionTitleView: View {
             
             VStack(spacing: 12) {
                 Text(title)
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(.black)
+                    .onboardingInter(size: 28, weight: .bold)
+                    .foregroundColor(.white)
                     .frame(maxWidth: .infinity, alignment: .center)
                 
                 Text(subtitle)
-                    .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .foregroundColor(Color.black.opacity(0.8))
+                    .onboardingInter(size: 18, weight: .medium)
+                    .foregroundColor(Color.white.opacity(0.9))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 16)
             }
@@ -153,11 +131,11 @@ private struct ProgressBar: View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 Capsule()
-                    .fill(Color.black.opacity(0.12))
+                    .fill(Color.white.opacity(0.25))
                     .frame(height: geo.size.height)
                 
                 Capsule()
-                    .fill(Color.black.opacity(0.4))
+                    .fill(Color.white.opacity(0.75))
                     .frame(width: max(0, min(1, progress)) * geo.size.width, height: geo.size.height)
             }
         }
@@ -171,22 +149,22 @@ private struct AmountInputField: View {
         ZStack(alignment: .leading) {
             if text.isEmpty {
                 Text("Enter an approximate amount")
-                    .foregroundColor(Color.black.opacity(0.35))
-                    .font(.system(size: 18, weight: .medium, design: .rounded))
+                    .foregroundColor(Color.white.opacity(0.55))
+                    .onboardingInter(size: 18, weight: .medium)
             }
             
             TextField("", text: $text)
                 .keyboardType(.decimalPad)
-                .font(.system(size: 20, weight: .semibold, design: .rounded))
-                .foregroundColor(.black)
+                .onboardingInter(size: 20, weight: .semibold)
+                .foregroundColor(.white)
         }
         .padding(.vertical, 18)
         .padding(.horizontal, 20)
-        .background(Color.white.opacity(0.9))
+        .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(Color.black.opacity(0.15), lineWidth: 1)
+                .stroke(Color.white.opacity(0.28), lineWidth: 1)
         )
     }
 }
@@ -194,8 +172,6 @@ private struct AmountInputField: View {
 private struct CurrencySelector: View {
     let currencies: [String]
     @Binding var selectedCurrency: String
-    
-    private let highlightColor = Color(red: 0.16, green: 0.36, blue: 0.72)
     
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -206,20 +182,11 @@ private struct CurrencySelector: View {
                     }) {
                         Text(currency)
                             .font(.system(size: 16, weight: .semibold, design: .rounded))
-                            .foregroundColor(selectedCurrency == currency ? .white : .black.opacity(0.85))
+                            .foregroundColor(.white)
                             .padding(.vertical, 12)
                             .padding(.horizontal, 20)
-                            .background(
-                                Capsule()
-                                    .fill(selectedCurrency == currency ? highlightColor.opacity(0.92) : Color.white.opacity(0.92))
-                            )
-                            .overlay(
-                                Capsule()
-                                    .stroke(selectedCurrency == currency ? highlightColor.opacity(0.6) : Color.black.opacity(0.1), lineWidth: selectedCurrency == currency ? 2 : 1)
-                            )
-                            .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 4)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(OnboardingSelectableGlassButtonStyle(fillOpacity: selectedCurrency == currency ? 0.22 : 0.10))
                 }
             }
             .frame(maxWidth: .infinity, alignment: .center)
