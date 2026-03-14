@@ -8,7 +8,7 @@ struct OnboardingStep13View: View {
     @EnvironmentObject private var flowManager: AppFlowManager
     @State private var userScore: Double = Double.random(in: 0.60...0.85)
     @State private var currentPage: Int = 0
-    @GestureState private var dragOffset: CGFloat = 0
+    @State private var awarenessPageIndex: Int = 0
     @State private var animateBars: Bool = false
     @State private var animateLines: Bool = false
     
@@ -19,19 +19,49 @@ struct OnboardingStep13View: View {
         GeometryReader { geo in
             let height = geo.size.height
             
-            VStack(spacing: 0) {
-                resultsPage
-                    .frame(width: geo.size.width, height: height)
+            ZStack {
+                // Explicit page-by-page: Analysis Complete MUST show first, then Exhale plan
+                Group {
+                    switch currentPage {
+                    case 0:
+                        resultsPageContent
+                    case 1:
+                        planComparisonPage
+                    default:
+                        awarenessCarouselPage
+                    }
+                }
+                .frame(width: geo.size.width, height: height)
+                .contentShape(Rectangle())
+                .simultaneousGesture(dragGesture(for: height))
+                .animation(pagingAnimation, value: currentPage)
                 
-                planComparisonPage
-                    .frame(width: geo.size.width, height: height)
-                
-                awarenessCarouselPage
-                    .frame(width: geo.size.width, height: height)
+                // Single arrow overlay for pages 0 and 1 - prevents duplicate buttons
+                if currentPage < 2 {
+                    VStack {
+                        Spacer()
+                        Button(action: { withAnimation(pagingAnimation) { currentPage += 1 } }) {
+                            VStack(spacing: 6) {
+                                Text("Swipe or tap")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.9))
+                                Image(systemName: "arrow.down")
+                                    .font(.system(size: 28, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .padding(14)
+                                    .background(Color.white.opacity(0.2), in: Circle())
+                                    .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 6)
+                            }
+                            .accessibilityLabel("Next step – swipe up or tap")
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.bottom, 24)
+                    }
+                    .frame(width: geo.size.width, height: geo.size.height)
+                    .allowsHitTesting(true)
+                }
             }
-            .offset(y: -CGFloat(currentPage) * height + dragOffset)
-            .gesture(dragGesture(for: height))
-            .animation(pagingAnimation, value: currentPage)
+            .frame(width: geo.size.width, height: geo.size.height)
         }
         .navigationBarBackButtonHidden(true)
         .ignoresSafeArea()
@@ -68,7 +98,7 @@ struct OnboardingStep13View: View {
         }
     }
     
-    private var resultsPage: some View {
+    private var resultsPageContent: some View {
         ZStack(alignment: .bottom) {
             ResultsBackground()
             
@@ -122,25 +152,6 @@ struct OnboardingStep13View: View {
             .padding(.horizontal, 24)
             .padding(.top, 52)
             .padding(.bottom, 72)
-            
-            if currentPage == 0 {
-                Button(action: { withAnimation(pagingAnimation) { currentPage = 1 } }) {
-                    VStack(spacing: 6) {
-                        Text("Swipe or tap")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.white.opacity(0.9))
-                        Image(systemName: "arrow.down")
-                            .font(.system(size: 28, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(14)
-                            .background(Color.white.opacity(0.2), in: Circle())
-                            .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 6)
-                    }
-                    .accessibilityLabel("Next step – swipe up or tap")
-                }
-                .buttonStyle(.plain)
-                .padding(.bottom, 24)
-            }
         }
     }
     
@@ -179,23 +190,7 @@ struct OnboardingStep13View: View {
                 .onAppear { animateLines = true }
                 
                 Spacer(minLength: 12)
-                
-                Button(action: { withAnimation(pagingAnimation) { currentPage = 2 } }) {
-                    VStack(spacing: 6) {
-                        Text("Swipe or tap")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.white.opacity(0.9))
-                        Image(systemName: "arrow.down")
-                            .font(.system(size: 28, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(14)
-                            .background(Color.white.opacity(0.2), in: Circle())
-                            .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 6)
-                    }
-                    .accessibilityLabel("Next step – swipe up or tap")
-                }
-                .buttonStyle(.plain)
-                .padding(.bottom, 24)
+                // Button in overlay above – avoids duplicate buttons
             }
             .padding(.horizontal, 24)
             .padding(.top, 52)
@@ -235,29 +230,39 @@ struct OnboardingStep13View: View {
     }
     
     private var awarenessCarouselPage: some View {
-        TabView {
+        TabView(selection: $awarenessPageIndex) {
             AwarenessPage(
                 icon: "brain_sad_icon",
                 title: "Bad Effects of Vaping on Mental Health",
                 description: "Nicotine interferes with brain chemistry and increases anxiety and stress over time. Regular vaping can make it harder for your brain to regulate mood and emotions.",
-                backgroundColor: Color(red: 214.0 / 255.0, green: 61.0 / 255.0, blue: 69.0 / 255.0)
+                backgroundColor: Color(red: 214.0 / 255.0, green: 61.0 / 255.0, blue: 69.0 / 255.0),
+                showNextButton: true,
+                onNext: { withAnimation { awarenessPageIndex = 1 } }
             )
+            .tag(0)
             
             AwarenessPage(
                 icon: "nicotine_icon",
                 title: "How Nicotine Affects Your Body",
                 description: "Nicotine quickly reaches your bloodstream and stimulates your nervous system. Over time it increases heart strain, blood pressure, and dependency.",
-                backgroundColor: Color(red: 214.0 / 255.0, green: 61.0 / 255.0, blue: 69.0 / 255.0)
+                backgroundColor: Color(red: 214.0 / 255.0, green: 61.0 / 255.0, blue: 69.0 / 255.0),
+                showNextButton: true,
+                onNext: { withAnimation { awarenessPageIndex = 2 } }
             )
+            .tag(1)
             
             AwarenessPage(
                 icon: "sleepy_icon",
                 title: "Why Vaping Can Cause Laziness",
                 description: "Nicotine disrupts your brain's natural dopamine balance and reduces motivation. This can make it easier to procrastinate and harder to stay focused on goals.",
-                backgroundColor: Color(red: 214.0 / 255.0, green: 61.0 / 255.0, blue: 69.0 / 255.0)
+                backgroundColor: Color(red: 214.0 / 255.0, green: 61.0 / 255.0, blue: 69.0 / 255.0),
+                showNextButton: true,
+                onNext: { withAnimation { awarenessPageIndex = 3 } }
             )
+            .tag(2)
             
             rescuePage
+                .tag(3)
         }
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
         .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
@@ -265,10 +270,6 @@ struct OnboardingStep13View: View {
     
     private func dragGesture(for height: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: 12, coordinateSpace: .local)
-            .updating($dragOffset) { value, state, _ in
-                let translation = value.translation.height
-                state = max(-height, min(height, translation))
-            }
             .onEnded { value in
                 let translation = value.translation.height
                 let velocity = value.predictedEndTranslation.height - value.translation.height
@@ -312,6 +313,8 @@ private struct AwarenessPage: View {
     let title: String
     let description: String
     let backgroundColor: Color
+    var showNextButton: Bool = false
+    var onNext: (() -> Void)? = nil
     
     var body: some View {
         ZStack {
@@ -340,10 +343,29 @@ private struct AwarenessPage: View {
                     .fixedSize(horizontal: false, vertical: true)
                 
                 Spacer()
+                
+                if showNextButton, let onNext = onNext {
+                    Button(action: onNext) {
+                        HStack(spacing: 8) {
+                            Text("Next")
+                                .font(.system(size: 20, weight: .bold, design: .rounded))
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 18, weight: .bold))
+                        }
+                        .foregroundColor(Color(red: 214.0 / 255.0, green: 61.0 / 255.0, blue: 69.0 / 255.0))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 60)
+                        .background(Color.white)
+                        .cornerRadius(30)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 32)
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(.horizontal, 24)
-            .padding(.bottom, 34)
+            .padding(.bottom, showNextButton ? 0 : 34)
         }
     }
 }

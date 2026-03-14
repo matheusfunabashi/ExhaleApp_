@@ -39,7 +39,18 @@ class ReviewManager {
         return true
     }
     
-    // MARK: - Request Review
+    // MARK: - Request Review (user-initiated, e.g. from onboarding "Rate the app" button)
+    func requestReviewNow() {
+        DispatchQueue.main.async {
+            if let windowScene = UIApplication.shared.connectedScenes
+                .compactMap({ $0 as? UIWindowScene })
+                .first {
+                SKStoreReviewController.requestReview(in: windowScene)
+            }
+        }
+    }
+    
+    // MARK: - Request Review (conditional, for automatic prompts)
     func requestReviewIfNeeded(
         onboardingCompleted: Bool,
         hasOpenedProgressView: Bool = false,

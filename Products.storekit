@@ -114,9 +114,37 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "7.99",
+          "displayPrice" : "3.99",
           "familyShareable" : false,
           "groupNumber" : 2,
+          "internalID" : "6756926726",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Full access to Exhale's quit program, billed weekly.",
+              "displayName" : "Exhale Weekly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "exhale_weekly_399",
+          "recurringSubscriptionPeriod" : "P1W",
+          "referenceName" : "Exhale Weekly",
+          "subscriptionGroupID" : "21867691",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "7.99",
+          "familyShareable" : false,
+          "groupNumber" : 3,
           "internalID" : "6756926725",
           "introductoryOffer" : null,
           "localizations" : [

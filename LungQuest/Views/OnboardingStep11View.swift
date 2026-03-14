@@ -108,7 +108,7 @@ private struct FinalHeadingView: View {
                 .frame(height: 6)
             
             VStack(spacing: 10) {
-                Text("Finally!")
+                Text("Tell us about yourself")
                     .onboardingInter(size: 32, weight: .bold)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity, alignment: .center)

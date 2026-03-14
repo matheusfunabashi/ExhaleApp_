@@ -115,14 +115,14 @@ struct OnboardingStep2View: View {
     
     private var texts: some View {
         VStack(spacing: 16) {
-            Text("Let’s go!")
+            Text("Welcome to Exhale!")
                 .onboardingInter(size: 34, weight: .bold)
                 .foregroundColor(.white)
                 .minimumScaleFactor(0.75)
                 .accessibilityAddTraits(.isHeader)
                 .frame(maxWidth: .infinity, alignment: .center)
             
-            Text("Welcome to Exhale, this is your profile card that will track your progress.")
+            Text("This is your profile card that will track your quit-vaping progress.")
                 .onboardingInter(size: 20, weight: .medium)
                 .foregroundColor(Color.white.opacity(0.9))
                 .multilineTextAlignment(.center)

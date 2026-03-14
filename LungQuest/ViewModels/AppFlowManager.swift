@@ -22,6 +22,7 @@ final class SubscriptionManager: ObservableObject {
     
     /// Keep product IDs aligned with StoreKit config and Superwall.
     private let subscribedProductIDs: Set<String> = [
+        "exhale_weekly_399",
         "exhale_monthly_799",
         "exhale_annual_3999"
     ]

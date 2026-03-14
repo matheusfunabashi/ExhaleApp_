@@ -137,7 +137,7 @@ private struct LogoBlock: View {
 private struct TitleBlock: View {
     var body: some View {
         VStack(spacing: 12) {
-            Text("Welcome!")
+            Text("Welcome to Exhale!")
                 .onboardingInter(size: 34, weight: .bold)
                 .foregroundColor(.white)
                 .lineLimit(2)

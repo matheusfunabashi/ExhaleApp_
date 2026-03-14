@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -96,6 +96,10 @@
 		9E9B7F342FE4B32E00A7707C /* TabBarDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarDiagnostics.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		9E7153AB2F65E0300026295D /* Fonts */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Fonts; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		8D1107240486CEB800E47090 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -115,6 +119,7 @@
 		8D11071E0486CEB800E47090 = {
 			isa = PBXGroup;
 			children = (
+				9E7153AB2F65E0300026295D /* Fonts */,
 				9E46E2E02F4B777A00E98627 /* Products.storekit */,
 				9701BB4C2E81E7E500716F78 /* Assets.xcassets */,
 				8D1107290486CEB800E47090 /* LungQuest */,
@@ -236,6 +241,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				9E7153AB2F65E0300026295D /* Fonts */,
 			);
 			name = Exhale;
 			packageProductDependencies = (
