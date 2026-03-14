@@ -16,15 +16,7 @@ struct OnboardingStep3View: View {
     
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [
-                    Color(red: 0.82, green: 0.92, blue: 1.0),
-                    Color(red: 0.65, green: 0.80, blue: 1.0)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            Step3CustomBackground()
             
             content
         }
@@ -34,8 +26,6 @@ struct OnboardingStep3View: View {
     
     private var content: some View {
         VStack(spacing: 32) {
-            Spacer()
-            
             header
                 .frame(maxWidth: .infinity, alignment: centerLogo ? .center : .leading)
                 .padding(.horizontal, 28)
@@ -68,28 +58,17 @@ struct OnboardingStep3View: View {
                 Button(action: {
                     onBegin?()
                 }) {
-                    HStack(spacing: 16) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 16, weight: .semibold))
                         Text("Let’s Begin")
-                            .font(.headline)
-                            .foregroundColor(.black)
+                            .onboardingInter(size: 17, weight: .semibold)
                             .minimumScaleFactor(0.8)
-                        
-                        ZStack {
-                            Circle()
-                                .fill(Color.black)
-                                .frame(width: 32, height: 32)
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.white)
-                        }
                     }
-                    .padding(.horizontal, 28)
-                    .padding(.vertical, 18)
-                    .background(Color.white.opacity(0.95))
-                    .clipShape(Capsule())
-                    .shadow(color: Color.black.opacity(0.1), radius: 18, x: 0, y: 15)
+                    .padding(.horizontal, 22)
+                    .padding(.vertical, 16)
                 }
+                .buttonStyle(OnboardingGlassButtonStyle())
                 .disabled(!beginEnabled)
                 .opacity(showBeginButton ? 1 : 0)
                 .animation(.easeInOut(duration: 0.6), value: showBeginButton)
@@ -103,6 +82,25 @@ struct OnboardingStep3View: View {
     
     private func handleAppear() {
         // Button starts enabled, no delayed animation needed.
+    }
+}
+
+private struct Step3CustomBackground: View {
+    var body: some View {
+        GeometryReader { proxy in
+            Group {
+                if UIImage(named: "OnboardingStep3Background") != nil {
+                    Image("OnboardingStep3Background")
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    OnboardingFlowBackground()
+                }
+            }
+            .frame(width: proxy.size.width, height: proxy.size.height)
+            .clipped()
+        }
+        .ignoresSafeArea()
     }
 }
 
@@ -140,16 +138,15 @@ private struct TitleBlock: View {
     var body: some View {
         VStack(spacing: 12) {
             Text("Welcome!")
-                .font(.largeTitle)
-                .bold()
-                .foregroundColor(.black)
+                .onboardingInter(size: 34, weight: .bold)
+                .foregroundColor(.white)
                 .lineLimit(2)
                 .minimumScaleFactor(0.75)
                 .frame(maxWidth: .infinity, alignment: .center)
             
             Text("Let’s begin discovering if you are facing problems with vaping.")
-                .font(.title3)
-                .foregroundColor(Color.black.opacity(0.85))
+                .onboardingInter(size: 20, weight: .medium)
+                .foregroundColor(Color.white.opacity(0.9))
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 360)
                 .accessibilityHint("Onboarding introduction message")

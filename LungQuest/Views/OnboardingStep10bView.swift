@@ -6,9 +6,6 @@ struct OnboardingStep10bView: View {
     let onNext: () -> Void
     let onBack: () -> Void
     
-    private let buttonColor = Color.white
-    private let textColor = Color.black
-    
     private var savings: [(period: String, amount: Double, icon: String)] {
         // Calculate based on weekly cost
         // 1 month ≈ 4.33 weeks, 6 months ≈ 26 weeks, 1 year ≈ 52 weeks, 5 years ≈ 260 weeks
@@ -57,13 +54,13 @@ struct OnboardingStep10bView: View {
                     // Title and subtitle
                     VStack(spacing: 16) {
                         Text("Spend less. Live more.")
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundColor(.black)
+                            .onboardingInter(size: 32, weight: .bold)
+                            .foregroundColor(.white)
                             .multilineTextAlignment(.center)
                         
                         Text("Every vape costs more than you think—start saving today")
-                            .font(.system(size: 16, weight: .medium, design: .rounded))
-                            .foregroundColor(Color.black.opacity(0.7))
+                            .onboardingInter(size: 16, weight: .medium)
+                            .foregroundColor(Color.white.opacity(0.9))
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 20)
                     }
@@ -72,8 +69,8 @@ struct OnboardingStep10bView: View {
                     // Savings section
                     VStack(spacing: 20) {
                         Text("What you will save:")
-                            .font(.system(size: 18, weight: .semibold, design: .rounded))
-                            .foregroundColor(.black)
+                            .onboardingInter(size: 18, weight: .semibold)
+                            .foregroundColor(.white)
                         
                         // 2x2 Grid of savings cards
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 2), spacing: 12) {
@@ -91,17 +88,7 @@ struct OnboardingStep10bView: View {
                     Spacer(minLength: 40)
                     
                     // Continue button
-                    Button(action: onNext) {
-                        Text("Continue")
-                            .font(.system(size: 18, weight: .semibold, design: .rounded))
-                            .foregroundColor(textColor)
-                            .padding(.vertical, 18)
-                            .frame(maxWidth: .infinity)
-                            .background(buttonColor.opacity(0.95))
-                            .clipShape(Capsule())
-                            .shadow(color: Color.black.opacity(0.1), radius: 18, x: 0, y: 15)
-                    }
-                    .buttonStyle(.plain)
+                    GlassButton(title: "Continue", systemImage: "arrow.right", action: onNext)
                     .padding(.bottom, 20)
                 }
                 .padding(.horizontal, 24)
@@ -119,7 +106,7 @@ struct OnboardingStep10bView: View {
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.white)
                     .padding(12)
-                    .background(Color.white.opacity(0.35), in: Circle())
+                    .background(.ultraThinMaterial, in: Circle())
                     .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
             }
             .buttonStyle(.plain)
@@ -136,7 +123,7 @@ struct OnboardingStep10bView: View {
                 .foregroundColor(.white)
                 .padding(.vertical, 8)
                 .padding(.horizontal, 14)
-                .background(Color.white.opacity(0.35), in: Capsule())
+                .background(.ultraThinMaterial, in: Capsule())
                 .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
             }
             .buttonStyle(.plain)
@@ -146,15 +133,7 @@ struct OnboardingStep10bView: View {
 
 private struct StaticOnboardingBackground: View {
     var body: some View {
-        LinearGradient(
-            colors: [
-                Color(red: 0.82, green: 0.92, blue: 1.0),
-                Color(red: 0.65, green: 0.80, blue: 1.0)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
+        OnboardingFlowBackground()
     }
 }
 
@@ -167,15 +146,15 @@ private struct SavingsCard: View {
         VStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 32, weight: .medium))
-                .foregroundColor(.black)
+                .foregroundColor(.white)
             
             Text(amount)
                 .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundColor(.black)
+                .foregroundColor(.white)
             
             Text(period)
                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundColor(Color.black.opacity(0.7))
+                .foregroundColor(Color.white.opacity(0.85))
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -183,11 +162,11 @@ private struct SavingsCard: View {
         .padding(.horizontal, 16)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.white.opacity(0.95))
+                .fill(.ultraThinMaterial)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color(red: 0.45, green: 0.72, blue: 0.99).opacity(0.3), lineWidth: 1)
+                .stroke(Color.white.opacity(0.25), lineWidth: 1)
         )
         .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
     }

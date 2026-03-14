@@ -210,7 +210,7 @@ struct OnboardingStep13View: View {
             VStack(spacing: 28) {
                 Spacer()
                 
-                Image("LungBuddy_0")
+                Image("LungBuddy_25")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 374, height: 306)
@@ -218,23 +218,13 @@ struct OnboardingStep13View: View {
                 
                 Text("Your lungs need your help!")
                     .font(.system(size: 24, weight: .semibold, design: .rounded))
-                    .foregroundColor(Color(red: 0.45, green: 0.05, blue: 0.05))
+                    .foregroundColor(.white)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
                 
                 Spacer()
                 
-                Button(action: handleContinue) {
-                    Text("Continue")
-                        .font(.headline)
-                        .foregroundColor(Color(red: 0.45, green: 0.05, blue: 0.05))
-                        .padding(.vertical, 18)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.white.opacity(0.9))
-                        .clipShape(Capsule())
-                        .shadow(color: .black.opacity(0.12), radius: 18, x: 0, y: 15)
-                }
-                .buttonStyle(.plain)
+                GlassButton(title: "Continue", systemImage: "arrow.right", action: handleContinue)
                 .padding(.horizontal, 32)
                 .padding(.bottom, 20)
 
@@ -277,29 +267,14 @@ struct OnboardingStep13View: View {
 
 private struct ResultsBackground: View {
     var body: some View {
-        LinearGradient(
-            colors: [
-                Color(red: 0.52, green: 0.72, blue: 0.97),
-                Color(red: 0.31, green: 0.58, blue: 0.96)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
+        OnboardingFlowBackground()
     }
 }
 
 private struct RescueBackground: View {
     var body: some View {
-        LinearGradient(
-            colors: [
-                Color(red: 1.0, green: 0.88, blue: 0.88),
-                Color(red: 1.0, green: 0.76, blue: 0.76)
-            ],
-            startPoint: .top,
-            endPoint: .bottom
-        )
-        .ignoresSafeArea()
+        Color(red: 58.0 / 255.0, green: 28.0 / 255.0, blue: 82.0 / 255.0)
+            .ignoresSafeArea()
     }
 }
 

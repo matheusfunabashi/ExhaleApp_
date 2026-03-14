@@ -47,8 +47,7 @@ struct OnboardingStep2View: View {
     
     var body: some View {
         ZStack {
-            Color(red: 0.68, green: 0.84, blue: 1.00)
-                .ignoresSafeArea()
+            OnboardingFlowBackground()
             
             content
         }
@@ -77,24 +76,13 @@ struct OnboardingStep2View: View {
                 
                 VStack(alignment: .leading, spacing: 16) {
                     Text("Let’s build the app around your needs.")
-                        .font(.title3.weight(.semibold))
-                        .foregroundColor(Color.black.opacity(0.85))
+                        .onboardingInter(size: 20, weight: .semibold)
+                        .foregroundColor(Color.white.opacity(0.92))
                         .accessibilityLabel("Let’s build the app around your needs.")
                     
-                    Button(action: { onNext?() }) {
-                        HStack {
-                            Spacer()
-                            Text("Next")
-                                .font(.headline)
-                                .padding(.vertical, 18)
-                            Spacer()
-                        }
-                        .background(Color.white.opacity(0.9))
-                        .foregroundColor(.black)
-                        .clipShape(Capsule())
-                        .shadow(color: Color.black.opacity(0.1), radius: 20, x: 0, y: 15)
+                    GlassButton(title: "Next", systemImage: "arrow.right") {
+                        onNext?()
                     }
-                    .buttonStyle(.plain)
                     .accessibilityLabel("Next")
                     .accessibilityHint("Continue to the next onboarding screen.")
                 }
@@ -113,7 +101,7 @@ struct OnboardingStep2View: View {
                 Image(systemName: "chevron.left")
                     .font(.title3.weight(.semibold))
                     .padding(12)
-                    .background(Color.white.opacity(0.35), in: Circle())
+                    .background(.ultraThinMaterial, in: Circle())
                     .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
                     .foregroundStyle(Color.white.opacity(0.95))
             }
@@ -128,15 +116,15 @@ struct OnboardingStep2View: View {
     private var texts: some View {
         VStack(spacing: 16) {
             Text("Let’s go!")
-                .font(.largeTitle.weight(.bold))
-                .foregroundColor(.black)
+                .onboardingInter(size: 34, weight: .bold)
+                .foregroundColor(.white)
                 .minimumScaleFactor(0.75)
                 .accessibilityAddTraits(.isHeader)
                 .frame(maxWidth: .infinity, alignment: .center)
             
             Text("Welcome to Exhale, this is your profile card that will track your progress.")
-                .font(.title3)
-                .foregroundColor(Color.black.opacity(0.85))
+                .onboardingInter(size: 20, weight: .medium)
+                .foregroundColor(Color.white.opacity(0.9))
                 .multilineTextAlignment(.center)
                 .lineLimit(nil)
                 .fixedSize(horizontal: false, vertical: true)
