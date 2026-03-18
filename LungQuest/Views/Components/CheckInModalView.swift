@@ -4,84 +4,135 @@ struct CheckInModalView: View {
     @EnvironmentObject var dataStore: AppDataStore
     @Environment(\.presentationMode) var presentationMode
     
-    @State private var wasVapeFree = true
-    @State private var cravingsLevel = 1
-    @State private var selectedMood = Mood.neutral
+    @State private var moodLevel = 0
+    @State private var cravingsLevel = 0
+    @State private var selfControlLevel = 0
+    @State private var energyLevel = 0
+    @State private var confidenceLevel = 0
+    @State private var puffCount = 0
     @State private var notes = ""
-    @State private var selectedPuffInterval = PuffInterval.none
     @State private var showSuccessAnimation = false
     
     private let accentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
     
+    private var formattedDate: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        formatter.timeStyle = .none
+        return formatter.string(from: Date())
+    }
+    
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Header
-                    VStack(spacing: 8) {
-                        Text("Daily Check-in")
-                            .font(.system(size: 32, weight: .heavy, design: .rounded))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [accentColor, Color(red: 0.45, green: 0.72, blue: 0.99)]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // Section title (date is now in sticky header)
+                        Text("Rate how you felt today in these key areas")
+                            .padding(.top, 24)
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .foregroundColor(.primary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
                         
-                        Text("How did today go?")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.top, 8)
+                        // 5 rating cards
+                    RatingCard(
+                        icon: "face.smiling",
+                        title: "Mood",
+                        subtitle: "How was your overall emotional state today?",
+                        value: $moodLevel
+                    )
                     
-                    // Vape-free status
-                    VapeFreeSection(wasVapeFree: $wasVapeFree)
+                    RatingCard(
+                        icon: "flame.fill",
+                        title: "Cravings",
+                        subtitle: "How intense were your cravings today?",
+                        value: $cravingsLevel
+                    )
                     
-                    // Cravings level
-                    CravingsSection(cravingsLevel: $cravingsLevel)
+                    RatingCard(
+                        icon: "shield.fill",
+                        title: "Self Control",
+                        subtitle: "How well did you manage urges and impulses?",
+                        value: $selfControlLevel
+                    )
                     
-                    // Mood selection
-                    MoodSection(selectedMood: $selectedMood)
+                    RatingCard(
+                        icon: "bolt.fill",
+                        title: "Energy",
+                        subtitle: "How was your energy level throughout the day?",
+                        value: $energyLevel
+                    )
                     
-                    // Puff count tracking
-                    PuffCountSection(selectedPuffInterval: $selectedPuffInterval, wasVapeFree: $wasVapeFree)
+                    RatingCard(
+                        icon: "hand.thumbsup.fill",
+                        title: "Confidence",
+                        subtitle: "How confident do you feel about staying vape-free?",
+                        value: $confidenceLevel
+                    )
                     
-                    // Notes
-                    NotesSection(notes: $notes)
+                    // Puff count slider
+                    PuffCountSliderCard(puffCount: $puffCount)
                     
-                    // Save button
-                    Button(action: saveCheckIn) {
-                        Text("Save Check-in")
-                            .font(.system(.headline, design: .rounded).weight(.semibold))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [accentColor, Color(red: 0.06, green: 0.21, blue: 0.55)]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .cornerRadius(26)
-                            .shadow(color: accentColor.opacity(0.3), radius: 14, x: 0, y: 10)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .padding(.top, 8)
+                    // Thoughts / reflections text box
+                    ReflectionsCard(notes: $notes)
                     
-                    Spacer(minLength: 20)
+                    Spacer(minLength: 24)
                 }
-                .padding()
+                .padding(.horizontal, 20)
+                .padding(.bottom, 16)
                 .dismissKeyboardOnTap()
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(
-                leading: Button("Cancel") {
-                    presentationMode.wrappedValue.dismiss()
+            
+            // Sticky Save button - always visible at bottom
+            VStack(spacing: 0) {
+                Button(action: saveCheckIn) {
+                    Text("Save check-in")
+                        .font(.system(.headline, design: .rounded).weight(.semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [accentColor, Color(red: 0.30, green: 0.60, blue: 0.90)]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                        )
                 }
-                .foregroundColor(.secondary)
+                .buttonStyle(PlainButtonStyle())
+                .disabled(!allRatingsSelected)
+                .opacity(allRatingsSelected ? 1 : 0.5)
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 24)
+            }
+            .background(
+                LinearGradient(
+                    gradient: Gradient(colors: [Color(red: 0.90, green: 0.96, blue: 1.0), Color.white]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
             )
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.black)
+                    }
+                }
+                ToolbarItem(placement: .principal) {
+                    Text(formattedDate)
+                        .font(.system(size: 20, weight: .bold, design: .default))
+                        .foregroundColor(.black)
+                }
+            }
             .breathableBackground()
         }
         .navigationViewStyle(.stack)
@@ -90,13 +141,20 @@ struct CheckInModalView: View {
         )
     }
     
+    private var allRatingsSelected: Bool {
+        moodLevel > 0 && cravingsLevel > 0 && selfControlLevel > 0 && energyLevel > 0 && confidenceLevel > 0
+    }
+    
     private func saveCheckIn() {
+        guard allRatingsSelected else { return }
         dataStore.checkIn(
-            wasVapeFree: wasVapeFree,
             cravingsLevel: cravingsLevel,
-            mood: selectedMood,
-            notes: notes,
-            puffInterval: selectedPuffInterval
+            moodLevel: moodLevel,
+            selfControlLevel: selfControlLevel,
+            energyLevel: energyLevel,
+            confidenceLevel: confidenceLevel,
+            puffCount: puffCount,
+            notes: notes
         )
         
         showSuccessAnimation = true
@@ -107,237 +165,172 @@ struct CheckInModalView: View {
     }
 }
 
-struct VapeFreeSection: View {
-    @Binding var wasVapeFree: Bool
+// MARK: - Rating Card (1-10 scale)
+private struct RatingCard: View {
+    let icon: String
+    let title: String
+    let subtitle: String
+    @Binding var value: Int
+    var inverted: Bool = false
     
     private let accentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Were you vape-free today?")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                Text("Be honest—every check-in helps you grow.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            HStack(spacing: 12) {
-                OptionButton(
-                    title: "Yes! 🎉",
-                    subtitle: "I stayed strong",
-                    isSelected: wasVapeFree,
-                    accentColor: accentColor,
-                    action: { wasVapeFree = true }
-                )
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(accentColor)
                 
-                OptionButton(
-                    title: "Not quite 😔",
-                    subtitle: "I'll do better tomorrow",
-                    isSelected: !wasVapeFree,
-                    accentColor: accentColor,
-                    action: { wasVapeFree = false }
-                )
-            }
-        }
-        .softCard(accent: accentColor, cornerRadius: 28)
-    }
-}
-
-struct CravingsSection: View {
-    @Binding var cravingsLevel: Int
-    
-    private let accentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("How intense were your cravings?")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                Text("Track how you felt to spot patterns over time.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                Text(title)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundColor(.primary)
             }
             
-            VStack(spacing: 12) {
-                HStack {
-                    Text("None")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Spacer()
-                    Text("Very Intense")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                HStack(spacing: 10) {
-                    ForEach(1...5, id: \.self) { level in
-                        Button(action: {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                cravingsLevel = level
-                            }
-                        }) {
-                            ZStack {
-                                Circle()
-                                    .fill(
-                                        level <= cravingsLevel 
-                                            ? cravingsColor(level)
-                                            : Color.gray.opacity(0.15)
-                                    )
-                                    .frame(width: 44, height: 44)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(
-                                                level <= cravingsLevel 
-                                                    ? cravingsColor(level).opacity(0.4)
-                                                    : Color.gray.opacity(0.25),
-                                                lineWidth: level <= cravingsLevel ? 2 : 1
-                                            )
-                                    )
-                                    .shadow(
-                                        color: level <= cravingsLevel 
-                                            ? cravingsColor(level).opacity(0.3)
-                                            : Color.clear,
-                                        radius: 8,
-                                        x: 0,
-                                        y: 4
-                                    )
-                                
-                                Text("\(level)")
-                                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                                    .foregroundColor(level <= cravingsLevel ? .white : .secondary)
-                            }
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                }
-            }
-            
-            Text(cravingsDescription)
-                .font(.caption)
+            Text(subtitle)
+                .font(.system(size: 13))
                 .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
-                .padding(.top, 4)
-        }
-        .softCard(accent: accentColor, cornerRadius: 28)
-    }
-    
-    private func cravingsColor(_ level: Int) -> Color {
-        switch level {
-        case 1: return Color.green
-        case 2: return Color(red: 0.85, green: 0.85, blue: 0.15)
-        case 3: return Color.orange
-        case 4: return Color(red: 0.94, green: 0.33, blue: 0.33)
-        case 5: return Color(red: 0.74, green: 0.13, blue: 0.26)
-        default: return Color.gray
-        }
-    }
-    
-    private var cravingsDescription: String {
-        switch cravingsLevel {
-        case 1: return "No cravings at all! ✨"
-        case 2: return "Mild thoughts, easily ignored"
-        case 3: return "Noticeable but manageable"
-        case 4: return "Strong urges, required effort"
-        case 5: return "Very intense, difficult to resist"
-        default: return ""
-        }
-    }
-}
-
-struct MoodSection: View {
-    @Binding var selectedMood: Mood
-    
-    private let accentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("How are you feeling?")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                Text("Your mood helps us understand your journey better.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
             
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 5), spacing: 12) {
-                ForEach(Mood.allCases, id: \.self) { mood in
+            // 1-10 scale - evenly spaced
+            HStack(spacing: 0) {
+                ForEach(1...10, id: \.self) { level in
+                    let isSelected = inverted ? (level <= (11 - value)) : (level <= value)
                     Button(action: {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            selectedMood = mood
+                        withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
+                            value = inverted ? (11 - level) : level
                         }
                     }) {
-                        VStack(spacing: 6) {
-                            ZStack {
-                                Circle()
-                                    .fill(
-                                        selectedMood == mood
-                                            ? mood.color.opacity(0.2)
-                                            : Color.gray.opacity(0.1)
-                                    )
-                                    .frame(width: 56, height: 56)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(
-                                                selectedMood == mood
-                                                    ? mood.color
-                                                    : Color.gray.opacity(0.3),
-                                                lineWidth: selectedMood == mood ? 2.5 : 1.5
-                                            )
-                                    )
-                                    .shadow(
-                                        color: selectedMood == mood
-                                            ? mood.color.opacity(0.25)
-                                            : Color.clear,
-                                        radius: 8,
-                                        x: 0,
-                                        y: 4
-                                    )
-                                
-                                Text(mood.emoji)
-                                    .font(.system(size: 28))
-                            }
+                        ZStack {
+                            Circle()
+                                .fill(isSelected ? accentColor.opacity(0.2) : Color.gray.opacity(0.08))
+                                .frame(width: 28, height: 28)
+                                .overlay(
+                                    Circle()
+                                        .stroke(isSelected ? accentColor : Color.gray.opacity(0.2), lineWidth: isSelected ? 1.5 : 1)
+                                )
                             
-                            Text(mood.rawValue.capitalized)
-                                .font(.caption2)
-                                .fontWeight(selectedMood == mood ? .semibold : .regular)
-                                .foregroundColor(selectedMood == mood ? mood.color : .secondary)
+                            Text("\(level)")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(isSelected ? accentColor : .secondary)
                         }
                     }
                     .buttonStyle(PlainButtonStyle())
+                    .frame(maxWidth: .infinity)
                 }
             }
         }
-        .softCard(accent: accentColor, cornerRadius: 28)
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color.white.opacity(0.95), Color.white.opacity(0.75)]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(accentColor.opacity(0.12), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+        )
     }
 }
 
-struct NotesSection: View {
+// MARK: - Puff Count Slider
+private struct PuffCountSliderCard: View {
+    @Binding var puffCount: Int
+    
+    private let accentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: "wind")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(accentColor)
+                
+                Text("Puff Count")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundColor(.primary)
+            }
+            
+            Text("How many puffs did you take today? Honest tracking helps you see real progress.")
+                .font(.system(size: 13))
+                .foregroundColor(.secondary)
+            
+            VStack(spacing: 8) {
+                HStack {
+                    Text("0")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Text("\(puffCount)")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundColor(accentColor)
+                    Spacer()
+                    Text("100+")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Slider(value: Binding(
+                    get: { Double(puffCount) },
+                    set: { puffCount = Int($0.rounded()) }
+                ), in: 0...100, step: 1)
+                .tint(accentColor)
+            }
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color.white.opacity(0.95), Color.white.opacity(0.75)]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(accentColor.opacity(0.12), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+        )
+    }
+}
+
+// MARK: - Reflections Text Box
+private struct ReflectionsCard: View {
     @Binding var notes: String
     
     private let accentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Any thoughts or reflections?")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                Text("Optional—but reflecting helps you notice patterns.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: "text.quote")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(accentColor)
+                
+                Text("Thoughts or Reflections")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundColor(.primary)
             }
             
+            Text("Optional, but reflecting helps you notice patterns.")
+                .font(.system(size: 13))
+                .foregroundColor(.secondary)
+            
             ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(Color.white.opacity(0.6))
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.gray.opacity(0.06))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .stroke(accentColor.opacity(0.2), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(accentColor.opacity(0.15), lineWidth: 1)
                     )
                     .frame(minHeight: 100)
                 
@@ -355,123 +348,23 @@ struct NotesSection: View {
                     .scrollContentBackground(.hidden)
             }
         }
-        .softCard(accent: accentColor, cornerRadius: 28)
-    }
-}
-
-struct OptionButton: View {
-    let title: String
-    let subtitle: String
-    let isSelected: Bool
-    let accentColor: Color
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                action()
-            }
-        }) {
-            VStack(spacing: 6) {
-                Text(title)
-                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(
-                        isSelected
-                            ? LinearGradient(
-                                gradient: Gradient(colors: [accentColor.opacity(0.15), accentColor.opacity(0.08)]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                            : LinearGradient(
-                                gradient: Gradient(colors: [Color.white.opacity(0.6), Color.white.opacity(0.4)]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color.white.opacity(0.95), Color.white.opacity(0.75)]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
                     )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .stroke(
-                                isSelected ? accentColor.opacity(0.4) : Color.gray.opacity(0.25),
-                                lineWidth: isSelected ? 2 : 1
-                            )
-                    )
-                    .shadow(
-                        color: isSelected ? accentColor.opacity(0.15) : Color.black.opacity(0.05),
-                        radius: isSelected ? 8 : 4,
-                        x: 0,
-                        y: isSelected ? 4 : 2
-                    )
-            )
-            .foregroundColor(isSelected ? accentColor : .primary)
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
-
-struct PuffCountSection: View {
-    @Binding var selectedPuffInterval: PuffInterval
-    @Binding var wasVapeFree: Bool
-    
-    private let accentColor = Color(red: 0.45, green: 0.72, blue: 0.99)
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("How many puffs did you take today?")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                Text("Honest tracking helps you see real progress.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            VStack(spacing: 10) {
-                ForEach(PuffInterval.allCases, id: \.self) { interval in
-                    let isDisabled = !wasVapeFree && interval == .none
-                    OptionButton(
-                        title: interval.displayName,
-                        subtitle: getSubtitle(for: interval),
-                        isSelected: selectedPuffInterval == interval,
-                        accentColor: accentColor,
-                        action: { selectedPuffInterval = interval }
-                    )
-                    .disabled(isDisabled)
-                    .opacity(isDisabled ? 0.4 : 1.0)
-                }
-            }
-            
-            Text(selectedPuffInterval.description)
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
-                .padding(.top, 4)
-        }
-        .softCard(accent: accentColor, cornerRadius: 28)
-        .onChange(of: wasVapeFree) { _, newValue in
-            if !newValue && selectedPuffInterval == .none {
-                selectedPuffInterval = .light
-            }
-        }
-    }
-    
-    private func getSubtitle(for interval: PuffInterval) -> String {
-        switch interval {
-        case .none: return "Completely vape-free"
-        case .light: return "Light usage"
-        case .moderate: return "Moderate usage"
-        case .heavy: return "Heavy usage"
-        case .veryHeavy: return "Very heavy usage"
-        }
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(accentColor.opacity(0.12), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+        )
     }
 }
 
