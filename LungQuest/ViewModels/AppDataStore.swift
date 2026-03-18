@@ -79,28 +79,59 @@ class AppDataStore: ObservableObject {
     }
     
     // MARK: - Progress Tracking
-    func checkIn(wasVapeFree: Bool, cravingsLevel: Int = 1, mood: Mood = .neutral, notes: String = "", puffInterval: PuffInterval = .none) {
+    func checkIn(
+        wasVapeFree: Bool? = nil,
+        cravingsLevel: Int = 5,
+        moodLevel: Int = 5,
+        selfControlLevel: Int = 5,
+        energyLevel: Int = 5,
+        confidenceLevel: Int = 5,
+        puffCount: Int = 0,
+        notes: String = "",
+        mood: Mood? = nil,
+        puffInterval: PuffInterval? = nil
+    ) {
         guard currentUser != nil else { return }
         
+        let vapeFree = wasVapeFree ?? (puffCount == 0)
         let today = Calendar.current.startOfDay(for: Date())
+        let resolvedMood: Mood = mood ?? {
+            if moodLevel <= 2 { return .terrible }
+            if moodLevel <= 4 { return .bad }
+            if moodLevel <= 6 { return .neutral }
+            if moodLevel <= 8 { return .good }
+            return .excellent
+        }()
+        let resolvedInterval: PuffInterval = puffInterval ?? (puffCount == 0 ? .none : puffCount <= 10 ? .light : puffCount <= 30 ? .moderate : puffCount <= 60 ? .heavy : .veryHeavy)
+        
         if let existingIndex = dailyProgress.firstIndex(where: {
             Calendar.current.isDate($0.date, inSameDayAs: today)
         }) {
-            dailyProgress[existingIndex].wasVapeFree = wasVapeFree
+            dailyProgress[existingIndex].wasVapeFree = vapeFree
             dailyProgress[existingIndex].cravingsLevel = cravingsLevel
-            dailyProgress[existingIndex].mood = mood
+            dailyProgress[existingIndex].mood = resolvedMood
             dailyProgress[existingIndex].notes = notes
-            dailyProgress[existingIndex].puffInterval = puffInterval
+            dailyProgress[existingIndex].puffInterval = resolvedInterval
+            dailyProgress[existingIndex].moodLevel = moodLevel
+            dailyProgress[existingIndex].selfControlLevel = selfControlLevel
+            dailyProgress[existingIndex].energyLevel = energyLevel
+            dailyProgress[existingIndex].confidenceLevel = confidenceLevel
+            dailyProgress[existingIndex].puffCount = puffCount
         } else {
-            var progress = DailyProgress(date: today, wasVapeFree: wasVapeFree)
+            var progress = DailyProgress(date: today, wasVapeFree: vapeFree)
             progress.cravingsLevel = cravingsLevel
-            progress.mood = mood
+            progress.mood = resolvedMood
             progress.notes = notes
-            progress.puffInterval = puffInterval
+            progress.puffInterval = resolvedInterval
+            progress.moodLevel = moodLevel
+            progress.selfControlLevel = selfControlLevel
+            progress.energyLevel = energyLevel
+            progress.confidenceLevel = confidenceLevel
+            progress.puffCount = puffCount
             dailyProgress.append(progress)
         }
 
-        if !wasVapeFree {
+        if !vapeFree {
             resetQuitTimerForSlip()
         }
         
@@ -211,7 +242,8 @@ class AppDataStore: ObservableObject {
         let recentProgress = dailyProgress.suffix(7)
         if !recentProgress.isEmpty {
             let avgCravings = recentProgress.map { Double($0.cravingsLevel) }.reduce(0, +) / Double(recentProgress.count)
-            statistics.cravingsReduced = max(0, 5.0 - avgCravings) * 20
+            // Scale: 1-10 where 1=no cravings (best), 10=worst. cravingsReduced = improvement (higher = better)
+            statistics.cravingsReduced = max(0, 10.0 - avgCravings) * 10
         }
         
         // Calculate daily XP based on days vape-free

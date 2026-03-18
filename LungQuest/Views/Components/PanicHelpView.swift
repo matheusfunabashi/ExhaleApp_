@@ -36,6 +36,15 @@ struct PanicButton: View {
     }
 }
 
+private let panicQuotes = [
+    "You made a commitment to yourself",
+    "You've already done harder things. Stay in control.",
+    "Every time you resist, you become someone you respect.",
+    "The strongest version of you is watching right now.",
+    "You don't need this. You chose better.",
+    "You've come too far to reset now."
+]
+
 struct PanicHelpView: View {
     @Binding var isPresented: Bool
     @State private var breathe: Bool = false
@@ -78,11 +87,8 @@ struct PanicHelpView: View {
                         }
                     }
                     
-                    // Main message - stronger typography
-                    Text("You made a commitment to yourself")
-                        .font(.system(size: 24, weight: .bold, design: .default))
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(.primary)
+                    // Main message - typewriter effect with alternating quotes
+                    PanicQuoteTypewriterView()
                         .padding(.horizontal, 20)
                     
                     // Breathing section
@@ -346,6 +352,55 @@ private struct BreathingCoach: View {
             remaining = totalCycleDuration - tInCycle
         }
         return max(1, Int(remaining.rounded(.up)))
+    }
+}
+
+// MARK: - Typewriter Quote with Haptics
+private struct PanicQuoteTypewriterView: View {
+    @State private var displayedText: String = ""
+    @State private var quoteIndex: Int = 0
+    @State private var cancellable: AnyCancellable?
+    
+    private let letterDelay: TimeInterval = 0.06
+    private let pauseBetweenQuotes: TimeInterval = 3.0
+    
+    var body: some View {
+        Text(displayedText)
+            .font(.system(size: 24, weight: .bold, design: .default))
+            .multilineTextAlignment(.center)
+            .foregroundColor(.primary)
+            .frame(minHeight: 60)
+            .onAppear(perform: startAnimation)
+            .onDisappear { cancellable?.cancel() }
+    }
+    
+    private func startAnimation() {
+        cancellable?.cancel()
+        displayedText = ""
+        let message = panicQuotes[quoteIndex]
+        let characters = Array(message)
+        var index = 0
+        
+        cancellable = Timer.publish(every: letterDelay, on: .main, in: .common)
+            .autoconnect()
+            .sink { _ in
+                guard index < characters.count else {
+                    cancellable?.cancel()
+                    scheduleNextQuote()
+                    return
+                }
+                displayedText.append(characters[index])
+                let gen = UIImpactFeedbackGenerator(style: .light)
+                gen.impactOccurred(intensity: 0.5)
+                index += 1
+            }
+    }
+    
+    private func scheduleNextQuote() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + pauseBetweenQuotes) {
+            quoteIndex = (quoteIndex + 1) % panicQuotes.count
+            startAnimation()
+        }
     }
 }
 

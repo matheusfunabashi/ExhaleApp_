@@ -213,10 +213,10 @@ struct HomeView: View {
             .breathableBackground()
         }
         .navigationViewStyle(.stack)
-        .sheet(isPresented: $showCheckIn) {
+        .fullScreenCover(isPresented: $showCheckIn) {
             CheckInModalView()
         }
-        .sheet(item: Binding(
+        .fullScreenCover(item: Binding(
             get: { selectedTodayCheckIn },
             set: { selectedTodayCheckIn = $0 }
         )) { checkIn in

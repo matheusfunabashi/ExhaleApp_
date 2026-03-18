@@ -85,11 +85,18 @@ struct DailyProgress: Codable, Identifiable {
     let id: String
     let date: Date
     var wasVapeFree: Bool
-    var cravingsLevel: Int // 1-5 scale
+    var cravingsLevel: Int // 1-10 scale (legacy 1-5 still supported)
     var notes: String
     var mood: Mood
     var completedQuests: [String] // Quest IDs
-    var puffInterval: PuffInterval // Interval-based tracking
+    var puffInterval: PuffInterval // Interval-based tracking (legacy)
+    
+    // New 1-10 ratings and puff count (from revamped check-in)
+    var moodLevel: Int?
+    var selfControlLevel: Int?
+    var energyLevel: Int?
+    var confidenceLevel: Int?
+    var puffCount: Int?
     
     init(date: Date = Date(), wasVapeFree: Bool = true) {
         self.id = UUID().uuidString
@@ -100,6 +107,31 @@ struct DailyProgress: Codable, Identifiable {
         self.mood = .neutral
         self.completedQuests = []
         self.puffInterval = .none
+        self.moodLevel = nil
+        self.selfControlLevel = nil
+        self.energyLevel = nil
+        self.confidenceLevel = nil
+        self.puffCount = nil
+    }
+    
+    /// Resolved mood for display: uses moodLevel (1-10) if present, else legacy mood.
+    var resolvedMood: Mood {
+        guard let m = moodLevel else { return mood }
+        if m <= 2 { return .terrible }
+        if m <= 4 { return .bad }
+        if m <= 6 { return .neutral }
+        if m <= 8 { return .good }
+        return .excellent
+    }
+    
+    /// Resolved puff interval for display: uses puffCount if present, else legacy puffInterval.
+    var resolvedPuffInterval: PuffInterval {
+        guard let p = puffCount else { return puffInterval }
+        if p == 0 { return .none }
+        if p <= 10 { return .light }
+        if p <= 30 { return .moderate }
+        if p <= 60 { return .heavy }
+        return .veryHeavy
     }
 }
 

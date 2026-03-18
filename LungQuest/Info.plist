@@ -4,7 +4,20 @@
 <dict>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Recoleta-RegularDEMO</string>
+		<string>Fonts/fonnts.com-recoleta-black.otf</string>
+		<string>Fonts/fonnts.com-recoleta-bold.otf</string>
+		<string>Fonts/fonnts.com-recoleta-light.otf</string>
+		<string>Fonts/fonnts.com-recoleta-medium.otf</string>
+		<string>Fonts/fonnts.com-recoleta-regular.otf</string>
+		<string>Fonts/fonnts.com-recoleta-semibold.otf</string>
+		<string>Fonts/fonnts.com-recoleta-thin.otf</string>
+		<string>Fonts/fonnts.com-recoletaalt-black.otf</string>
+		<string>Fonts/fonnts.com-recoletaalt-bold.otf</string>
+		<string>Fonts/fonnts.com-recoletaalt-light.otf</string>
+		<string>Fonts/fonnts.com-recoletaalt-medium.otf</string>
+		<string>Fonts/fonnts.com-recoletaalt-regular.otf</string>
+		<string>Fonts/fonnts.com-recoletaalt-semibold.otf</string>
+		<string>Fonts/fonnts.com-recoletaalt-thin.otf</string>
 	</array>
 </dict>
 </plist>
