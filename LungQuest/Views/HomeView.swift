@@ -11,6 +11,7 @@ struct HomeView: View {
     @State private var showCalendar = false
     @State private var showMoney = false
     @State private var showHealth = false
+    @State private var showExercises = false
     @State private var showSlipConfirmation = false
     @State private var showSlipSecondConfirmation = false
     @State private var showHeroGlow = false
@@ -189,6 +190,46 @@ struct HomeView: View {
                     }
                     .padding(.horizontal)
                     
+                    HomeSection(
+                        title: "De-stress exercises",
+                        subtitle: "Take a moment to reset with a quick activity."
+                    ) {
+                        Button(action: {
+                            showExercises = true
+                        }) {
+                            HStack(spacing: 16) {
+                                Image(systemName: "figure.mind.and.body")
+                                    .font(.system(size: 20, weight: .medium))
+                                    .foregroundColor(.black)
+                                    .frame(width: 40, height: 40)
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Open exercises")
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(.black)
+                                    
+                                Text("Bubble pop, memory, breathing, and more")
+                                        .font(.system(size: 14, weight: .regular))
+                                        .foregroundColor(.secondary)
+                                }
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.black)
+                            }
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                    .fill(Color.white)
+                                    .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal)
+                    
                     CheckInStatusButton(
                         showCheckIn: $showCheckIn,
                         onTodayCheckInTapped: {
@@ -267,6 +308,19 @@ struct HomeView: View {
             }
             .navigationViewStyle(.stack)
             .environmentObject(dataStore)
+        }
+        .sheet(isPresented: $showExercises) {
+            NavigationView {
+                ExercisesView()
+                    .navigationTitle("De-stress exercises")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Close") { showExercises = false }
+                        }
+                    }
+            }
+            .navigationViewStyle(.stack)
         }
         #if DEBUG
         .sheet(isPresented: $showDevMenu) {
