@@ -26,6 +26,7 @@
 		971C04622E7DFED500540355 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 971C04612E7DFED500540355 /* FirebaseAuth */; };
 		971C04642E7DFED500540355 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 971C04632E7DFED500540355 /* FirebaseFirestore */; };
 		971C04662E7DFED500540355 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 971C04652E7DFED500540355 /* FirebaseStorage */; };
+		9778CC722F6B349200132506 /* bubble_pop.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 9778CC712F6B349100132506 /* bubble_pop.mp3 */; };
 		97E3A6B42F3B0F7B00A4D5EA /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97E3A6B32F3B0F7B00A4D5EA /* OnboardingView.swift */; };
 		97FE9EAA2FCFA826006FDDE7 /* OnboardingStep2View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FE9EA92FCFA826006FDDE7 /* OnboardingStep2View.swift */; };
 		97FE9EAD2FCFB151006FDDE7 /* OnboardingStep3View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FE9EAC2FCFB151006FDDE7 /* OnboardingStep3View.swift */; };
@@ -51,6 +52,12 @@
 		9E9B7F302FE4B32E00A77078 /* ReviewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9B7F2F2FE4B32E00A77078 /* ReviewManager.swift */; };
 		9E9B7F312FE4B32E00A77079 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9B7F302FE4B32E00A77079 /* NotificationService.swift */; };
 		9E9B7F352FE4B32E00A7707C /* TabBarDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9B7F342FE4B32E00A7707C /* TabBarDiagnostics.swift */; };
+		A1B2C3D42FF1000000000001 /* ExercisesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FF1000000000002 /* ExercisesView.swift */; };
+		A1B2C3D42FF1000000000003 /* BubblePopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FF1000000000004 /* BubblePopView.swift */; };
+		A1B2C3D42FF1000000000005 /* ConnectDotsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FF1000000000006 /* ConnectDotsView.swift */; };
+		A1B2C3D42FF1000000000007 /* MindMemoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FF1000000000008 /* MindMemoryView.swift */; };
+		A1B2C3D42FF1000000000009 /* BreathingExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FF100000000000A /* BreathingExerciseView.swift */; };
+		A1B2C3D42FF100000000000B /* ConnectDotsPuzzleLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FF100000000000C /* ConnectDotsPuzzleLibrary.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -71,6 +78,7 @@
 		8D1107650486CEB800E47090 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
 		8D1107690486CEB800E47090 /* CommonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonStyles.swift; sourceTree = "<group>"; };
 		9701BB4C2E81E7E500716F78 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		9778CC712F6B349100132506 /* bubble_pop.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bubble_pop.mp3; sourceTree = "<group>"; };
 		97E3A6B32F3B0F7B00A4D5EA /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		97FE9EA92FCFA826006FDDE7 /* OnboardingStep2View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStep2View.swift; sourceTree = "<group>"; };
 		97FE9EAC2FCFB151006FDDE7 /* OnboardingStep3View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStep3View.swift; sourceTree = "<group>"; };
@@ -94,6 +102,12 @@
 		9E9B7F2F2FE4B32E00A77078 /* ReviewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewManager.swift; sourceTree = "<group>"; };
 		9E9B7F302FE4B32E00A77079 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		9E9B7F342FE4B32E00A7707C /* TabBarDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarDiagnostics.swift; sourceTree = "<group>"; };
+		A1B2C3D42FF1000000000002 /* ExercisesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExercisesView.swift; sourceTree = "<group>"; };
+		A1B2C3D42FF1000000000004 /* BubblePopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BubblePopView.swift; sourceTree = "<group>"; };
+		A1B2C3D42FF1000000000006 /* ConnectDotsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectDotsView.swift; sourceTree = "<group>"; };
+		A1B2C3D42FF1000000000008 /* MindMemoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindMemoryView.swift; sourceTree = "<group>"; };
+		A1B2C3D42FF100000000000A /* BreathingExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreathingExerciseView.swift; sourceTree = "<group>"; };
+		A1B2C3D42FF100000000000C /* ConnectDotsPuzzleLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectDotsPuzzleLibrary.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -181,6 +195,7 @@
 		8D1107570486CEB800E47090 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				9778CC712F6B349100132506 /* bubble_pop.mp3 */,
 				8D1107320486CEB800E47090 /* ContentView.swift */,
 				8D1107470486CEB800E47090 /* HomeView.swift */,
 				8D11075F0486CEB800E47090 /* LearningView.swift */,
@@ -201,6 +216,12 @@
 				97FE9EC72FCFE4F3006FDDE7 /* OnboardingStep12View.swift */,
 				97FE9EC82FCFE4F3006FDDE9 /* OnboardingStep12bView.swift */,
 				97FE9EC92FCFE5C7006FDDE7 /* OnboardingStep13View.swift */,
+				A1B2C3D42FF1000000000002 /* ExercisesView.swift */,
+				A1B2C3D42FF1000000000004 /* BubblePopView.swift */,
+				A1B2C3D42FF1000000000006 /* ConnectDotsView.swift */,
+				A1B2C3D42FF100000000000C /* ConnectDotsPuzzleLibrary.swift */,
+				A1B2C3D42FF1000000000008 /* MindMemoryView.swift */,
+				A1B2C3D42FF100000000000A /* BreathingExerciseView.swift */,
 				8D11074B0486CEB800E47090 /* ProgressView.swift */,
 				8D11074D0486CEB800E47090 /* ProfileView.swift */,
 				8D1107580486CEB800E47090 /* Components */,
@@ -301,6 +322,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9E46E2E12F4B777A00E98627 /* Products.storekit in Resources */,
+				9778CC722F6B349200132506 /* bubble_pop.mp3 in Resources */,
 				9701BB4D2E81E7E500716F78 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -347,6 +369,12 @@
 				97FE9EC82FCFE4F3006FDDE7 /* OnboardingStep12View.swift in Sources */,
 				97FE9EC92FCFE4F3006FDDE9 /* OnboardingStep12bView.swift in Sources */,
 				97FE9ECA2FCFE5C7006FDDE7 /* OnboardingStep13View.swift in Sources */,
+				A1B2C3D42FF1000000000001 /* ExercisesView.swift in Sources */,
+				A1B2C3D42FF1000000000003 /* BubblePopView.swift in Sources */,
+				A1B2C3D42FF1000000000005 /* ConnectDotsView.swift in Sources */,
+				A1B2C3D42FF100000000000B /* ConnectDotsPuzzleLibrary.swift in Sources */,
+				A1B2C3D42FF1000000000007 /* MindMemoryView.swift in Sources */,
+				A1B2C3D42FF1000000000009 /* BreathingExerciseView.swift in Sources */,
 				97FE9EB02FCFB1B8006FDDE7 /* WaveGradientBackground.swift in Sources */,
 				97FE9EB32FCFB200006FDDE7 /* UserProfile.swift in Sources */,
 			);
