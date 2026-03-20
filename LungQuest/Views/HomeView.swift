@@ -191,8 +191,8 @@ struct HomeView: View {
                     .padding(.horizontal)
                     
                     HomeSection(
-                        title: "De-stress exercises",
-                        subtitle: "Take a moment to reset with a quick activity."
+                        title: "Relapse Prevention Exercises",
+                        subtitle: "Defeat the urge to vape with these exercises."
                     ) {
                         Button(action: {
                             showExercises = true

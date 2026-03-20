@@ -1,7 +1,6 @@
 import SwiftUI
 import UIKit
 import AVFoundation
-import Combine
 
 struct PanicButton: View {
     var action: () -> Void
@@ -87,8 +86,8 @@ struct PanicHelpView: View {
                         }
                     }
                     
-                    // Main message - typewriter effect with alternating quotes
-                    PanicQuoteTypewriterView()
+                    // Main message - fade between alternating quotes
+                    PanicQuoteFadeView()
                         .padding(.horizontal, 20)
                     
                     // Breathing section
@@ -355,52 +354,35 @@ private struct BreathingCoach: View {
     }
 }
 
-// MARK: - Typewriter Quote with Haptics
-private struct PanicQuoteTypewriterView: View {
-    @State private var displayedText: String = ""
+// MARK: - Fade Between Quotes
+private struct PanicQuoteFadeView: View {
     @State private var quoteIndex: Int = 0
-    @State private var cancellable: AnyCancellable?
+    @State private var timer: Timer?
     
-    private let letterDelay: TimeInterval = 0.06
-    private let pauseBetweenQuotes: TimeInterval = 3.0
+    private let displayDuration: TimeInterval = 4.0
+    private let fadeDuration: Double = 1.1
     
     var body: some View {
-        Text(displayedText)
+        Text(panicQuotes[quoteIndex])
             .font(.system(size: 24, weight: .bold, design: .default))
             .multilineTextAlignment(.center)
             .foregroundColor(.primary)
             .frame(minHeight: 60)
-            .onAppear(perform: startAnimation)
-            .onDisappear { cancellable?.cancel() }
+            .id(quoteIndex)
+            .transition(.opacity)
+            .animation(.easeInOut(duration: fadeDuration), value: quoteIndex)
+            .onAppear(perform: startTimer)
+            .onDisappear { timer?.invalidate(); timer = nil }
     }
     
-    private func startAnimation() {
-        cancellable?.cancel()
-        displayedText = ""
-        let message = panicQuotes[quoteIndex]
-        let characters = Array(message)
-        var index = 0
-        
-        cancellable = Timer.publish(every: letterDelay, on: .main, in: .common)
-            .autoconnect()
-            .sink { _ in
-                guard index < characters.count else {
-                    cancellable?.cancel()
-                    scheduleNextQuote()
-                    return
-                }
-                displayedText.append(characters[index])
-                let gen = UIImpactFeedbackGenerator(style: .light)
-                gen.impactOccurred(intensity: 0.5)
-                index += 1
+    private func startTimer() {
+        timer = Timer.scheduledTimer(withTimeInterval: displayDuration, repeats: true) { _ in
+            withAnimation(.easeInOut(duration: fadeDuration)) {
+                quoteIndex = (quoteIndex + 1) % panicQuotes.count
             }
-    }
-    
-    private func scheduleNextQuote() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + pauseBetweenQuotes) {
-            quoteIndex = (quoteIndex + 1) % panicQuotes.count
-            startAnimation()
         }
+        timer?.tolerance = 0.5
+        RunLoop.main.add(timer!, forMode: .common)
     }
 }
 

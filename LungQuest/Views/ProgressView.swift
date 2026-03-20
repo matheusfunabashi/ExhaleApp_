@@ -117,9 +117,6 @@ struct StatsOverviewSection: View {
                 )
             }
             
-            if let highlight = savingsHighlight {
-                MotivationTile(emoji: highlight.emoji, accent: highlight.color, message: highlight.message)
-            }
         }
     }
     
@@ -129,21 +126,6 @@ struct StatsOverviewSection: View {
         return max(0, Int(elapsed) / 86_400)
     }
     
-    private var savingsHighlight: (emoji: String, message: String, color: Color)? {
-        let savings = dataStore.moneySavedFromFirstQuit()
-        switch savings {
-        case ..<5:
-            return ("🍃", "Every bit counts—\(dataStore.formattedMoneySaved()) saved already is a fresh start fund.", Color.green)
-        case 5..<12:
-            return ("☕", "You've saved enough for a cozy coffee break—treat yourself mindfully!", Color.brown)
-        case 12..<25:
-            return ("🍔", "That's a lunch paid for by your lungs. Savor the win!", Color.orange)
-        case 25..<60:
-            return ("🎬", "Tickets covered—plan a celebration night with your savings.", Color.purple)
-        default:
-            return ("✈️", "Your savings could fund a weekend getaway. Keep investing in freedom!", Color.blue)
-        }
-    }
 }
 
 struct TimeFrameSelector: View {
@@ -605,7 +587,7 @@ struct StatCard: View {
     let emoji: String
     let accentColor: Color
     let subtitle: String?
-    
+
     init(title: String, value: String, emoji: String, accentColor: Color, subtitle: String? = nil) {
         self.title = title
         self.value = value
@@ -613,35 +595,37 @@ struct StatCard: View {
         self.accentColor = accentColor
         self.subtitle = subtitle
     }
-    
+
     var body: some View {
-        VStack(spacing: 10) {
-            // Emoji icon - consistent size
-            Text(emoji)
-                .font(.system(size: 32))
-            
-            // Value - visual focus, larger and bold
+        VStack(spacing: 8) {
+            // Spacer for emoji overlap
+            Spacer()
+                .frame(height: 16)
+
+            // Title - small grey, above value
+            Text(title)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+
+            // Value - large bold, main focus
             Text(value)
-                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .font(.system(size: 34, weight: .bold, design: .rounded))
                 .foregroundColor(.primary)
                 .monospacedDigit()
-            
-            // Title - clearly secondary
-            Text(title.uppercased())
-                .font(.caption)
-                .kerning(0.5)
-                .foregroundColor(.secondary)
-            
-            // Subtitle - restrained micro-copy
+
+            // Subtitle - small grey below value
             if let subtitle = subtitle {
                 Text(subtitle)
-                    .font(.caption2)
-                    .foregroundColor(accentColor.opacity(0.6))
+                    .font(.system(size: 10, weight: .regular))
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
+        .padding(.vertical, 16)
         .padding(.horizontal, 16)
+        .padding(.top, 4)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color.white)
@@ -649,8 +633,13 @@ struct StatCard: View {
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
                         .stroke(accentColor.opacity(0.12), lineWidth: 1)
                 )
-                .shadow(color: Color.black.opacity(0.03), radius: 4, x: 0, y: 2)
+                .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 4)
         )
+        .overlay(alignment: .top) {
+            Text(emoji)
+                .font(.system(size: 36))
+                .offset(y: -10)
+        }
     }
 }
 
@@ -1051,37 +1040,6 @@ struct LegendItem: View {
                 .font(.caption2)
                 .foregroundColor(.secondary)
         }
-    }
-}
-
-struct MotivationTile: View {
-    let emoji: String
-    var accent: Color = .pink
-    let message: String
-    
-    var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            Text(emoji)
-                .font(.system(size: 20))
-            
-            Text(message)
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            
-            Spacer(minLength: 0)
-        }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 16)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.white)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(accent.opacity(0.15), lineWidth: 1)
-                )
-                .shadow(color: Color.black.opacity(0.02), radius: 4, x: 0, y: 2)
-        )
     }
 }
 
